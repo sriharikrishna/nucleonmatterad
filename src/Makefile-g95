@@ -1,0 +1,12 @@
+# regular options
+OPTFLAGS=   -g -r8 -O3 -Include
+FC= g95 $(OPTFLAGS)
+# variable avoids magnetic moment bug in Intel Fortran compilation
+OPTFLAGSX=  -g -r8 -O3 -Include
+FCX=g95 $(OPTFLAGSX)
+# variable for debug options
+OPTFLAGSD=  -g -r8 -O0 -Include
+FCD=g95 $(OPTFLAGSD)
+
+# flag for linking
+LDFLAGS = 

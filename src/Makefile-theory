@@ -1,0 +1,11 @@
+# omp options
+OMPFLAGS= -openmp -lpthread -openmp-report
+# # regular compiler options
+OPTFLAGS=  -g -r8 -O3 -xSSE4.2 -axSSE4.2 -cm -w -WB -traceback -Include
+FC=ifort $(OPTFLAGS)
+# # debug compiler options
+OPTFLAGSD=  -g -r8 -O0 -cm -w -WB -traceback -Include
+FCD=ifort $(OPTFLAGSD)
+MLIB=-lsvml
+
+GC=gcc
