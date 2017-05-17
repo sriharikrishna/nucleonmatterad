@@ -1,0 +1,133 @@
+all: numCore.pre.xb.x2w.w2f.post.f90
+
+ifndef F90C
+F90C=gfortran
+endif
+ifndef CC
+CC=gcc
+endif
+
+ifndef HEADER
+HEADER=ref_output_10y_OAD
+endif
+
+F90FLAGS= -mcmodel=medium -fno-range-check
+
+SRC_SICO_PASSIVE=\
+subroutines/general/output_m.F90\
+subroutines/grl/boundary.F90\
+subroutines/grl/sico_init.F90\
+subroutines/grl/phys_para.F90\
+subroutines/grl/topography1.F90\
+subroutines/grl/topography2.F90\
+subroutines/grl/topography3.F90\
+
+SRC=\
+nmchain.f\
+nmfkts.f\
+nmfts.f\
+nmhnc.f\
+nmmain.f\ 
+nmspot.f\ 
+nmsub.f\
+nmtbi.f\
+
+CPPCMD = cat $< |  cpp -DALLOW_OPENAD=1 -I../ -I./ -traditional-cpp -P 
+
+
+toolChain : numCore.f90
+	openad -c -m rs $<
+
+numCore.f90: numCore.F90
+	$(CPPCMD) > numcore_temp.F90
+	cat numcore_temp.F90| sed 's/use */use oad_/'| sed 's/module */\module oad_/' | sed 's/ctrl_init/\oad_ctrl_init/' | sed 's/cost_independent_init/\oad_cost_independent_init/' | sed 's/cost_dependent_init/\oad_cost_dependent_init/' | sed 's/cost_final/\oad_final/' | sed 's/module oad_procedure/\module procedure/' | sed 's/use oad_sico_maths_AD_m/ use oad_sico_maths_AD_m_stub/'> $@
+
+
+numCore.F90: $(SRC)
+	cat $(SRC) > $@ 
+
+RUN=$(HEADER)
+INDIR=../sico_in
+#RESDIR=${PWD}/../sico_out/$(HEADER)
+RESDIR=../sico_out/$(HEADER)
+sico_specs.h: ../runs/headers/sico_specs_$(HEADER).h
+	cp $^ sico_specs_temp.h
+	# Reading the header and changing the values
+	sed 's%INPATH .*%INPATH '\'''${INDIR}\''%' sico_specs_temp.h | sed 's%OUTPATH .*%OUTPATH '\'''${RESDIR}\''%' > $@
+
+PREPROCESS_FLAGS=--mode=r
+POSTPROCESS_FLAGS=--mode=r --infoUnitFile w2f__types.f90
+
+# preprocess F
+head_sf.pre.f: numCore.f90
+	${OPENADROOT}/OpenADFortTk/tools/SourceProcessing/preProcess.py $(PREPROCESS_FLAGS) --timing -o $@ numCore.f90
+
+# F -> WHIRL
+head_sf.pre.B: head_sf.pre.f 
+	${OPEN64ROOT}/crayf90/sgi/mfef90 -z -F -N132 $<
+
+# WHIRL -> XAIF
+head_sf.pre.xaif : head_sf.pre.B 
+	${OPENADFORTTK}/bin/whirl2xaif -N -n -o $@ $<
+
+# XAIF -> XAIF'
+head_sf.pre.xb.xaif : head_sf.pre.xaif
+	${XAIFBOOSTER_BASE}/algorithms/BasicBlockPreaccumulationReverse/driver/oadDriver -v -V -i $< -c ${XAIFSCHEMAROOT}/schema/examples/inlinable_intrinsics.xaif -s ${XAIFSCHEMAROOT}/schema/ -o $@ 
+
+# XAIF' -> WHIRL'
+head_sf.pre.xb.x2w.B : head_sf.pre.xb.xaif 
+	 ${OPENADFORTTK}/bin/xaif2whirl -t OpenADTy_active head_sf.pre.B $<
+
+# WHIRL' -> F'
+head_sf.pre.xb.x2w.w2f.f: head_sf.pre.xb.x2w.B 
+	${OPEN64ROOT}/whirl2f/whirl2f -openad -openadType OpenADTy_active  $<
+
+# postprocess F'
+numCore.pre.xb.x2w.w2f.post.f90 :  head_sf.pre.xb.x2w.w2f.f w2f__types.f90 OAD_tape.f90 OAD_active.f90 OAD_cp.f90 ad_template.f oad_template_sor_sprs_alt.f90 oad_template_tri_sle_alt.f90
+	#cp subroutines/openad/ad_inline_custom.f ./ad_inline.f
+	cp ./subroutines/openad/ad_inline_dynamic.F ./ad_inline.f
+	${OPENADROOT}/OpenADFortTk/tools/SourceProcessing/postProcess.py $(POSTPROCESS_FLAGS) --timing --abstractType OpenADTy_active $< --filenameSuffix=".pre.xb.x2w.w2f.post" --pathSuffix='./' $(postProcessVerbFlag) ${EXAMPLE_SPECIFIC_POSTPROCESS_OPTIONS} -o numCore.pre.xb.x2w.w2f.post.f90
+
+RTSUPP=w2f__types OAD_active OAD_cp OAD_tape OAD_rev
+driver:   $(addsuffix .o, $(RTSUPP) iaddr) sico_specs.h subroutines/general/sico_types_m.o subroutines/general/sico_maths_AD_m.o subroutines/general/sico_maths_AD_m_grad.o numCore.pre.xb.x2w.w2f.post.o sicopolis.o subroutines/openad/var_transfer.o subroutines/openad/print_output.o subroutines/openad/oad_independent_init.o
+	${F90C} -g -o $@ subroutines/general/sico_maths_AD_m.o subroutines/general/sico_maths_AD_m_grad.o numCore.pre.xb.x2w.w2f.post.o sicopolis.o subroutines/openad/print_output.o subroutines/openad/oad_independent_init.o subroutines/openad/var_transfer.o $(addsuffix .o, $(RTSUPP) iaddr) -lm
+
+
+w2f__types.f90: ${OPENADROOT}/runTimeSupport/all/w2f__types.f90
+	cp ${OPENADROOT}/runTimeSupport/all/w2f__types.f90 ./
+iaddr.c: ${OPENADROOT}/runTimeSupport/all/iaddr.c
+	cp ${OPENADROOT}/runTimeSupport/all/iaddr.c ./
+OAD_cp.f90: ${OPENADROOT}/runTimeSupport/simple/OAD_cp.f90
+	cp ${OPENADROOT}/runTimeSupport/simple/OAD_cp.f90 ./
+OAD_rev.f90: ${OPENADROOT}/runTimeSupport/simple/OAD_rev.f90
+	cp ${OPENADROOT}/runTimeSupport/simple/OAD_rev.f90 ./  
+#OAD_tape.f90: ${OPENADROOT}/runTimeSupport/simple/OAD_tape.f90
+#	cp  ${OPENADROOT}/runTimeSupport/simple/OAD_tape.f90 ./ 
+OAD_tape.f90: ./subroutines/openad/OAD_tape_dynamic.F90
+	cp  ./subroutines/openad/OAD_tape_dynamic.F90 ./OAD_tape.f90
+OAD_trace.f90:${OPENADROOT}/runTimeSupport/simple/OAD_trace.f90
+	cp ${OPENADROOT}/runTimeSupport/simple/OAD_trace.f90 ./
+OAD_active.f90:${OPENADROOT}/runTimeSupport/scalar/OAD_active.f90
+	cp ${OPENADROOT}/runTimeSupport/scalar/OAD_active.f90 ./
+ad_template.f:
+	cp ${OPENADROOT}/runTimeSupport/simple/ad_template.split.f ./ad_template.f 
+
+%.o : %.F90
+	${F90C} -I./ ${F90FLAGS} -g -O -o $@ -c $<
+
+%.o : %.f90
+	${F90C} ${F90FLAGS} -g -O -o $@ -c $< 
+
+%.o : %.f
+	${F90C} ${F90FLAGS} -g -O -o $@ -c $< 
+
+%.o : %.c
+	${CC} -g -O0 -o $@ -c $< 
+
+clean: 
+	rm -f subroutines/openad/var_transfer.o subroutines/general/sico_maths_AD_m.o subroutines/general/sico_maths_AD_m_grad.o subroutines/general/sico_types_m.o subroutines/general/sico_types_m.o subroutines/general/sico_maths_AD_m.o numCore.pre.xb.x2w.w2f.post.o sicopolis.o  subroutines/openad/print_output.o subroutines/openad/oad_independent_init.o
+	rm -f numCore.* *.o *.mod* driver *~ oad_template_sor_sprs_alt.f90 oad_template_tri_sle_alt.f90 sico_specs.h sico_specs_temp.h
+	rm -f ad_template* ad_inline.f OAD_* w2f__* iaddr* stream_vel_variables_passive.f90 head_sf*
+#	rm -f *.o *.mod* driver *~ 
+
+.PHONY: clean toolChain
