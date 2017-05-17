@@ -76,4 +76,5 @@ src/numcore_temp.F90
 src/numCore.F90
 src/numCore.f90
 src/oad_template*
-
+src/pnm/pnm.x
+src/snm/snm.x
