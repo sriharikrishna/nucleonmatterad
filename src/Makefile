@@ -107,4 +107,4 @@ sub/dgamma.o: sub/dgamma.f
 	$(FC) -c sub/dgamma.f -o sub/dgamma.o
 
 clean:
-	rm -Rf sub/*.o pnm/*.o snm/*.o *.x *.o snm/*.x pnm/*.x *~ snm/*~ pnm/*~
+	rm -Rf $(OBJFIL) $(OBJSUB) sub/*.o pnm/*.o snm/*.o *.x *.o snm/*.x pnm/*.x *~ snm/*~ pnm/*~ *.mod snm/obj/*.mod snm/obj/*.o pnm/obj/*.mod pnm/obj/*.o
