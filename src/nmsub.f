@@ -14,9 +14,6 @@ c **********************************************************************
       !implicit integer*4 (i-n)
       !include "params.f"
       !parameter (ngrid=(20*lgrid+1))
-      integer*4, parameter :: nlog=0
-      integer*4, parameter :: nin=5
-      integer*4, parameter :: nout=6
 
       !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       !common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,

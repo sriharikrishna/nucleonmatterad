@@ -7,7 +7,6 @@ c **********************************************************************
       !implicit real*8 (a-h,o-z)
       !implicit integer*4 (i-n)
       external nucmat
-      parameter (nlog=0,nin=5,nout=6)
       parameter (maxdim=15)
       character*50 sysdat
       character*20 timdat
@@ -59,7 +58,6 @@ c ----------------------------------------------------------------------
       use nmvar
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
-      parameter (nlog=0,nin=5,nout=6)
       logical lprt
       real*8 x(n)
       !common /minim/ econ,ncon,ntype

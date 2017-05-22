@@ -3,6 +3,11 @@
       !implicit real*8 (a-h,o-z)
       !implicit integer*4 (i-n)
       
+      integer*4, parameter:: nu=4/nm
+      integer*4,parameter :: nlog=0
+      integer*4,parameter :: nin=5
+      integer*4,parameter :: nout=6
+
       !common minim 
       real*8     :: econ
       integer*4  :: ncon,ntype

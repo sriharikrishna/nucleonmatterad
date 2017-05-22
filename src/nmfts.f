@@ -9,8 +9,6 @@ c **********************************************************************
       implicit integer*4 (i-n)
 c
       !include "params.f"
-      integer*4, parameter :: nlog=0
-      integer*4, parameter :: nout=6
       
       real*8 rr,vv(22),vp(12),vw(10),rv(6)
       real*8 rix(ngrid),rsx(ngrid),slsx(ngrid),slpsx(ngrid),

@@ -7,12 +7,8 @@
       private:: rrr,rry,ryr,rrz,zzz,zzr,zrz,rbybr,rbrtr,rbrty,rbytr,
      &ybrtr,rtrtr,rtrty,rtytr,zbzbz,zbztz
       
-      integer*4, parameter :: nu=4/nm
       integer*4, parameter :: n3s=5-nm
       integer*4, parameter :: n3t=7-nm
-      integer*4, parameter :: nlog=0
-      integer*4, parameter :: nin=5
-      integer*4, parameter :: nout=6
       real*8 afe(6),w3vm(10),w3vx(6,2),v3(2,2)
      &,rcc(lgrid),rdd(lgrid),rde(lgrid),ree(lgrid),sdd(lgrid)
      &,ycc(lgrid),ydd(lgrid),yde(lgrid),yee(lgrid),ybcc(lgrid)

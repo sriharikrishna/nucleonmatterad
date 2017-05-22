@@ -7,10 +7,6 @@ c ----------------------------------------------------------------------
       !implicit real*8 (a-h,o-z)
       !implicit integer*4 (i-n)
       !include "params.f"
-      integer*4, parameter:: nu=4/nm
-      integer*4, parameter :: nlog=0
-      integer*4, parameter :: nout=6
-      integer*4, parameter :: nin=5
       integer*4 :: nv,nt,no,lg,l3
       integer*4 :: li,kj,j,lj,l,k,i,m,n,mp,ir,ka,kb,jk
       real*8    :: wvc,wvcs,wfcdd,wfccc,wfcsdd,wfcscc,wpcdd,wpccc

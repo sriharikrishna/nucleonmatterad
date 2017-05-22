@@ -24,14 +24,10 @@ c subroutine for fhnc/soc equations
 c **********************************************************************
       subroutine nmhnc(lg,le,l3,ni,nie,no,nt,nv)
       implicit none
-      integer*4, parameter :: nu=4/nm
       integer*4, parameter :: n3s=5-nm
       integer*4, parameter :: n3t=7-nm
       integer*4, parameter :: nphi=5
       integer*4, parameter :: lx=512
-      integer*4, parameter :: nlog=0
-      integer*4, parameter :: nin=5
-      integer*4, parameter :: nout=6
       integer*4 lg,le,l3,ni,nie,no,nt,nv
 c
       real*8 :: xa(4),ya(4),yb(4),yc(4),jx(0:lx),rsx(0:lx)

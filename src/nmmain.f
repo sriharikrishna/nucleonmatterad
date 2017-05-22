@@ -11,11 +11,7 @@ c **********************************************************************
       !implicit real*8 (a-h,o-z)
       !implicit integer*4 (i-n)
       !include "params.f"
-      integer*4,parameter :: nu=4/nm
       !parameter (ngrid=(20*lgrid+1))
-      integer*4,parameter :: nlog=0
-      integer*4,parameter :: nin=5
-      integer*4,parameter :: nout=6
 c ----------------------------------------------------------------------
       real*8 :: dor,bst,btn,bls,endiff,efree,gint(6)
       integer*4 :: np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
