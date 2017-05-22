@@ -1,3 +1,10 @@
+      module nmhncmod
+      use nmvar
+      implicit none
+
+
+      private:: sdd,sde,see,udd,ude,uee
+      
       real*8 afe(6),afi(6,6,6),afj(6,6,6),afk(6,6,6),ahi(6,6,6)
      &,ahj(6,6,6),ahk(6,6,6),vco(6,3,3),vce(6,3),xcc(lgrid)
      &,xca(lgrid,6),xdd(lgrid,6),xde(lgrid,6),xee(lgrid,6),xgcc(lgrid)
@@ -6,7 +13,12 @@
      &,qcc(6),qdd(6),qde(6),qee(6),pcc(6),pdd(6),pde(6),pee(6)
      &,zca(6),zcb(6),zdd(6),zde(6),zee(6),v3st(6)
       integer lit(6),mit(6),nit(6)
-      data lit/0,2,2,4,4,4/,mit/0,2,4,2,4,4/,nit/0,2,4,4,2,4/
+
+      real*8 :: eijk
+      public :: nmhnc
+      
+      contains
+
 c *id* nmhnc ***********************************************************
 c subroutine for fhnc/soc equations
 c **********************************************************************
@@ -39,18 +51,6 @@ c
 c -------------------
 c statement functions
 c -------------------
-      sdd(j,k,l,m)=eijk*(xdd(j,l)*xgdd(k,m)*vc(l,2,1)
-     &            +(xdd(j,l)*xgde(k,m)+xde(j,l)*xgdd(k,m))*vc(l,2,2))
-      sde(j,k,l,m)=eijk*(xdd(j,l)*xgde(k,m)*vc(l,2,1)
-     &            +(xdd(j,l)*xgee(k,m)+xde(j,l)*xgde(k,m))*vc(l,2,2))
-      see(j,k,l,m)=eijk*(xde(j,l)*xgde(k,m)*vc(l,2,1)
-     &            +(xde(j,l)*xgee(k,m)+xee(j,l)*xgde(k,m))*vc(l,2,2))
-      udd(j,k,l,m)=eijk*(xgdd(j,l)*xgdd(k,m)*vc(l,2,1)
-     &            +(xgdd(j,l)*xgde(k,m)+xgde(j,l)*xgdd(k,m))*vc(l,2,2))
-      ude(j,k,l,m)=eijk*(xgdd(j,l)*xgde(k,m)*vc(l,2,1)
-     &            +(xgdd(j,l)*xgee(k,m)+xgde(j,l)*xgde(k,m))*vc(l,2,2))
-      uee(j,k,l,m)=eijk*(xgde(j,l)*xgde(k,m)*vc(l,2,1)
-     &            +(xgde(j,l)*xgee(k,m)+xgee(j,l)*xgde(k,m))*vc(l,2,2))
 c ---------------------
 c setup sines & cosines
 c ---------------------
@@ -1294,4 +1294,64 @@ cdir$ ivdep
   890 continue
   900 continue
       return
-      end
+      end subroutine nmhnc
+
+      function sdd(j,k,l,m)
+        use nmvar
+        implicit none
+        real*8 :: sdd 
+        integer*4 :: j,k,l,m
+        sdd = eijk*(xdd(j,l)*xgdd(k,m)*vc(l,2,1)
+     &            +(xdd(j,l)*xgde(k,m)+xde(j,l)*xgdd(k,m))*vc(l,2,2))
+      end function
+
+      function sde(j,k,l,m)
+        use nmvar
+        implicit none
+        real*8 :: sde 
+        integer*4 :: j,k,l,m
+        sde = eijk*(xdd(j,l)*xgde(k,m)*vc(l,2,1)
+     &            +(xdd(j,l)*xgee(k,m)+xde(j,l)*xgde(k,m))*vc(l,2,2))
+      end function
+
+
+      function see(j,k,l,m)
+        use nmvar
+        implicit none
+        real*8 :: see 
+        integer*4 :: j,k,l,m
+        see = eijk*(xde(j,l)*xgde(k,m)*vc(l,2,1)
+     &            +(xde(j,l)*xgee(k,m)+xee(j,l)*xgde(k,m))*vc(l,2,2))
+      end function
+
+
+      function udd(j,k,l,m)
+        use nmvar
+        implicit none
+        real*8 udd 
+        integer*4 :: j,k,l,m
+        udd = eijk*(xgdd(j,l)*xgdd(k,m)*vc(l,2,1)
+     &            +(xgdd(j,l)*xgde(k,m)+xgde(j,l)*xgdd(k,m))*vc(l,2,2))
+      end function
+
+
+      function ude(j,k,l,m)
+        use nmvar
+        implicit none
+        real*8 ude 
+        integer*4 :: j,k,l,m
+        ude = eijk*(xgdd(j,l)*xgde(k,m)*vc(l,2,1)
+     &            +(xgdd(j,l)*xgee(k,m)+xgde(j,l)*xgde(k,m))*vc(l,2,2))
+      end function
+
+      function uee(j,k,l,m)
+        use nmvar
+        implicit none
+        real*8 uee 
+        integer*4 :: j,k,l,m 
+        uee = eijk*(xgde(j,l)*xgde(k,m)*vc(l,2,1)
+     &            +(xgde(j,l)*xgee(k,m)+xgee(j,l)*xgde(k,m))*vc(l,2,2))
+      end function
+
+      end module nmhncmod
+

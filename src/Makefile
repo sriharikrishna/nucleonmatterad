@@ -68,7 +68,7 @@ $(OBJ)/nmfts.o: nmfts.f $(PARAMS)
 $(OBJ)/nmhnc.o: nmhnc.f $(PARAMS)
 	$(FC) $(OMP) -c nmhnc.f -o $(OBJ)/nmhnc.o
 
-$(OBJ)/nmmain.o: nmmain.f $(PARAMS)
+$(OBJ)/nmmain.o: nmmain.f $(PARAMS) $(OBJ)/nmhnc.o $(OBJ)/nmtbi.o
 	$(FC) -c nmmain.f -o $(OBJ)/nmmain.o
 
 $(OBJ)/nmsub.o: nmsub.f $(PARAMS)
