@@ -26,6 +26,8 @@ endif
 # you must define CASE either as environment variables or on
 # the command line
 
+OBJ=$(CASE)/obj
+
 OBJFIL= $(OBJ)/nmchain.o $(OBJ)/nmfts.o $(OBJ)/nmhnc.o $(OBJ)/nmmain.o \
    $(OBJ)/nmsub.o $(OBJ)/nmtbi.o
 
@@ -38,7 +40,6 @@ PARAMS=nclude/params.$(CASE)
 OBJSUB= sub/dtime.o sub/headtime.o sub/linpack.o sub/minimi.o sub/numrec.o \
    sub/pot.o sub/eft_pot_r.o sub/dgamma.o
 
-OBJ=$(CASE)/obj
 
 all: $(CASE)/$(CASE).x
 
