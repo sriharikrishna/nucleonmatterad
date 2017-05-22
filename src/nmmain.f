@@ -4,55 +4,43 @@ c neutron matter
 c **********************************************************************
       subroutine nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &                 ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "params.f"
-      parameter (nu=4/nm)
-      parameter (ngrid=(20*lgrid+1))
-      parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 f(lgrid,8),fp(lgrid,8),fds(lgrid,8),v(lgrid,14)
-      common /correl/ f,fp,fds,v
-      real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
-     &       as(6),at(8,8),ax(6,6,6)
-      common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
-      real*8 gca(lgrid,6),gcb(lgrid,6),gdd(lgrid,6),gde(lgrid,6),
-     &       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
-     &       gnn(lgrid,14)
-      common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
-      real*8 v3cc(lgrid,6,2),v3dd(lgrid,6,2),v3de(lgrid,6,2),
-     &       v3ee(lgrid,6,2)
-      common /tbpots/ v3cc,v3dd,v3de,v3ee
-      real*8 bj(8,6),bk(4,3),bq(6,2),vc(6,3,3),
-     &       bcc(lgrid,3),bde(lgrid,3)
-      common /sorfun/ bj,bk,bq,vc,bde,bcc
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
-     &       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
-      common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
-      real*8 eav,fsof,plm,qmin,qmax
-      common /pionic/ eav,fsof,plm,qmin,qmax
-      real*8 temp,mstar,chmpot,entrpy,ksav,kqav
-      common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
-      real*8 xph,yph
-      common /parhol/ xph,yph
-      real*8 ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6,
-     &       wx(14,10),wcx(8,10),wcdx(8,10),wcmx(8,10),wcrx(8,10),
-     &       w3x(6,4,2)
-      common /eblock/ ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6,
-     &       wx,wcx,wcdx,wcmx,wcrx,w3x
+      use nmvar
+      use nmhncmod
+      use nmtbimod
+      implicit none
+      !implicit real*8 (a-h,o-z)
+      !implicit integer*4 (i-n)
+      !include "params.f"
+      integer*4,parameter :: nu=4/nm
+      !parameter (ngrid=(20*lgrid+1))
+      integer*4,parameter :: nlog=0
+      integer*4,parameter :: nin=5
+      integer*4,parameter :: nout=6
 c ----------------------------------------------------------------------
+      real*8 :: dor,bst,btn,bls,endiff,efree,gint(6)
+      integer*4 :: np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+      integer*4 :: npi,npf
       real*8 xsq(lgrid),xqq(lgrid),rllpp(lgrid),rdls(lgrid),rlss(lgrid)
      &,rlltp(lgrid),wkx(10),wjx(10),ya(6),zif(6,2),esum(14),echeck(14)
-     &,gint(6),vem(14)
+     &,vem(14)
+      real*8 :: r0,dc,dg,de,ds,dl,dcor,dtor,x,wv2,wvh,wvs,wvs2,wvsb,wfs
+      real*8 :: wfs2,wfsb,wj2,wjh,wjs,wjs2,wjsb,wp2,wph,wps,wps2,wpsb
+      real*8 :: wk2,wkh,wks,wks2,wksb,wf2,wfh,x1,x2,qx,di1dk1,ditdkt
+      real*8 :: wdd,wde,wed,wcc,afe,dli,dlj,dlk,y1,y2,y3,y4,ydd,yde,yee
+      real*8 :: ycc,zdd,zde,zee,zcc,yb,ybd,ybc,ybl,z,xdd,xde,xee,xcc,z3
+      real*8 :: zk,zf,zj,bvpk,bkpk,bjpk,wv2b,wvhb,wk2b,wf2b,wfhb,wj2b
+      real*8 :: wjhb,wp2b,wphb,wv2q,wvhq,wvsq,wvsxq,wkhb,yd,ye,yc,xb
+      real*8 :: xbex,xbe,xbc,xi,xicc,zi,bvik,bkik,bjik,bvif,bkif,bjif
+      integer*4:: ltd,irl,l,ir,kj,j,i,k,n,mp,m,nx,il,kl,lb,jp,jq
+      real*8 :: bvpf,yt,yr,yl,xcp,zr,zl,fdi,fdk,zkp,zkr,zkl,zkx,bkpf
+      real*8 :: bjpf,x3,x4,x6,ytd,ytc,yqd,yqc,elj,yt1,yt2,yt4,xq,xqex
+      real*8 :: w3,vemtot,vc1pp,vc1np,vmmpp,vmmnp,vmmnn,esq,tf,wv,wk
+      real*8 :: wf,wj,wp,epb,ejf,ev2,evm,ek2,ekm,ej2,ejm,energy
+      real*8    :: acex !entry point
+      real*8    :: acl2ex !entry point
+      real*8    :: acl2 !entry point
+      real*8    :: al2 !entry point
+      real*8    :: ac   !function
       if (kf.eq.0) kf=(1.5*nm*pi**2*rho)**(1./3.)
       if (rho.eq.0) rho=kf**3/(1.5*nm*pi**2)
       r0=(3/(4*pi*rho))**(1./3.)

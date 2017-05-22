@@ -26,6 +26,8 @@ endif
 # you must define CASE either as environment variables or on
 # the command line
 
+OBJ=$(CASE)/obj
+
 OBJFIL= $(OBJ)/nmchain.o $(OBJ)/nmfts.o $(OBJ)/nmhnc.o $(OBJ)/nmmain.o \
    $(OBJ)/nmsub.o $(OBJ)/nmtbi.o
 
@@ -38,19 +40,23 @@ PARAMS=nclude/params.$(CASE)
 OBJSUB= sub/dtime.o sub/headtime.o sub/linpack.o sub/minimi.o sub/numrec.o \
    sub/pot.o sub/eft_pot_r.o sub/dgamma.o
 
-OBJ=$(CASE)/obj
 
 all: $(CASE)/$(CASE).x
 
 prep: 
 	cp -p $(PARAMS) nclude/params.f
 
+PARAMSMOD = params.mod
+
+params.mod: nclude/params.f
+	$(FC) $(OMP) -c nclude/params.f -o params.o
+
 $(CASE)/$(CASE).x: $(CASE)/nm.o $(OBJFIL) $(OBJSUB)
 	$(FC) $(OMP) $(CASE)/nm.o $(OBJFIL) $(OBJSUB) $(MLIB) -o $(CASE)/$(CASE).x
 
 # case specific subroutines
 
-$(CASE)/nm.o: nm.f $(PARAMS)
+$(CASE)/nm.o: nm.f $(PARAMSMOD) $(OBJ)/nmvar.o
 	$(FC) $(OMP) -c nm.f -o $(CASE)/nm.o
 
 $(OBJ)/nmchain.o: nmchain.f $(PARAMS)
@@ -62,7 +68,7 @@ $(OBJ)/nmfts.o: nmfts.f $(PARAMS)
 $(OBJ)/nmhnc.o: nmhnc.f $(PARAMS)
 	$(FC) $(OMP) -c nmhnc.f -o $(OBJ)/nmhnc.o
 
-$(OBJ)/nmmain.o: nmmain.f $(PARAMS)
+$(OBJ)/nmmain.o: nmmain.f $(PARAMS) $(OBJ)/nmhnc.o $(OBJ)/nmtbi.o
 	$(FC) -c nmmain.f -o $(OBJ)/nmmain.o
 
 $(OBJ)/nmsub.o: nmsub.f $(PARAMS)
@@ -70,6 +76,9 @@ $(OBJ)/nmsub.o: nmsub.f $(PARAMS)
 
 $(OBJ)/nmtbi.o: nmtbi.f $(PARAMS)
 	$(FC) -c nmtbi.f -o $(OBJ)/nmtbi.o
+
+$(OBJ)/nmvar.o: nmvar.f $(PARAMSMOD)
+	$(FC) -c nmvar.f -o $(OBJ)/nmvar.o
 
 # common subroutines
 
@@ -98,4 +107,4 @@ sub/dgamma.o: sub/dgamma.f
 	$(FC) -c sub/dgamma.f -o sub/dgamma.o
 
 clean:
-	rm -Rf sub/*.o pnm/*.o snm/*.o *.x *.o snm/*.x pnm/*.x *~ snm/*~ pnm/*~
+	rm -Rf $(OBJFIL) $(OBJSUB) sub/*.o pnm/*.o snm/*.o *.x *.o snm/*.x pnm/*.x *~ snm/*~ pnm/*~ *.mod snm/obj/*.mod snm/obj/*.o pnm/obj/*.mod pnm/obj/*.o

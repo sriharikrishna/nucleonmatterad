@@ -3,24 +3,25 @@ c nmspot
 c single-particle potential driver
 c ********************************
       program nmspot
+      use nmvar
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
       parameter (nlog=0,nin=5,nout=6)
       real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      !common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
+      !&       h2m,h2mcs,pi,s
       real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
      &       as(6),at(8,8),ax(6,6,6)
-      common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
+      !common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
       real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
+      !common /tbcnst/ u,uf,up,
+      !&       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
       real*8 eav,fsof,plm,qmin,qmax
-      common /pionic/ eav,fsof,plm,qmin,qmax
+      !common /pionic/ eav,fsof,plm,qmin,qmax
       real*8 temp,mstar,chmpot,entrpy,ksav,kqav
-      common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
+      !common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
       real*8 xph,yph
-      common /parhol/ xph,yph
+      !common /parhol/ xph,yph
       dimension e(5,20),gint(6),x(5),y(100)
       character*8 mname(2)
       character*16 pname(10),tname(0:5)
@@ -138,7 +139,7 @@ c *********************
 c
       real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
      &       as(6),at(8,8),ax(6,6,6)
-      common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
+      !common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
 c
       data aa/1.,3.,3.,9.,6.,18.,1.,3./
       data ab/1.,3.,3.,9.,1.,3.,1.,3./

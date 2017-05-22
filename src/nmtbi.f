@@ -1,47 +1,18 @@
-c *id* nmtbi ***********************************************************
-c nmtbi
-c subprogram for three-body integrations
-c ----------------------------------------------------------------------
-      subroutine nmtbi(lt,lg,le,l3,nie,no,nt)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "params.f"
-      parameter (nu=4/nm,n3s=5-nm,n3t=7-nm)
-      parameter (legrid=lgrid*(lgrid**2+1)/2)
-      parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 f(lgrid,8),fp(lgrid,8),fds(lgrid,8),v(lgrid,14)
-      common /correl/ f,fp,fds,v
-      real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
-     &       as(6),at(8,8),ax(6,6,6)
-      common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
-      real*8 gca(lgrid,6),gcb(lgrid,6),gdd(lgrid,6),gde(lgrid,6),
-     &       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
-     &       gnn(lgrid,14)
-      common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
-      real*8 eca(lgrid,6),ecb(lgrid,6),edd(lgrid,6),ede(lgrid,6),
-     &       eee(lgrid,6),sccd(legrid),scce(legrid),
-     &       sddd(legrid),sdde(legrid),sdee(legrid),seee(legrid)
-      common /echain/ eca,ecb,edd,ede,eee,sccd,scce,sddd,sdde,sdee,seee
-      real*8 bj(8,6),bk(4,3),bq(6,2),vc(6,3,3),
-     &       bcc(lgrid,3),bde(lgrid,3)
-      common /sorfun/ bj,bk,bq,vc,bde,bcc
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
-     &       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
-      common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
-      real*8 xtheta(legrid),ytheta(legrid),ztheta(legrid),stheta(legrid)
-      integer*4 index(lgrid,lgrid,lgrid)
-      common /angle/ xtheta,ytheta,ztheta,stheta,index
-c
+
+      module nmtbimod
+      use nmvar
+      implicit none
+
+
+      private:: rrr,rry,ryr,rrz,zzz,zzr,zrz,rbybr,rbrtr,rbrty,rbytr,
+     &ybrtr,rtrtr,rtrty,rtytr,zbzbz,zbztz
+      
+      integer*4, parameter :: nu=4/nm
+      integer*4, parameter :: n3s=5-nm
+      integer*4, parameter :: n3t=7-nm
+      integer*4, parameter :: nlog=0
+      integer*4, parameter :: nin=5
+      integer*4, parameter :: nout=6
       real*8 afe(6),w3vm(10),w3vx(6,2),v3(2,2)
      &,rcc(lgrid),rdd(lgrid),rde(lgrid),ree(lgrid),sdd(lgrid)
      &,ycc(lgrid),ydd(lgrid),yde(lgrid),yee(lgrid),ybcc(lgrid)
@@ -50,281 +21,32 @@ c
      &,zpdd(lgrid,6),zpde(lgrid,6),zpee(lgrid,6),zpcc(lgrid,6)
      &,zbdd(lgrid,8),zbde(lgrid,8),zbee(lgrid,8),zbcc(lgrid,8)
      &,ztee(lgrid,6)
+
+      public :: nmtbi
+      
+      contains
+
+c *id* nmtbi ***********************************************************
+c nmtbi
+c subprogram for three-body integrations
+c ----------------------------------------------------------------------
+      subroutine nmtbi(lt,lg,le,l3,nie,no,nt)
+      implicit none
+      integer*4 :: lt,lg,le,l3,nie,no,nt
+      integer*4 :: i,j,k,l,kb,ltd,fc2,fc2p,fl2,ffl,fl2p,fflp,ijk,ikj
+      integer*4 :: jik,kji,ka
+      real*8 :: vid,vie,vip,vpd,vpe,vpp,vfd,vfe,vfp,pa,pap,pb,pc,pd,qv
+      real*8 :: v0,ac,qvi,w3vma,w3vmb,x,y,z,qttt,qtts,qtst,qstt,acx,u1
+      real*8 :: u2,u3,u4,uf1,uf2,uf3,uf4,uf5,up1,up2,up3,qu,fpi,fpj
+      real*8 :: qui,u4a,u4b,u4c,u4d,qpts,qtps,qpps,qspt,qpst,qtpt,qptt
+      real*8 :: qppt
+      real*8 :: acex !entry point
+c
+
 c -------------------------
 c statement functions
 c error in rbrtr fixed 7/07
 c -------------------------
-      rrr(i,j,k,ijk,ikj,jik,kji)=
-     &  rdd(i)*rdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
-     &                         +sdde(kji)+sdee(ijk)+sdee(ikj)
-     &                         +sdee(kji)+seee(ijk))
-     & +rde(i)*rdd(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
-     &                         +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
-     & +rdd(i)*rde(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
-     &                         +2*sdde(jik)+sdee(ijk)+sdee(kji))
-     & +rdd(i)*rdd(j)*rde(k)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
-     &                         +2*sdde(kji)+sdee(ikj)+sdee(kji))
-     & +ree(i)*rdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk))
-     & +rdd(i)*ree(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
-     & +rdd(i)*rdd(j)*ree(k)*(1+sddd(ijk)+sdde(kji))
-     & +(rde(i)*rde(j)*rdd(k)+rde(i)*rdd(j)*rde(k)+rdd(i)*rde(j)*rde(k))
-     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
-     & +(rdd(i)*(rde(j)*ree(k)+ree(j)*rde(k))
-     &  +rdd(j)*(rde(k)*ree(i)+ree(k)*rde(i))
-     &  +rdd(k)*(rde(i)*ree(j)+ree(i)*rde(j))
-     &  +2*rde(i)*rde(j)*rde(k))*(1+sddd(ijk))
-     &  -2*nu*(rcc(i)*rcc(j)*rcc(k)*(1+sddd(ijk))
-     &        +rcc(i)*rdd(j)*rdd(k)*(sccd(ijk)+scce(ijk))
-     &        +rdd(i)*rcc(j)*rdd(k)*(sccd(jik)+scce(jik))
-     &        +rdd(i)*rdd(j)*rcc(k)*(sccd(kji)+scce(kji))
-     &        +rcc(i)*(rde(j)*rdd(k)+rdd(j)*rde(k))*sccd(ijk)
-     &        +rcc(j)*(rde(k)*rdd(i)+rdd(k)*rde(i))*sccd(jik)
-     &        +rcc(k)*(rde(i)*rdd(j)+rdd(i)*rde(j))*sccd(kji)
-     &        +rdd(i)*rcc(j)*rcc(k)*sccd(ijk)
-     &        +rcc(i)*rdd(j)*rcc(k)*sccd(jik)
-     &        +rcc(i)*rcc(j)*rdd(k)*sccd(kji))
-      rry(i,j,k,ijk,ikj,jik,kji)=
-     &  rdd(i)*rdd(j)*ydd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
-     &                         +sdde(kji)+sdee(ijk)+sdee(ikj)
-     &                         +sdee(kji)+seee(ijk))
-     & +rde(i)*rdd(j)*ydd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
-     &                         +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
-     & +rdd(i)*rde(j)*ydd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
-     &                         +2*sdde(jik)+sdee(ijk)+sdee(kji))
-     & +rdd(i)*rdd(j)*yde(k)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
-     &                         +2*sdde(kji)+sdee(ikj)+sdee(kji))
-     & +ree(i)*rdd(j)*ydd(k)*(1+sddd(ijk)+sdde(ijk))
-     & +rdd(i)*ree(j)*ydd(k)*(1+sddd(ijk)+sdde(jik))
-     & +rdd(i)*rdd(j)*yee(k)*(1+sddd(ijk)+sdde(kji))
-     & +(rde(i)*rde(j)*ydd(k)+rde(i)*rdd(j)*yde(k)+rdd(i)*rde(j)*yde(k))
-     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
-     & +(rdd(i)*(rde(j)*yee(k)+ree(j)*yde(k))
-     &  +rdd(j)*(yde(k)*ree(i)+yee(k)*rde(i))
-     &  +ydd(k)*(rde(i)*ree(j)+ree(i)*rde(j))
-     &  +2*rde(i)*rde(j)*yde(k))*(1+sddd(ijk))
-     &  -2*nu*(rcc(i)*rcc(j)*ycc(k)*(1+sddd(ijk))
-     &        +rcc(i)*rdd(j)*ydd(k)*(sccd(ijk)+scce(ijk))
-     &        +rdd(i)*rcc(j)*ydd(k)*(sccd(jik)+scce(jik))
-     &        +rdd(i)*rdd(j)*ycc(k)*(sccd(kji)+scce(kji))
-     &        +rcc(i)*(rde(j)*ydd(k)+rdd(j)*yde(k))*sccd(ijk)
-     &        +rcc(j)*(yde(k)*rdd(i)+ydd(k)*rde(i))*sccd(jik)
-     &        +ycc(k)*(rde(i)*rdd(j)+rdd(i)*rde(j))*sccd(kji)
-     &        +rdd(i)*rcc(j)*ycc(k)*sccd(ijk)
-     &        +rcc(i)*rdd(j)*ycc(k)*sccd(jik)
-     &        +rcc(i)*rcc(j)*ydd(k)*sccd(kji))
-      ryr(i,j,k,ijk,ikj,jik,kji)=
-     &  rdd(i)*ydd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
-     &                         +sdde(kji)+sdee(ijk)+sdee(ikj)
-     &                         +sdee(kji)+seee(ijk))
-     & +rde(i)*ydd(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
-     &                         +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
-     & +rdd(i)*yde(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
-     &                         +2*sdde(jik)+sdee(ijk)+sdee(kji))
-     & +rdd(i)*ydd(j)*rde(k)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
-     &                         +2*sdde(kji)+sdee(ikj)+sdee(kji))
-     & +ree(i)*ydd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk))
-     & +rdd(i)*yee(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
-     & +rdd(i)*ydd(j)*ree(k)*(1+sddd(ijk)+sdde(kji))
-     & +(rde(i)*yde(j)*rdd(k)+rde(i)*ydd(j)*rde(k)+rdd(i)*yde(j)*rde(k))
-     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
-     & +(rdd(i)*(yde(j)*ree(k)+yee(j)*rde(k))
-     &  +ydd(j)*(rde(k)*ree(i)+ree(k)*rde(i))
-     &  +rdd(k)*(rde(i)*yee(j)+ree(i)*yde(j))
-     &  +2*rde(i)*yde(j)*rde(k))*(1+sddd(ijk))
-     &  -2*nu*(rcc(i)*ycc(j)*rcc(k)*(1+sddd(ijk))
-     &        +rcc(i)*ydd(j)*rdd(k)*(sccd(ijk)+scce(ijk))
-     &        +rdd(i)*ycc(j)*rdd(k)*(sccd(jik)+scce(jik))
-     &        +rdd(i)*ydd(j)*rcc(k)*(sccd(kji)+scce(kji))
-     &        +rcc(i)*(yde(j)*rdd(k)+ydd(j)*rde(k))*sccd(ijk)
-     &        +ycc(j)*(rde(k)*rdd(i)+rdd(k)*rde(i))*sccd(jik)
-     &        +rcc(k)*(rde(i)*ydd(j)+rdd(i)*yde(j))*sccd(kji)
-     &        +rdd(i)*ycc(j)*rcc(k)*sccd(ijk)
-     &        +rcc(i)*ydd(j)*rcc(k)*sccd(jik)
-     &        +rcc(i)*ycc(j)*rdd(k)*sccd(kji))
-      rrz(i,j,k,l,ijk,ikj,jik,kji)=
-     &  rdd(i)*rdd(j)*zdd(k,l)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
-     &                           +sdde(kji)+sdee(ijk)+sdee(ikj)
-     &                           +sdee(kji)+seee(ijk))
-     & +rde(i)*rdd(j)*zdd(k,l)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
-     &                           +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
-     & +rdd(i)*rde(j)*zdd(k,l)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
-     &                           +2*sdde(jik)+sdee(ijk)+sdee(kji))
-     & +rdd(i)*rdd(j)*zde(k,l)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
-     &                           +2*sdde(kji)+sdee(ikj)+sdee(kji))
-     & +ree(i)*rdd(j)*zdd(k,l)*(1+sddd(ijk)+sdde(ijk))
-     & +rdd(i)*ree(j)*zdd(k,l)*(1+sddd(ijk)+sdde(jik))
-     & +rdd(i)*rdd(j)*zee(k,l)*(1+sddd(ijk)+sdde(kji))
-     & +(rde(i)*rde(j)*zdd(k,l)+rde(i)*rdd(j)*zde(k,l)
-     &  +rdd(i)*rde(j)*zde(k,l))
-     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
-     & +(rdd(i)*(rde(j)*zee(k,l)+ree(j)*zde(k,l))
-     &  +rdd(j)*(zde(k,l)*ree(i)+zee(k,l)*rde(i))
-     &  +zdd(k,l)*(rde(i)*ree(j)+ree(i)*rde(j))
-     &  +2*rde(i)*rde(j)*zde(k,l))*(1+sddd(ijk))
-     &  -2*nu*(rcc(i)*rcc(j)*rcc(k)*af(l)*(1+sddd(ijk))
-     &        +rcc(i)*rdd(j)*zdd(k,l)*(sccd(ijk)+scce(ijk))
-     &        +rdd(i)*rcc(j)*zdd(k,l)*(sccd(jik)+scce(jik))
-     &        +rdd(i)*rdd(j)*rcc(k)*af(l)*(sccd(kji)+scce(kji))
-     &        +rcc(i)*(rde(j)*zdd(k,l)+rdd(j)*zde(k,l))*sccd(ijk)
-     &        +rcc(j)*(zde(k,l)*rdd(i)+zdd(k,l)*rde(i))*sccd(jik)
-     &        +rcc(k)*af(l)*(rde(i)*rdd(j)+rdd(i)*rde(j))*sccd(kji)
-     &        +rdd(i)*rcc(j)*rcc(k)*af(l)*sccd(ijk)
-     &        +rcc(i)*rdd(j)*rcc(k)*af(l)*sccd(jik)
-     &        +rcc(i)*rcc(j)*zdd(k,l)*sccd(kji))
-      zzz(i,j,k,l,m,n,ijk,ikj,jik,kji)=
-     & zdd(i,l)*zdd(j,m)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
-     &          +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
-     &+zde(i,l)*zdd(j,m)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
-     &          +sdde(jik)+2*sdde(ijk)+sdee(ijk)+sdee(ikj))
-     &+zdd(i,l)*zde(j,m)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
-     &          +sdde(ijk)+2*sdde(jik)+sdee(ijk)+sdee(kji))
-     &+zdd(i,l)*zdd(j,m)*zde(k,n)*(2+2*sddd(ijk)+sdde(jik)
-     &          +sdde(ijk)+2*sdde(kji)+sdee(ikj)+sdee(kji))
-     & +zee(i,l)*zdd(j,m)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk))
-     & +zdd(i,l)*zee(j,m)*zdd(k,n)*(1+sddd(ijk)+sdde(jik))
-     & +zdd(i,l)*zdd(j,m)*zee(k,n)*(1+sddd(ijk)+sdde(kji))
-     & +(zde(i,l)*zde(j,m)*zdd(k,n)+zde(i,l)*zdd(j,m)*zde(k,n)
-     &  +zdd(i,l)*zde(j,m)*zde(k,n))
-     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
-     & +(zdd(i,l)*(zde(j,m)*zee(k,n)+zee(j,m)*zde(k,n))
-     &  +zdd(j,m)*(zde(k,n)*zee(i,l)+zee(k,n)*zde(i,l))
-     &  +zdd(k,n)*(zde(i,l)*zee(j,m)+zee(i,l)*zde(j,m))
-     &  +2*zde(i,l)*zde(j,m)*zde(k,n))*(1+sddd(ijk))
-      zzr(i,j,k,l,m,ijk,ikj,jik,kji)=
-     & zdd(i,l)*zdd(j,m)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
-     &        +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
-     &+zde(i,l)*zdd(j,m)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)
-     &        +sdde(jik)+2*sdde(ijk)+sdee(ijk)+sdee(ikj))
-     &+zdd(i,l)*zde(j,m)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)
-     &        +sdde(ijk)+2*sdde(jik)+sdee(ijk)+sdee(kji))
-     &+zdd(i,l)*zdd(j,m)*rde(k)*(2+2*sddd(ijk)+sdde(jik)
-     &        +sdde(ijk)+2*sdde(kji)+sdee(ikj)+sdee(kji))
-     & +zee(i,l)*zdd(j,m)*rdd(k)*(1+sddd(ijk)+sdde(ijk))
-     & +zdd(i,l)*zee(j,m)*rdd(k)*(1+sddd(ijk)+sdde(jik))
-     & +zdd(i,l)*zdd(j,m)*ree(k)*(1+sddd(ijk)+sdde(kji))
-     & +(zde(i,l)*zde(j,m)*rdd(k)+zde(i,l)*zdd(j,m)*rde(k)
-     &  +zdd(i,l)*zde(j,m)*rde(k))
-     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
-     & +(zdd(i,l)*(zde(j,m)*ree(k)+zee(j,m)*rde(k))
-     &  +zdd(j,m)*(rde(k)*zee(i,l)+ree(k)*zde(i,l))
-     &  +rdd(k)*(zde(i,l)*zee(j,m)+zee(i,l)*zde(j,m))
-     &  +2*zde(i,l)*zde(j,m)*rde(k)-2*nu*zcc(i,l)*zcc(j,m)*rcc(k))
-     & *(1+sddd(ijk))
-      zrz(i,j,k,l,n,ijk,ikj,jik,kji)=
-     & zdd(i,l)*rdd(j)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
-     &        +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
-     &+zde(i,l)*rdd(j)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
-     &        +sdde(jik)+2*sdde(ijk)+sdee(ijk)+sdee(ikj))
-     &+zdd(i,l)*rde(j)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
-     &        +sdde(ijk)+2*sdde(jik)+sdee(ijk)+sdee(kji))
-     &+zdd(i,l)*rdd(j)*zde(k,n)*(2+2*sddd(ijk)+sdde(jik)
-     &        +sdde(ijk)+2*sdde(kji)+sdee(ikj)+sdee(kji))
-     & +zee(i,l)*rdd(j)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk))
-     & +zdd(i,l)*ree(j)*zdd(k,n)*(1+sddd(ijk)+sdde(jik))
-     & +zdd(i,l)*rdd(j)*zee(k,n)*(1+sddd(ijk)+sdde(kji))
-     & +(zde(i,l)*rde(j)*zdd(k,n)+zde(i,l)*rdd(j)*zde(k,n)
-     &  +zdd(i,l)*rde(j)*zde(k,n))
-     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
-     & +(zdd(i,l)*(rde(j)*zee(k,n)+ree(j)*zde(k,n))
-     &  +rdd(j)*(zde(k,n)*zee(i,l)+zee(k,n)*zde(i,l))
-     &  +zdd(k,n)*(zde(i,l)*ree(j)+zee(i,l)*rde(j))
-     &  +2*zde(i,l)*rde(j)*zde(k,n))*(1+sddd(ijk))
-      rbybr(i,j,k,ijk,ikj,jik,kji)=
-     &  rdd(i)*ybdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
-     &  +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
-     & +rde(i)*ybdd(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
-     &                          +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
-     & +rdd(i)*ybde(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
-     &                          +2*sdde(jik)+sdee(ijk)+sdee(kji))
-     & +rdd(i)*ybdd(j)*rde(k)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
-     &                          +2*sdde(kji)+sdee(ikj)+sdee(kji))
-     & +ree(i)*ybdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk))
-     & +rdd(i)*ybee(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
-     & +rdd(i)*ybdd(j)*ree(k)*(1+sddd(ijk)+sdde(kji))
-     & +(rde(i)*ybde(j)*rdd(k)+rde(i)*ybdd(j)*rde(k)
-     &  +rdd(i)*ybde(j)*rde(k))
-     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
-     & +(rdd(i)*(ybde(j)*ree(k)+ybee(j)*rde(k))
-     &  +ybdd(j)*(rde(k)*ree(i)+ree(k)*rde(i))
-     &  +rdd(k)*(rde(i)*ybee(j)+ree(i)*ybde(j))
-     &  +2*rde(i)*ybde(j)*rde(k))*(1+sddd(ijk))
-     &  -2*nu*(rcc(i)*ybcc(j)*rcc(k)*(1+sddd(ijk))
-     &        +rcc(i)*ybdd(j)*rdd(k)*(sccd(ijk)+scce(ijk))
-     &        +rdd(i)*ybcc(j)*rdd(k)*(sccd(jik)+scce(jik))
-     &        +rdd(i)*ybdd(j)*rcc(k)*(sccd(kji)+scce(kji))
-     &        +rcc(i)*(ybde(j)*rdd(k)+ybdd(j)*rde(k))*sccd(ijk)
-     &        +ybcc(j)*(rde(k)*rdd(i)+rdd(k)*rde(i))*sccd(jik)
-     &        +rcc(k)*(rde(i)*ybdd(j)+rdd(i)*ybde(j))*sccd(kji)
-     &        +rdd(i)*ybcc(j)*rcc(k)*sccd(ijk)
-     &        +rcc(i)*ybdd(j)*rcc(k)*sccd(jik)
-     &        +rcc(i)*ybcc(j)*rdd(k)*sccd(kji))
-      rbrtr(i,j,k,ijk,ikj,jik,kji)=
-     &  (rdd(i)+rde(i))*rcc(j)*sdd(k)
-     & +(rdd(i)*rcc(j)*rde(k)+rcc(i)*sdd(j)*rcc(k))*(1+sddd(ijk))
-     &  +rdd(i)*rcc(j)*rdd(k)*(sddd(ijk)+sdde(jik))
-     & +(rde(i)*rcc(j)*rdd(k)+rcc(i)*rcc(k))*sddd(ijk)
-     &  +rcc(i)*(sdd(j)*rdd(k)+sdd(k))*sccd(kji)
-     &  +rdd(i)*(sdd(j)*rdd(k)+sdd(k))*(sccd(jik)+scce(jik))
-     & +(rdd(i)*rdd(j)*rde(k)+rde(i)*(sdd(j)*rdd(k)+sdd(k)))*sccd(jik)
-     &  +rdd(i)*rdd(j)*rcc(k)*sccd(ijk)
-      rbrty(i,j,k,ijk,ikj,jik,kji)=
-     &   rdd(i)*rcc(j)*ydd(k)*(1+sddd(ijk)+sdde(jik))
-     & +(rdd(i)*rcc(j)*yde(k)+rde(i)*rcc(j)*ydd(k)
-     &  +rcc(i)*sdd(j)*ycc(k))*(1+sddd(ijk))
-     &  +rcc(i)*ycc(k)*sddd(ijk)
-     &  +rcc(i)*rdd(j)*ydd(k)*sccd(kji)
-     &  +rdd(i)*rdd(j)*ydd(k)*(sccd(jik)+scce(jik))
-     & +(rdd(i)*rdd(j)*yde(k)+rde(i)*rdd(j)*ydd(k))*sccd(jik)
-     &  +rdd(i)*rdd(j)*ycc(k)*sccd(ijk)
-      rbytr(i,j,k,ijk,ikj,jik,kji)=
-     &   rdd(i)*ytee(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
-     & +(rdd(i)*ytee(j)*rde(k)+rde(i)*ytee(j)*rdd(k)
-     &  +rcc(i)*ytcc(j)*rcc(k))*(1+sddd(ijk))
-     &  +rcc(i)*ytcc(j)*rdd(k)*sccd(kji)
-     &  +rdd(i)*ytcc(j)*rdd(k)*(sccd(jik)+scce(jik))
-     & +(rdd(i)*ytcc(j)*rde(k)+rde(i)*ytcc(j)*rdd(k))*sccd(jik)
-     &  +rdd(i)*ytcc(j)*rcc(k)*sccd(ijk)
-      ybrtr(i,j,k,ijk,ikj,jik,kji)=
-     &   ybdd(i)*rcc(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
-     & +(ybdd(i)*rcc(j)*rde(k)+ybde(i)*rcc(j)*rdd(k)
-     &  +ybcc(i)*sdd(j)*rcc(k))*(1+sddd(ijk))
-     &  +ybcc(i)*rcc(k)*sddd(ijk)
-     &  +ybcc(i)*(sdd(j)*rdd(k)+sdd(k))*sccd(kji)
-     &  +ybdd(i)*(sdd(j)*rdd(k)+sdd(k))*(sccd(jik)+scce(jik))
-     & +(ybdd(i)*rdd(j)*rde(k)+ybde(i)*(sdd(j)*rdd(k)+sdd(k)))*sccd(jik)
-     &  +ybdd(i)*rdd(j)*rcc(k)*sccd(ijk)
-      rtrtr(i,j,k,ijk,kji)=sdd(i)*sdd(j)*rcc(k)
-     & +rdd(i)*rdd(j)*rcc(k)*sddd(ijk)
-     & +rdd(i)*rdd(j)*rdd(k)*sccd(kji)
-      rtrty(i,j,k,ijk,kji)=sdd(i)*sdd(j)*ycc(k)
-     & +rdd(i)*rdd(j)*ycc(k)*sddd(ijk)
-     & +rdd(i)*rdd(j)*ydd(k)*sccd(kji)
-      rtytr(i,j,k,ijk,kji)=sdd(i)*ytcc(j)*rcc(k)
-     & +rdd(i)*ytcc(j)*rcc(k)*sddd(ijk)
-     & +rdd(i)*ytcc(j)*rdd(k)*sccd(kji)
-      zbzbz(i,j,k,l,m,n,ijk,ikj,jik,kji)=
-     & zbdd(i,l)*zbdd(j,m)*zpdd(k,n)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
-     &             +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
-     &+zbde(i,l)*zbdd(j,m)*zpdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
-     &             +sdde(jik)+2*sdde(ijk)+sdee(ijk)+sdee(ikj))
-     &+zbdd(i,l)*zbde(j,m)*zpdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
-     &             +sdde(ijk)+2*sdde(jik)+sdee(ijk)+sdee(kji))
-     &+zbdd(i,l)*zbdd(j,m)*zpde(k,n)*(2+2*sddd(ijk)+sdde(jik)
-     &             +sdde(ijk)+2*sdde(kji)+sdee(ikj)+sdee(kji))
-     & +zbee(i,l)*zbdd(j,m)*zpdd(k,n)*(1+sddd(ijk)+sdde(ijk))
-     & +zbdd(i,l)*zbee(j,m)*zpdd(k,n)*(1+sddd(ijk)+sdde(jik))
-     & +zbdd(i,l)*zbdd(j,m)*zpee(k,n)*(1+sddd(ijk)+sdde(kji))
-     & +(zbde(i,l)*zbde(j,m)*zpdd(k,n)+zbde(i,l)*zbdd(j,m)*zpde(k,n)
-     &  +zbdd(i,l)*zbde(j,m)*zpde(k,n))
-     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
-     & +(zbdd(i,l)*(zbde(j,m)*zpee(k,n)+zbee(j,m)*zpde(k,n))
-     &  +zbdd(j,m)*(zpde(k,n)*zbee(i,l)+zpee(k,n)*zbde(i,l))
-     &  +zpdd(k,n)*(zbde(i,l)*zbee(j,m)+zbee(i,l)*zbde(j,m))
-     &  +2*zbde(i,l)*zbde(j,m)*zpde(k,n))*(1+sddd(ijk))
-      zbztz(i,j,k,l,m,n,ijk,jik)=
-     & +zbdd(i,l)*ztee(j,m)*zpdd(k,n)*(1+sddd(ijk)+sdde(jik))
-     & +(zbdd(i,l)*ztee(j,m)*zpde(k,n)+zbde(i,l)*ztee(j,m)*zpdd(k,n))
-     & *(1+sddd(ijk))
       do 5 l=1,6
     5 afe(l)=acex(l,1,l)
       do 10 i=1,10
@@ -848,4 +570,394 @@ c ======================================================================
       uf=uf1+uf2+uf3+uf4+uf5
       up=up1+up2+up3
       return
-      end
+      end subroutine nmtbi
+
+      function rrr(i,j,k,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: rrr
+        integer*4 :: i,j,k,ijk,ikj,jik,kji
+        rrr =
+     &  rdd(i)*rdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &                         +sdde(kji)+sdee(ijk)+sdee(ikj)
+     &                         +sdee(kji)+seee(ijk))
+     & +rde(i)*rdd(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
+     &                         +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     & +rdd(i)*rde(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
+     &                         +2*sdde(jik)+sdee(ijk)+sdee(kji))
+     & +rdd(i)*rdd(j)*rde(k)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
+     &                         +2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +ree(i)*rdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk))
+     & +rdd(i)*ree(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
+     & +rdd(i)*rdd(j)*ree(k)*(1+sddd(ijk)+sdde(kji))
+     & +(rde(i)*rde(j)*rdd(k)+rde(i)*rdd(j)*rde(k)+rdd(i)*rde(j)*rde(k))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(rdd(i)*(rde(j)*ree(k)+ree(j)*rde(k))
+     &  +rdd(j)*(rde(k)*ree(i)+ree(k)*rde(i))
+     &  +rdd(k)*(rde(i)*ree(j)+ree(i)*rde(j))
+     &  +2*rde(i)*rde(j)*rde(k))*(1+sddd(ijk))
+     &  -2*nu*(rcc(i)*rcc(j)*rcc(k)*(1+sddd(ijk))
+     &        +rcc(i)*rdd(j)*rdd(k)*(sccd(ijk)+scce(ijk))
+     &        +rdd(i)*rcc(j)*rdd(k)*(sccd(jik)+scce(jik))
+     &        +rdd(i)*rdd(j)*rcc(k)*(sccd(kji)+scce(kji))
+     &        +rcc(i)*(rde(j)*rdd(k)+rdd(j)*rde(k))*sccd(ijk)
+     &        +rcc(j)*(rde(k)*rdd(i)+rdd(k)*rde(i))*sccd(jik)
+     &        +rcc(k)*(rde(i)*rdd(j)+rdd(i)*rde(j))*sccd(kji)
+     &        +rdd(i)*rcc(j)*rcc(k)*sccd(ijk)
+     &        +rcc(i)*rdd(j)*rcc(k)*sccd(jik)
+     &        +rcc(i)*rcc(j)*rdd(k)*sccd(kji))
+      end function rrr
+
+      function rry(i,j,k,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: rry
+        integer*4 :: i,j,k,ijk,ikj,jik,kji
+        rry=
+     &  rdd(i)*rdd(j)*ydd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &                         +sdde(kji)+sdee(ijk)+sdee(ikj)
+     &                         +sdee(kji)+seee(ijk))
+     & +rde(i)*rdd(j)*ydd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
+     &                         +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     & +rdd(i)*rde(j)*ydd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
+     &                         +2*sdde(jik)+sdee(ijk)+sdee(kji))
+     & +rdd(i)*rdd(j)*yde(k)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
+     &                         +2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +ree(i)*rdd(j)*ydd(k)*(1+sddd(ijk)+sdde(ijk))
+     & +rdd(i)*ree(j)*ydd(k)*(1+sddd(ijk)+sdde(jik))
+     & +rdd(i)*rdd(j)*yee(k)*(1+sddd(ijk)+sdde(kji))
+     & +(rde(i)*rde(j)*ydd(k)+rde(i)*rdd(j)*yde(k)+rdd(i)*rde(j)*yde(k))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(rdd(i)*(rde(j)*yee(k)+ree(j)*yde(k))
+     &  +rdd(j)*(yde(k)*ree(i)+yee(k)*rde(i))
+     &  +ydd(k)*(rde(i)*ree(j)+ree(i)*rde(j))
+     &  +2*rde(i)*rde(j)*yde(k))*(1+sddd(ijk))
+     &  -2*nu*(rcc(i)*rcc(j)*ycc(k)*(1+sddd(ijk))
+     &        +rcc(i)*rdd(j)*ydd(k)*(sccd(ijk)+scce(ijk))
+     &        +rdd(i)*rcc(j)*ydd(k)*(sccd(jik)+scce(jik))
+     &        +rdd(i)*rdd(j)*ycc(k)*(sccd(kji)+scce(kji))
+     &        +rcc(i)*(rde(j)*ydd(k)+rdd(j)*yde(k))*sccd(ijk)
+     &        +rcc(j)*(yde(k)*rdd(i)+ydd(k)*rde(i))*sccd(jik)
+     &        +ycc(k)*(rde(i)*rdd(j)+rdd(i)*rde(j))*sccd(kji)
+     &        +rdd(i)*rcc(j)*ycc(k)*sccd(ijk)
+     &        +rcc(i)*rdd(j)*ycc(k)*sccd(jik)
+     &        +rcc(i)*rcc(j)*ydd(k)*sccd(kji))
+      end function rry
+
+      function ryr(i,j,k,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: ryr
+        integer*4 :: i,j,k,ijk,ikj,jik,kji
+        ryr=
+     &  rdd(i)*ydd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &                         +sdde(kji)+sdee(ijk)+sdee(ikj)
+     &                         +sdee(kji)+seee(ijk))
+     & +rde(i)*ydd(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
+     &                         +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     & +rdd(i)*yde(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
+     &                         +2*sdde(jik)+sdee(ijk)+sdee(kji))
+     & +rdd(i)*ydd(j)*rde(k)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
+     &                         +2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +ree(i)*ydd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk))
+     & +rdd(i)*yee(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
+     & +rdd(i)*ydd(j)*ree(k)*(1+sddd(ijk)+sdde(kji))
+     & +(rde(i)*yde(j)*rdd(k)+rde(i)*ydd(j)*rde(k)+rdd(i)*yde(j)*rde(k))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(rdd(i)*(yde(j)*ree(k)+yee(j)*rde(k))
+     &  +ydd(j)*(rde(k)*ree(i)+ree(k)*rde(i))
+     &  +rdd(k)*(rde(i)*yee(j)+ree(i)*yde(j))
+     &  +2*rde(i)*yde(j)*rde(k))*(1+sddd(ijk))
+     &  -2*nu*(rcc(i)*ycc(j)*rcc(k)*(1+sddd(ijk))
+     &        +rcc(i)*ydd(j)*rdd(k)*(sccd(ijk)+scce(ijk))
+     &        +rdd(i)*ycc(j)*rdd(k)*(sccd(jik)+scce(jik))
+     &        +rdd(i)*ydd(j)*rcc(k)*(sccd(kji)+scce(kji))
+     &        +rcc(i)*(yde(j)*rdd(k)+ydd(j)*rde(k))*sccd(ijk)
+     &        +ycc(j)*(rde(k)*rdd(i)+rdd(k)*rde(i))*sccd(jik)
+     &        +rcc(k)*(rde(i)*ydd(j)+rdd(i)*yde(j))*sccd(kji)
+     &        +rdd(i)*ycc(j)*rcc(k)*sccd(ijk)
+     &        +rcc(i)*ydd(j)*rcc(k)*sccd(jik)
+     &        +rcc(i)*ycc(j)*rdd(k)*sccd(kji))
+      end function ryr
+
+      function rrz(i,j,k,l,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: rrz
+        integer*4 :: i,j,k,l,ijk,ikj,jik,kji
+        rrz=
+     &  rdd(i)*rdd(j)*zdd(k,l)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &                           +sdde(kji)+sdee(ijk)+sdee(ikj)
+     &                           +sdee(kji)+seee(ijk))
+     & +rde(i)*rdd(j)*zdd(k,l)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
+     &                           +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     & +rdd(i)*rde(j)*zdd(k,l)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
+     &                           +2*sdde(jik)+sdee(ijk)+sdee(kji))
+     & +rdd(i)*rdd(j)*zde(k,l)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
+     &                           +2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +ree(i)*rdd(j)*zdd(k,l)*(1+sddd(ijk)+sdde(ijk))
+     & +rdd(i)*ree(j)*zdd(k,l)*(1+sddd(ijk)+sdde(jik))
+     & +rdd(i)*rdd(j)*zee(k,l)*(1+sddd(ijk)+sdde(kji))
+     & +(rde(i)*rde(j)*zdd(k,l)+rde(i)*rdd(j)*zde(k,l)
+     &  +rdd(i)*rde(j)*zde(k,l))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(rdd(i)*(rde(j)*zee(k,l)+ree(j)*zde(k,l))
+     &  +rdd(j)*(zde(k,l)*ree(i)+zee(k,l)*rde(i))
+     &  +zdd(k,l)*(rde(i)*ree(j)+ree(i)*rde(j))
+     &  +2*rde(i)*rde(j)*zde(k,l))*(1+sddd(ijk))
+     &  -2*nu*(rcc(i)*rcc(j)*rcc(k)*af(l)*(1+sddd(ijk))
+     &        +rcc(i)*rdd(j)*zdd(k,l)*(sccd(ijk)+scce(ijk))
+     &        +rdd(i)*rcc(j)*zdd(k,l)*(sccd(jik)+scce(jik))
+     &        +rdd(i)*rdd(j)*rcc(k)*af(l)*(sccd(kji)+scce(kji))
+     &        +rcc(i)*(rde(j)*zdd(k,l)+rdd(j)*zde(k,l))*sccd(ijk)
+     &        +rcc(j)*(zde(k,l)*rdd(i)+zdd(k,l)*rde(i))*sccd(jik)
+     &        +rcc(k)*af(l)*(rde(i)*rdd(j)+rdd(i)*rde(j))*sccd(kji)
+     &        +rdd(i)*rcc(j)*rcc(k)*af(l)*sccd(ijk)
+     &        +rcc(i)*rdd(j)*rcc(k)*af(l)*sccd(jik)
+     &        +rcc(i)*rcc(j)*zdd(k,l)*sccd(kji))
+      end function rrz
+
+      function zzz(i,j,k,l,m,n,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: zzz
+        integer*4 :: i,j,k,l,m,n,ijk,ikj,jik,kji
+        zzz=
+     & zdd(i,l)*zdd(j,m)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &          +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
+     &+zde(i,l)*zdd(j,m)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
+     &          +sdde(jik)+2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     &+zdd(i,l)*zde(j,m)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
+     &          +sdde(ijk)+2*sdde(jik)+sdee(ijk)+sdee(kji))
+     &+zdd(i,l)*zdd(j,m)*zde(k,n)*(2+2*sddd(ijk)+sdde(jik)
+     &          +sdde(ijk)+2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +zee(i,l)*zdd(j,m)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk))
+     & +zdd(i,l)*zee(j,m)*zdd(k,n)*(1+sddd(ijk)+sdde(jik))
+     & +zdd(i,l)*zdd(j,m)*zee(k,n)*(1+sddd(ijk)+sdde(kji))
+     & +(zde(i,l)*zde(j,m)*zdd(k,n)+zde(i,l)*zdd(j,m)*zde(k,n)
+     &  +zdd(i,l)*zde(j,m)*zde(k,n))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(zdd(i,l)*(zde(j,m)*zee(k,n)+zee(j,m)*zde(k,n))
+     &  +zdd(j,m)*(zde(k,n)*zee(i,l)+zee(k,n)*zde(i,l))
+     &  +zdd(k,n)*(zde(i,l)*zee(j,m)+zee(i,l)*zde(j,m))
+     &  +2*zde(i,l)*zde(j,m)*zde(k,n))*(1+sddd(ijk))
+      end function zzz
+
+      function zzr(i,j,k,l,m,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: zzr
+        integer*4 :: i,j,k,l,m,ijk,ikj,jik,kji
+        zzr=
+     & zdd(i,l)*zdd(j,m)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &        +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
+     &+zde(i,l)*zdd(j,m)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)
+     &        +sdde(jik)+2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     &+zdd(i,l)*zde(j,m)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)
+     &        +sdde(ijk)+2*sdde(jik)+sdee(ijk)+sdee(kji))
+     &+zdd(i,l)*zdd(j,m)*rde(k)*(2+2*sddd(ijk)+sdde(jik)
+     &        +sdde(ijk)+2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +zee(i,l)*zdd(j,m)*rdd(k)*(1+sddd(ijk)+sdde(ijk))
+     & +zdd(i,l)*zee(j,m)*rdd(k)*(1+sddd(ijk)+sdde(jik))
+     & +zdd(i,l)*zdd(j,m)*ree(k)*(1+sddd(ijk)+sdde(kji))
+     & +(zde(i,l)*zde(j,m)*rdd(k)+zde(i,l)*zdd(j,m)*rde(k)
+     &  +zdd(i,l)*zde(j,m)*rde(k))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(zdd(i,l)*(zde(j,m)*ree(k)+zee(j,m)*rde(k))
+     &  +zdd(j,m)*(rde(k)*zee(i,l)+ree(k)*zde(i,l))
+     &  +rdd(k)*(zde(i,l)*zee(j,m)+zee(i,l)*zde(j,m))
+     &  +2*zde(i,l)*zde(j,m)*rde(k)-2*nu*zcc(i,l)*zcc(j,m)*rcc(k))
+     & *(1+sddd(ijk))
+      end function zzr
+
+      function zrz(i,j,k,l,n,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: zrz
+        integer*4 :: i,j,k,l,n,ijk,ikj,jik,kji
+        zrz=
+     & zdd(i,l)*rdd(j)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &        +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
+     &+zde(i,l)*rdd(j)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
+     &        +sdde(jik)+2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     &+zdd(i,l)*rde(j)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
+     &        +sdde(ijk)+2*sdde(jik)+sdee(ijk)+sdee(kji))
+     &+zdd(i,l)*rdd(j)*zde(k,n)*(2+2*sddd(ijk)+sdde(jik)
+     &        +sdde(ijk)+2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +zee(i,l)*rdd(j)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk))
+     & +zdd(i,l)*ree(j)*zdd(k,n)*(1+sddd(ijk)+sdde(jik))
+     & +zdd(i,l)*rdd(j)*zee(k,n)*(1+sddd(ijk)+sdde(kji))
+     & +(zde(i,l)*rde(j)*zdd(k,n)+zde(i,l)*rdd(j)*zde(k,n)
+     &  +zdd(i,l)*rde(j)*zde(k,n))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(zdd(i,l)*(rde(j)*zee(k,n)+ree(j)*zde(k,n))
+     &  +rdd(j)*(zde(k,n)*zee(i,l)+zee(k,n)*zde(i,l))
+     &  +zdd(k,n)*(zde(i,l)*ree(j)+zee(i,l)*rde(j))
+     &  +2*zde(i,l)*rde(j)*zde(k,n))*(1+sddd(ijk))
+      end function zrz
+
+      function rbybr(i,j,k,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: rbybr
+        integer*4 :: i,j,k,ijk,ikj,jik,kji
+        rbybr =
+     &  rdd(i)*ybdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &  +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
+     & +rde(i)*ybdd(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(jik)
+     &                          +2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     & +rdd(i)*ybde(j)*rdd(k)*(2+2*sddd(ijk)+sdde(kji)+sdde(ijk)
+     &                          +2*sdde(jik)+sdee(ijk)+sdee(kji))
+     & +rdd(i)*ybdd(j)*rde(k)*(2+2*sddd(ijk)+sdde(jik)+sdde(ijk)
+     &                          +2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +ree(i)*ybdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk))
+     & +rdd(i)*ybee(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
+     & +rdd(i)*ybdd(j)*ree(k)*(1+sddd(ijk)+sdde(kji))
+     & +(rde(i)*ybde(j)*rdd(k)+rde(i)*ybdd(j)*rde(k)
+     &  +rdd(i)*ybde(j)*rde(k))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(rdd(i)*(ybde(j)*ree(k)+ybee(j)*rde(k))
+     &  +ybdd(j)*(rde(k)*ree(i)+ree(k)*rde(i))
+     &  +rdd(k)*(rde(i)*ybee(j)+ree(i)*ybde(j))
+     &  +2*rde(i)*ybde(j)*rde(k))*(1+sddd(ijk))
+     &  -2*nu*(rcc(i)*ybcc(j)*rcc(k)*(1+sddd(ijk))
+     &        +rcc(i)*ybdd(j)*rdd(k)*(sccd(ijk)+scce(ijk))
+     &        +rdd(i)*ybcc(j)*rdd(k)*(sccd(jik)+scce(jik))
+     &        +rdd(i)*ybdd(j)*rcc(k)*(sccd(kji)+scce(kji))
+     &        +rcc(i)*(ybde(j)*rdd(k)+ybdd(j)*rde(k))*sccd(ijk)
+     &        +ybcc(j)*(rde(k)*rdd(i)+rdd(k)*rde(i))*sccd(jik)
+     &        +rcc(k)*(rde(i)*ybdd(j)+rdd(i)*ybde(j))*sccd(kji)
+     &        +rdd(i)*ybcc(j)*rcc(k)*sccd(ijk)
+     &        +rcc(i)*ybdd(j)*rcc(k)*sccd(jik)
+     &        +rcc(i)*ybcc(j)*rdd(k)*sccd(kji))
+      end function rbybr
+
+      function rbrtr(i,j,k,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: rbrtr
+        integer*4 :: i,j,k,ijk,ikj,jik,kji
+        rbrtr =
+     &  (rdd(i)+rde(i))*rcc(j)*sdd(k)
+     & +(rdd(i)*rcc(j)*rde(k)+rcc(i)*sdd(j)*rcc(k))*(1+sddd(ijk))
+     &  +rdd(i)*rcc(j)*rdd(k)*(sddd(ijk)+sdde(jik))
+     & +(rde(i)*rcc(j)*rdd(k)+rcc(i)*rcc(k))*sddd(ijk)
+     &  +rcc(i)*(sdd(j)*rdd(k)+sdd(k))*sccd(kji)
+     &  +rdd(i)*(sdd(j)*rdd(k)+sdd(k))*(sccd(jik)+scce(jik))
+     & +(rdd(i)*rdd(j)*rde(k)+rde(i)*(sdd(j)*rdd(k)+sdd(k)))*sccd(jik)
+     &  +rdd(i)*rdd(j)*rcc(k)*sccd(ijk)
+      end function rbrtr
+
+      function rbrty(i,j,k,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: rbrty
+        integer*4 :: i,j,k,ijk,ikj,jik,kji
+        rbrty =
+     &   rdd(i)*rcc(j)*ydd(k)*(1+sddd(ijk)+sdde(jik))
+     & +(rdd(i)*rcc(j)*yde(k)+rde(i)*rcc(j)*ydd(k)
+     &  +rcc(i)*sdd(j)*ycc(k))*(1+sddd(ijk))
+     &  +rcc(i)*ycc(k)*sddd(ijk)
+     &  +rcc(i)*rdd(j)*ydd(k)*sccd(kji)
+     &  +rdd(i)*rdd(j)*ydd(k)*(sccd(jik)+scce(jik))
+     & +(rdd(i)*rdd(j)*yde(k)+rde(i)*rdd(j)*ydd(k))*sccd(jik)
+     &  +rdd(i)*rdd(j)*ycc(k)*sccd(ijk)
+      end function rbrty
+
+      function rbytr(i,j,k,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: rbytr
+        integer*4 :: i,j,k,ijk,ikj,jik,kji
+        rbytr =
+     &   rdd(i)*ytee(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
+     & +(rdd(i)*ytee(j)*rde(k)+rde(i)*ytee(j)*rdd(k)
+     &  +rcc(i)*ytcc(j)*rcc(k))*(1+sddd(ijk))
+     &  +rcc(i)*ytcc(j)*rdd(k)*sccd(kji)
+     &  +rdd(i)*ytcc(j)*rdd(k)*(sccd(jik)+scce(jik))
+     & +(rdd(i)*ytcc(j)*rde(k)+rde(i)*ytcc(j)*rdd(k))*sccd(jik)
+     &  +rdd(i)*ytcc(j)*rcc(k)*sccd(ijk)
+      end function rbytr
+
+      function ybrtr(i,j,k,ijk,ikj,jik,kji)
+        use nmvar
+        implicit none
+        real*8 :: ybrtr
+        integer*4 :: i,j,k,ijk,ikj,jik,kji
+        ybrtr =
+     &   ybdd(i)*rcc(j)*rdd(k)*(1+sddd(ijk)+sdde(jik))
+     & +(ybdd(i)*rcc(j)*rde(k)+ybde(i)*rcc(j)*rdd(k)
+     &  +ybcc(i)*sdd(j)*rcc(k))*(1+sddd(ijk))
+     &  +ybcc(i)*rcc(k)*sddd(ijk)
+     &  +ybcc(i)*(sdd(j)*rdd(k)+sdd(k))*sccd(kji)
+     &  +ybdd(i)*(sdd(j)*rdd(k)+sdd(k))*(sccd(jik)+scce(jik))
+     & +(ybdd(i)*rdd(j)*rde(k)+ybde(i)*(sdd(j)*rdd(k)+sdd(k)))*sccd(jik)
+     &  +ybdd(i)*rdd(j)*rcc(k)*sccd(ijk)
+      end function ybrtr
+
+      function rtrtr(i,j,k,ijk,kji)
+        use nmvar
+        implicit none
+        real*8 :: rtrtr
+        integer*4 :: i,j,k,ijk,kji
+        rtrtr =sdd(i)*sdd(j)*rcc(k)
+     & +rdd(i)*rdd(j)*rcc(k)*sddd(ijk)
+     & +rdd(i)*rdd(j)*rdd(k)*sccd(kji)
+      end function rtrtr
+
+      function rtrty(i,j,k,ijk,kji)
+        use nmvar
+        implicit none
+        real*8 :: rtrty
+        integer*4 :: i,j,k,ijk,kji
+        rtrty = sdd(i)*sdd(j)*ycc(k)
+     & +rdd(i)*rdd(j)*ycc(k)*sddd(ijk)
+     & +rdd(i)*rdd(j)*ydd(k)*sccd(kji)
+      end function rtrty
+
+      function rtytr(i,j,k,ijk,kji)
+        use nmvar
+        implicit none
+        real*8 :: rtytr
+        integer*4 :: i,j,k,ijk,kji
+        rtytr = sdd(i)*ytcc(j)*rcc(k)
+     & +rdd(i)*ytcc(j)*rcc(k)*sddd(ijk)
+     & +rdd(i)*ytcc(j)*rdd(k)*sccd(kji)
+      end function rtytr
+
+      function zbzbz(i,j,k,l,m,n,ijk,ikj,jik,kji)
+        implicit none
+        real*8 :: zbzbz
+        integer*4 :: i,j,k,l,m,n,ijk,ikj,jik,kji
+        zbzbz=
+     & zbdd(i,l)*zbdd(j,m)*zpdd(k,n)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &             +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
+     &+zbde(i,l)*zbdd(j,m)*zpdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
+     &             +sdde(jik)+2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     &+zbdd(i,l)*zbde(j,m)*zpdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
+     &             +sdde(ijk)+2*sdde(jik)+sdee(ijk)+sdee(kji))
+     &+zbdd(i,l)*zbdd(j,m)*zpde(k,n)*(2+2*sddd(ijk)+sdde(jik)
+     &             +sdde(ijk)+2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +zbee(i,l)*zbdd(j,m)*zpdd(k,n)*(1+sddd(ijk)+sdde(ijk))
+     & +zbdd(i,l)*zbee(j,m)*zpdd(k,n)*(1+sddd(ijk)+sdde(jik))
+     & +zbdd(i,l)*zbdd(j,m)*zpee(k,n)*(1+sddd(ijk)+sdde(kji))
+     & +(zbde(i,l)*zbde(j,m)*zpdd(k,n)+zbde(i,l)*zbdd(j,m)*zpde(k,n)
+     &  +zbdd(i,l)*zbde(j,m)*zpde(k,n))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(zbdd(i,l)*(zbde(j,m)*zpee(k,n)+zbee(j,m)*zpde(k,n))
+     &  +zbdd(j,m)*(zpde(k,n)*zbee(i,l)+zpee(k,n)*zbde(i,l))
+     &  +zpdd(k,n)*(zbde(i,l)*zbee(j,m)+zbee(i,l)*zbde(j,m))
+     &  +2*zbde(i,l)*zbde(j,m)*zpde(k,n))*(1+sddd(ijk))
+      end function zbzbz
+
+      function zbztz(i,j,k,l,m,n,ijk,jik)
+        implicit none
+        real*8 :: zbztz
+        integer*4 :: i,j,k,l,m,n,ijk,jik
+        zbztz=
+     & +zbdd(i,l)*ztee(j,m)*zpdd(k,n)*(1+sddd(ijk)+sdde(jik))
+     & +(zbdd(i,l)*ztee(j,m)*zpde(k,n)+zbde(i,l)*ztee(j,m)*zpdd(k,n))
+     & *(1+sddd(ijk))
+      end function zbztz
+
+      end module nmtbimod

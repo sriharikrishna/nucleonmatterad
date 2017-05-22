@@ -1,2 +1,4 @@
-      parameter (nm=2)
-      parameter (lgrid=100)
+       module params
+        parameter (nm=2)
+        parameter (lgrid=100)
+      end module 
