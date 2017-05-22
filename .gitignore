@@ -52,7 +52,7 @@ libtool
 *.lai
 *.so*
 *.pc
-Makefile
+#Makefile
 *.m
 *.tex
 *~
