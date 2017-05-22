@@ -627,19 +627,19 @@ c   -----------------
       write(nout,5000)
  5000 format(/3x,'r',10x,'v3dd(r,p)')
       write(nout,2006)
-      write(nout,2011) (r(j),(v3dd(j,i),i=1,6),j=1,l3)
+      write(nout,2011) (r(j),(v3dd(j,i,1),i=1,6),j=1,l3)
       write(nout,5010)
  5010 format(/3x,'r',10x,'v3de(r,p)')
       write(nout,2006)
-      write(nout,2011) (r(j),(v3de(j,i),i=1,6),j=1,l3)
+      write(nout,2011) (r(j),(v3de(j,i,1),i=1,6),j=1,l3)
       write(nout,5020)
  5020 format(/3x,'r',10x,'v3ee(r,p)')
       write(nout,2006)
-      write(nout,2011) (r(j),(v3ee(j,i),i=1,6),j=1,l3)
+      write(nout,2011) (r(j),(v3ee(j,i,1),i=1,6),j=1,l3)
       write(nout,5030)
  5030 format(/3x,'r',10x,'v3cc(r,p)')
       write(nout,2006)
-      write(nout,2011) (r(j),(v3cc(j,i),i=1,6),j=1,l3)
+      write(nout,2011) (r(j),(v3cc(j,i,1),i=1,6),j=1,l3)
   100 return
       end
 c *id* ac **************************************************************
