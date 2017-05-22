@@ -5,6 +5,8 @@ c **********************************************************************
       subroutine nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &                 ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       use nmvar
+      use nmhncmod
+      use nmtbimod
       implicit none
       !implicit real*8 (a-h,o-z)
       !implicit integer*4 (i-n)
