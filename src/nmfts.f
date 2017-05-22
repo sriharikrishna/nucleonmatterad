@@ -4,33 +4,23 @@ c in spin-isospin channels for v14 problem
 c short-range behavior fixed 2/16/2016
 c **********************************************************************
       subroutine nmfts(lc,ls,lt,ll,lf,no,np,nt,nv)
+      use nmvar
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
 c
-      include "params.f"
-      parameter (ngrid=(20*lgrid+1))
-      parameter (nlog=0,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 f(lgrid,8),fp(lgrid,8),fds(lgrid,8),v(lgrid,14)
-      common /correl/ f,fp,fds,v
-      real*8 temp,mstar,chmpot,entrpy,ksav,kqav
-      common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
-      real*8 rx(ngrid),slx(ngrid),slpx(ngrid),sldpx(ngrid),sltpx(ngrid)
-      common /hotfun/ rx,slx,slpx,sldpx,sltpx
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
+      !include "params.f"
+      integer*4, parameter :: nlog=0
+      integer*4, parameter :: nout=6
+      
       real*8 rr,vv(22),vp(12),vw(10),rv(6)
       real*8 rix(ngrid),rsx(ngrid),slsx(ngrid),slpsx(ngrid),
      & chi(ngrid),phir(10,ngrid),pm(8,ngrid),psi(8,ngrid),vx(14,ngrid),
      & rlm(8,ngrid),rlx(2,ngrid),ets(2,2),c(3,8),ca(3,8),blm(8)
-      data ets/4*0./
+      !data ets/4*0./
+      ets(1,1) = 0.
+      ets(1,2) = 0.
+      ets(2,1) = 0.
+      ets(2,2) = 0.
       rt2=sqrt(2.)
       rt5=sqrt(5.)
       lfh=lf/2

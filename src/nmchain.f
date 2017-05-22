@@ -2,50 +2,33 @@ c *id* nmchain *********************************************************
 c subroutine for calculating chain contributions
 c ----------------------------------------------------------------------
       subroutine nmchain(nv,nt,no,lg,l3)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "params.f"
-      parameter (nu=4/nm)
-      parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 f(lgrid,8),fp(lgrid,8),fds(lgrid,8),v(lgrid,14)
-      common /correl/ f,fp,fds,v
-      real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
-     &       as(6),at(8,8),ax(6,6,6)
-      common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
-      real*8 gca(lgrid,6),gcb(lgrid,6),gdd(lgrid,6),gde(lgrid,6),
-     &       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
-     &       gnn(lgrid,14)
-      common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
-      real*8 gfdd(lgrid,6),gfde(lgrid,6),gfed(lgrid,6),gfcc(lgrid,6),
-     &       ghdd(lgrid,6),ghde(lgrid,6),ghed(lgrid,6),ghcc(lgrid,6),
-     &       grdc(lgrid,6),grdd(lgrid,6),grde(lgrid,6),gred(lgrid,6),
-     &       gree(lgrid,6),grfc(lgrid,6),grfd(lgrid,6),grfe(lgrid,6),
-     &       grmd(lgrid,6),grme(lgrid,6)
-      common /mocfun/ gfdd,gfde,gfed,gfcc,ghdd,ghde,ghed,ghcc,
-     &       grdc,grdd,grde,gred,gree,grfc,grfd,grfe,grmd,grme
-      real*8 v3cc(lgrid,6,2),v3dd(lgrid,6,2),v3de(lgrid,6,2),
-     &       v3ee(lgrid,6,2)
-      common /tbpots/ v3cc,v3dd,v3de,v3ee
-      real*8 bj(8,6),bk(4,3),bq(6,2),vc(6,3,3),
-     &       bcc(lgrid,3),bde(lgrid,3)
-      common /sorfun/ bj,bk,bq,vc,bde,bcc
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      real*8 temp,mstar,chmpot,entrpy,ksav,kqav
-      common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
-      real*8 ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6,
-     &       wx(14,10),wcx(8,10),wcdx(8,10),wcmx(8,10),wcrx(8,10),
-     &       w3x(6,4,2)
-      common /eblock/ ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6,
-     &       wx,wcx,wcdx,wcmx,wcrx,w3x
+      use nmvar
+      implicit none
+      !implicit real*8 (a-h,o-z)
+      !implicit integer*4 (i-n)
+      !include "params.f"
+      integer*4, parameter:: nu=4/nm
+      integer*4, parameter :: nlog=0
+      integer*4, parameter :: nout=6
+      integer*4, parameter :: nin=5
+      integer*4 :: nv,nt,no,lg,l3
+      integer*4 :: li,kj,j,lj,l,k,i,m,n,mp,ir,ka,kb,jk
+      real*8    :: wvc,wvcs,wfcdd,wfccc,wfcsdd,wfcscc,wpcdd,wpccc
+      real*8    :: wpcsdd,wpcscc,x,vd,ve,vp,qx
+      real*8    :: z,ze,zf,zfe,zk,zke,zp,zpe,zj,zje
+      real*8    :: x0,x1,x2,x3,x4,x5,x6,x7,x8,xcc,xdd,xde,xee
+      real*8    :: y0,y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11
+      real*8    :: ydd,yca,ycb,yde,yee,qe,qd,g1,g2,g3,g4,g5
+      real*8    :: wkc,wkcs,wjc,wjcs,wfc,wfcs,wpc,wpcs,wvcb,wkcb,wjcb
+      real*8    :: wvcd,wvcds,wfcddd,wfcdcc,wfcdsd,wfcdsc,wpcddd,wpcdcc
+      real*8    :: wpcdsd,wpcdsc,wkcd,wkcds,wjcd,wjcds,wfcd,wfcds
+      real*8    :: wpcd,wpcds,wvcm,wvcms,wfcmcc,wfcmdd,wfcmsc,wfcmsd
+      real*8    :: wpcmcc,wpcmdd,wpcmsc,wpcmsd,wkcm,wkcms,wjcm,wjcms
+      real*8    :: wfcm,wfcms,wpcm,wpcms,wvcr,wfcr,wpcr,wkcr,wjcr
+      real*8    :: xx,yy,zz,z1,z2,z3,z4,z5
+      real*8    :: di1dk1,ditdkt,dli,dlj,dlk,d3
+      real*8    :: acex !entry point
+      real*8    :: ac   !function
 c ----------------------------------------------------------------------
       real*8 wckx(10),wcjx(10),wcdkx(10),wcdjx(10),wcmjx(10),wcmkx(10)
      &,wcrjx(10),wcrkx(10)

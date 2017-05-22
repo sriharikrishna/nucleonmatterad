@@ -8,24 +8,32 @@ c chmpot found by iterative solution of sum[n(k)]=rho*volume
 c entrpy, ksav, kqav, and slater functions calculated
 c **********************************************************************
       subroutine nmhot(lkf,ld,no)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "params.f"
-      parameter (ngrid=(20*lgrid+1))
-      parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 temp,mstar,chmpot,entrpy,ksav,kqav
-      common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
-      real*8 rx(ngrid),slx(ngrid),slpx(ngrid),sldpx(ngrid),sltpx(ngrid)
-      common /hotfun/ rx,slx,slpx,sldpx,sltpx
+      use nmvar
+      implicit none
+      !implicit real*8 (a-h,o-z)
+      !implicit integer*4 (i-n)
+      !include "params.f"
+      !parameter (ngrid=(20*lgrid+1))
+      integer*4, parameter :: nlog=0
+      integer*4, parameter :: nin=5
+      integer*4, parameter :: nout=6
+
+      !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      !common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
+      !&       h2m,h2mcs,pi,s
+      !real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
+      !&       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
+      !&       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
+      !common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
+      !real*8 temp,mstar,chmpot,entrpy,ksav,kqav
+      !common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
+      !real*8 rx(ngrid),slx(ngrid),slpx(ngrid),sldpx(ngrid),sltpx(ngrid)
+      !common /hotfun/ rx,slx,slpx,sldpx,sltpx
+      integer*4 :: lkf,ld,no,lk,ik,ii,il,im,in,ir
       real*8 ek(401),k(401),ks(401),nk(401),wk(401),kinc
-c -------------------------------
+      real*8 :: sml,htms,fact,tkfc,drho,x,drhos,chmpts,y
+      real*8 :: zlx,zlpx,zldpx,zltpx,z
+c -------------------------------,
 c set k, k**2, e(k), weights w(k)
 c -------------------------------
       sml=1.e-7
@@ -147,22 +155,29 @@ c *id* nmsps ***********************************************************
 c subroutine for single particle spectrum
 c **********************************************************************
       subroutine nmsps(ltd)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "params.f"
-      parameter (ngrid=(20*lgrid+1))
-      parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 temp,mstar,chmpot,entrpy,ksav,kqav
-      common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
-      real*8 xph,yph
-      common /parhol/ xph,yph
+      use nmvar
+      implicit none
+      !implicit real*8 (a-h,o-z)
+      !implicit integer*4 (i-n)
+      !include "params.f"
+      !parameter (ngrid=(20*lgrid+1))
+      !parameter (nlog=0,nin=5,nout=6)
+      integer*4, parameter :: nlog=0
+      integer*4, parameter :: nin=5
+      integer*4, parameter :: nout=6
+      !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      !common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
+      !&       h2m,h2mcs,pi,s
+      !real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
+      ! &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
+      ! &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
+      !common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
+      !real*8 temp,mstar,chmpot,entrpy,ksav,kqav
+      !common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
+      !real*8 xph,yph
+      !common /parhol/ xph,yph
+      integer*4 :: ltd,ir
+      real*8 :: rk,ry,dlph,dlphp,dlphdp,dlphtp,dlkf,dlkfp,dlkfdp,dlkftp
 c
       ksav=3*kf**2/5+xph*(yph**2-kf**2)
       kqav=3*kf**4/7+xph*(yph**4-kf**4)
@@ -200,33 +215,44 @@ c fsof=(fpind/fpinn)**2
 c plm=lambda (fm**-1) in form factor
 c **********************************************************************
       subroutine nmpion(lp,no,np,npi,npf)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "params.f"
-      parameter (nu=4/nm)
-      parameter (ngrid=(20*lgrid+1))
-      parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
-     &       as(6),at(8,8),ax(6,6,6)
-      common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
-      real*8 gca(lgrid,6),gcb(lgrid,6),gdd(lgrid,6),gde(lgrid,6),
-     &       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
-     &       gnn(lgrid,14)
-      common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
-      real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
-     &       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
-      common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
-      real*8 eav,fsof,plm,qmin,qmax
-      common /pionic/ eav,fsof,plm,qmin,qmax
+      use nmvar
+      implicit none
+      !implicit real*8 (a-h,o-z)
+      !implicit integer*4 (i-n)
+      !include "params.f"
+      !parameter (ngrid=(20*lgrid+1))
+      !parameter (nlog=0,nin=5,nout=6)
+      integer*4, parameter :: parameter nu=4/nm
+      integer*4, parameter :: nlog=0
+      integer*4, parameter :: nin=5
+      integer*4, parameter :: nout=6
+      !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      !common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
+      !&       h2m,h2mcs,pi,s
+      !real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
+      ! &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
+      !&       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
+      !common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
+      !real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
+      !&       as(6),at(8,8),ax(6,6,6)
+      !common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
+      !real*8 gca(lgrid,6),gcb(lgrid,6),gdd(lgrid,6),gde(lgrid,6),
+      !&       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
+      !&       gnn(lgrid,14)
+      !common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
+      !real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
+       !&       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
+      !common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
+      !real*8 eav,fsof,plm,qmin,qmax
+      !common /pionic/ eav,fsof,plm,qmin,qmax
+      real*8 :: aj0, aj2
 c
       real*8 vpi(6),wpi(6),wpinn(6),wpind(6),wpidd(6)
+      integer*4 :: lp,no,np,npi,npf
+      integer*4 :: lt,lst,ltnt,i,k,l
+      real*8 :: qscale,upi,fs,fsmpi3,upis,plms,x,y,z,eav1,eav2,dq,qq
+      real*8 :: totpi,qqs,ffs,ff,fac,qr,aj0qr,aj2qr,tempnn,tempnd,tempdd
+      real*8 :: totnn,totnd,totdd
       character*8 label,psilab(2)
       data psilab/'k-space ','r-space '/
       aj0(z)=sin(z)/z
@@ -374,41 +400,49 @@ c *id* nmout ***********************************************************
 c subroutine for printing out f, fp, fds, v, g, etc.
 c **********************************************************************
       subroutine nmout(le,lg,lt,l3,nie,no,nt,nv)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "params.f"
-      parameter (legrid=lgrid*(lgrid**2+1)/2)
-      parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 f(lgrid,8),fp(lgrid,8),fds(lgrid,8),v(lgrid,14)
-      common /correl/ f,fp,fds,v
-      real*8 gca(lgrid,6),gcb(lgrid,6),gdd(lgrid,6),gde(lgrid,6),
-     &       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
-     &       gnn(lgrid,14)
-      common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
-      real*8 gfdd(lgrid,6),gfde(lgrid,6),gfed(lgrid,6),gfcc(lgrid,6),
-     &       ghdd(lgrid,6),ghde(lgrid,6),ghed(lgrid,6),ghcc(lgrid,6),
-     &       grdc(lgrid,6),grdd(lgrid,6),grde(lgrid,6),gred(lgrid,6),
-     &       gree(lgrid,6),grfc(lgrid,6),grfd(lgrid,6),grfe(lgrid,6),
-     &       grmd(lgrid,6),grme(lgrid,6)
-      real*8 eca(lgrid,6),ecb(lgrid,6),edd(lgrid,6),ede(lgrid,6),
-     &       eee(lgrid,6),sddd(legrid),sdde(legrid),
-     &       sdee(legrid),seee(legrid),sdcc(legrid),secc(legrid)
-      common /echain/ eca,ecb,edd,ede,eee,sddd,sdde,sdee,seee,sdcc,secc
-      common /mocfun/ gfdd,gfde,gfed,gfcc,ghdd,ghde,ghed,ghcc,
-     &       grdc,grdd,grde,gred,gree,grfc,grfd,grfe,grmd,grme
-      real*8 v3cc(lgrid,6),v3dd(lgrid,6),v3de(lgrid,6),v3ee(lgrid,6)
-      common /tbpots/ v3cc,v3dd,v3de,v3ee
+      use nmvar
+      implicit none
+      !implicit real*8 (a-h,o-z)
+      !implicit integer*4 (i-n)
+      !include "params.f"
+      !parameter (legrid=lgrid*(lgrid**2+1)/2)
+      !parameter (nlog=0,nin=5,nout=6)
+      integer*4, parameter :: nlog=0
+      integer*4, parameter :: nin=5
+      integer*4, parameter :: nout=6
+
+      !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      !common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
+      !&       h2m,h2mcs,pi,s
+      !real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
+      !&       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
+      !&       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
+      !common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
+      !real*8 f(lgrid,8),fp(lgrid,8),fds(lgrid,8),v(lgrid,14)
+      !common /correl/ f,fp,fds,v
+      !real*8 gca(lgrid,6),gcb(lgrid,6),gdd(lgrid,6),gde(lgrid,6),
+      !&       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
+      !&       gnn(lgrid,14)
+      !common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
+      !real*8 gfdd(lgrid,6),gfde(lgrid,6),gfed(lgrid,6),gfcc(lgrid,6),
+      !&       ghdd(lgrid,6),ghde(lgrid,6),ghed(lgrid,6),ghcc(lgrid,6),
+      !&       grdc(lgrid,6),grdd(lgrid,6),grde(lgrid,6),gred(lgrid,6),
+      !&       gree(lgrid,6),grfc(lgrid,6),grfd(lgrid,6),grfe(lgrid,6),
+      !&       grmd(lgrid,6),grme(lgrid,6)
+      !real*8 eca(lgrid,6),ecb(lgrid,6),edd(lgrid,6),ede(lgrid,6),
+      !&       eee(lgrid,6),sddd(legrid),sdde(legrid),
+      !&       sdee(legrid),seee(legrid),sdcc(legrid),secc(legrid)
+      !common /echain/ eca,ecb,edd,ede,eee,sddd,sdde,sdee,seee,sdcc,secc
+      !common /mocfun/ gfdd,gfde,gfed,gfcc,ghdd,ghde,ghed,ghcc,
+      !&       grdc,grdd,grde,gred,gree,grfc,grfd,grfe,grmd,grme
+      !real*8 v3cc(lgrid,6),v3dd(lgrid,6),v3de(lgrid,6),v3ee(lgrid,6)
+      !common /tbpots/ v3cc,v3dd,v3de,v3ee
 c
       real*8 f00(lgrid),f01(lgrid),f10(lgrid),f11(lgrid),
      &       ft0(lgrid),ft1(lgrid)
       real*8 g01(lgrid),g11(lgrid),h01(lgrid),h11(lgrid)
+      integer*4 :: le,lg,lt,l3,nie,no,nt,nv
+      integer*4 :: lprt,j,i
       f00(:)=f(:,1)-3*f(:,2)-3*f(:,3)+9*f(:,4)
       f01(:)=f(:,1)+  f(:,2)-3*f(:,3)-3*f(:,4)
       f10(:)=f(:,1)-3*f(:,2)+  f(:,3)-3*f(:,4)

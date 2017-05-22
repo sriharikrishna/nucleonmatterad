@@ -46,12 +46,17 @@ all: $(CASE)/$(CASE).x
 prep: 
 	cp -p $(PARAMS) nclude/params.f
 
+PARAMSMOD = params.mod
+
+params.mod: nclude/params.f
+	$(FC) $(OMP) -c nclude/params.f -o params.o
+
 $(CASE)/$(CASE).x: $(CASE)/nm.o $(OBJFIL) $(OBJSUB)
 	$(FC) $(OMP) $(CASE)/nm.o $(OBJFIL) $(OBJSUB) $(MLIB) -o $(CASE)/$(CASE).x
 
 # case specific subroutines
 
-$(CASE)/nm.o: nm.f $(PARAMS)
+$(CASE)/nm.o: nm.f $(PARAMSMOD) $(OBJ)/nmvar.o
 	$(FC) $(OMP) -c nm.f -o $(CASE)/nm.o
 
 $(OBJ)/nmchain.o: nmchain.f $(PARAMS)
@@ -71,6 +76,9 @@ $(OBJ)/nmsub.o: nmsub.f $(PARAMS)
 
 $(OBJ)/nmtbi.o: nmtbi.f $(PARAMS)
 	$(FC) -c nmtbi.f -o $(OBJ)/nmtbi.o
+
+$(OBJ)/nmvar.o: nmvar.f $(PARAMSMOD)
+	$(FC) -c nmvar.f -o $(OBJ)/nmvar.o
 
 # common subroutines
 

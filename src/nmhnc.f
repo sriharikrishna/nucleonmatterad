@@ -1,61 +1,3 @@
-c *id* nmhnc ***********************************************************
-c subroutine for fhnc/soc equations
-c **********************************************************************
-      subroutine nmhnc(lg,le,l3,ni,nie,no,nt,nv)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "params.f"
-      parameter (nu=4/nm,n3s=5-nm,n3t=7-nm)
-      parameter (legrid=lgrid*(lgrid**2+1)/2)
-      parameter (nphi=5,lx=512)
-      parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 f(lgrid,8),fp(lgrid,8),fds(lgrid,8),v(lgrid,14)
-      common /correl/ f,fp,fds,v
-      real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
-     &       as(6),at(8,8),ax(6,6,6)
-      common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
-      real*8 gca(lgrid,6),gcb(lgrid,6),gdd(lgrid,6),gde(lgrid,6),
-     &       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
-     &       gnn(lgrid,14)
-      common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
-      real*8 eca(lgrid,6),ecb(lgrid,6),edd(lgrid,6),ede(lgrid,6),
-     &       eee(lgrid,6),sccd(legrid),scce(legrid),
-     &       sddd(legrid),sdde(legrid),sdee(legrid),seee(legrid)
-      common /echain/ eca,ecb,edd,ede,eee,sccd,scce,sddd,sdde,sdee,seee
-      real*8 gfdd(lgrid,6),gfde(lgrid,6),gfed(lgrid,6),gfcc(lgrid,6),
-     &       ghdd(lgrid,6),ghde(lgrid,6),ghed(lgrid,6),ghcc(lgrid,6),
-     &       grdc(lgrid,6),grdd(lgrid,6),grde(lgrid,6),gred(lgrid,6),
-     &       gree(lgrid,6),grfc(lgrid,6),grfd(lgrid,6),grfe(lgrid,6),
-     &       grmd(lgrid,6),grme(lgrid,6)
-      common /mocfun/ gfdd,gfde,gfed,gfcc,ghdd,ghde,ghed,ghcc,
-     &       grdc,grdd,grde,gred,gree,grfc,grfd,grfe,grmd,grme
-      real*8 v3cc(lgrid,6,2),v3dd(lgrid,6,2),v3de(lgrid,6,2),
-     &       v3ee(lgrid,6,2)
-      common /tbpots/ v3cc,v3dd,v3de,v3ee
-      real*8 bj(8,6),bk(4,3),bq(6,2),vc(6,3,3),
-     &       bcc(lgrid,3),bde(lgrid,3)
-      common /sorfun/ bj,bk,bq,vc,bde,bcc
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
-     &       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
-      common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
-      real*8 eav,fsof,plm,qmin,qmax
-      common /pionic/ eav,fsof,plm,qmin,qmax
-      real*8 temp,mstar,chmpot,entrpy,ksav,kqav
-      common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
-      real*8 xtheta(legrid),ytheta(legrid),ztheta(legrid),stheta(legrid)
-      integer*4 index(lgrid,lgrid,lgrid)
-      common /angle/ xtheta,ytheta,ztheta,stheta,index
-c
       real*8 afe(6),afi(6,6,6),afj(6,6,6),afk(6,6,6),ahi(6,6,6)
      &,ahj(6,6,6),ahk(6,6,6),vco(6,3,3),vce(6,3),xcc(lgrid)
      &,xca(lgrid,6),xdd(lgrid,6),xde(lgrid,6),xee(lgrid,6),xgcc(lgrid)
@@ -65,10 +7,35 @@ c
      &,zca(6),zcb(6),zdd(6),zde(6),zee(6),v3st(6)
       integer lit(6),mit(6),nit(6)
       data lit/0,2,2,4,4,4/,mit/0,2,4,2,4,4/,nit/0,2,4,4,2,4/
+c *id* nmhnc ***********************************************************
+c subroutine for fhnc/soc equations
+c **********************************************************************
+      subroutine nmhnc(lg,le,l3,ni,nie,no,nt,nv)
+      implicit none
+      integer*4, parameter :: nu=4/nm
+      integer*4, parameter :: n3s=5-nm
+      integer*4, parameter :: n3t=7-nm
+      integer*4, parameter :: nphi=5
+      integer*4, parameter :: lx=512
+      integer*4, parameter :: nlog=0
+      integer*4, parameter :: nin=5
+      integer*4, parameter :: nout=6
+      integer*4 lg,le,l3,ni,nie,no,nt,nv
 c
-      real*8 xa(4),ya(4),yb(4),yc(4),jx(0:lx),rsx(0:lx)
+      real*8 :: xa(4),ya(4),yb(4),yc(4),jx(0:lx),rsx(0:lx)
      &,sddx(0:lx),sdex(0:lx),seex(0:lx),cphi(nphi)
      &,sccr(lgrid),sddr(lgrid),sder(lgrid),seer(lgrid)
+      real*8 :: coe,dphi,q3,q3cne,q4,dx,dxi,co,q1,q2,q2cn,fc2
+      real*8 :: c3,s3,s4,yddd,ydde,dya,dyb,dyc,ydee,yeee,yccd,ycce,cg
+      real*8 :: s3s4,rdddde,rdeeee,reeeee,rddddd,rdeede,reeede,rcccc,dln
+      real*8 :: x1,x2,x3,x4,x5,x6,axi,axj,axk,rde,rdd,ree,rcut0,xlm,xlm2
+      real*8 :: y1,y2,y3,y4,y5,y6,z1,z2,z3,z4,z5,z6,xmu,pa,pb,pc,rcut
+      integer*4 :: lmax,kji,ka,kb,ljk,ijk,kl,it
+      real*8 :: a,b,c4,c3c4,r34s,xp,xm,sddp,sdep,seep,vpd,vpe,vpp,vfd
+      real*8 :: vfe,vfp,ffl,hl,fl2,hlh,ei,eij,x,y,z,xijk,xi,xj,xk,rxmu
+      real*8 :: rmu,rlm,ermu,erlm,pac,pap
+      integer*4 :: i,j,k,l,m,n,il,ia,jn,ma,mb,mli,np,ikj,jik,lj,dlk,dkn
+      real*8 :: acex !entry point
 c -------------------
 c statement functions
 c -------------------
@@ -1091,10 +1058,10 @@ c ------------------------------
       if (nt.le.1.or.nt.ge.4) then
         xmu=.7
         do 710 j=1,lmax
-          rx=xmu*r(j)
+          rxmu=xmu*r(j)
           rcut=1-exp(-cut*rs(j))
-          ypi(j)=exp(-rx)*rcut/rx
-          tpi(j)=(1+3/rx+3/rx**2)*ypi(j)*rcut
+          ypi(j)=exp(-rxmu)*rcut/rxmu
+          tpi(j)=(1+3/rxmu+3/rxmu**2)*ypi(j)*rcut
           rcut0=1-exp(-cut0*rs(j))
           tpi2(j)=(tpi(j)*(rcut0/rcut)**2)**2
           xt1(j)=(ypi(j)-tpi(j))*r(j)/3

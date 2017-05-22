@@ -1,47 +1,3 @@
-c *id* nmtbi ***********************************************************
-c nmtbi
-c subprogram for three-body integrations
-c ----------------------------------------------------------------------
-      subroutine nmtbi(lt,lg,le,l3,nie,no,nt)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "params.f"
-      parameter (nu=4/nm,n3s=5-nm,n3t=7-nm)
-      parameter (legrid=lgrid*(lgrid**2+1)/2)
-      parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
-      real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
-     &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
-     &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
-      common /rslate/ r,ri,rs,sl,sls,slp,slps,sldp,sltp,rllp,rlssx,rsdsl
-      real*8 f(lgrid,8),fp(lgrid,8),fds(lgrid,8),v(lgrid,14)
-      common /correl/ f,fp,fds,v
-      real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
-     &       as(6),at(8,8),ax(6,6,6)
-      common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
-      real*8 gca(lgrid,6),gcb(lgrid,6),gdd(lgrid,6),gde(lgrid,6),
-     &       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
-     &       gnn(lgrid,14)
-      common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
-      real*8 eca(lgrid,6),ecb(lgrid,6),edd(lgrid,6),ede(lgrid,6),
-     &       eee(lgrid,6),sccd(legrid),scce(legrid),
-     &       sddd(legrid),sdde(legrid),sdee(legrid),seee(legrid)
-      common /echain/ eca,ecb,edd,ede,eee,sccd,scce,sddd,sdde,sdee,seee
-      real*8 bj(8,6),bk(4,3),bq(6,2),vc(6,3,3),
-     &       bcc(lgrid,3),bde(lgrid,3)
-      common /sorfun/ bj,bk,bq,vc,bde,bcc
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
-     &       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
-      common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
-      real*8 xtheta(legrid),ytheta(legrid),ztheta(legrid),stheta(legrid)
-      integer*4 index(lgrid,lgrid,lgrid)
-      common /angle/ xtheta,ytheta,ztheta,stheta,index
-c
       real*8 afe(6),w3vm(10),w3vx(6,2),v3(2,2)
      &,rcc(lgrid),rdd(lgrid),rde(lgrid),ree(lgrid),sdd(lgrid)
      &,ycc(lgrid),ydd(lgrid),yde(lgrid),yee(lgrid),ybcc(lgrid)
@@ -50,6 +6,23 @@ c
      &,zpdd(lgrid,6),zpde(lgrid,6),zpee(lgrid,6),zpcc(lgrid,6)
      &,zbdd(lgrid,8),zbde(lgrid,8),zbee(lgrid,8),zbcc(lgrid,8)
      &,ztee(lgrid,6)
+c *id* nmtbi ***********************************************************
+c nmtbi
+c subprogram for three-body integrations
+c ----------------------------------------------------------------------
+      subroutine nmtbi(lt,lg,le,l3,nie,no,nt)
+      implicit none
+      integer*4 :: lt,lg,le,l3,nie,no,nt
+      integer*4 :: i,j,k,l,kb,ltd,fc2,fc2p,fl2,ffl,fl2p,fflp,ijk,ikj
+      integer*4 :: jik,kji,ka
+      real*8 :: vid,vie,vip,vpd,vpe,vpp,vfd,vfe,vfp,pa,pap,pb,pc,pd,qv
+      real*8 :: v0,ac,qvi,w3vma,w3vmb,x,y,z,qttt,qtts,qtst,qstt,acx,u1
+      real*8 :: u2,u3,u4,uf1,uf2,uf3,uf4,uf5,up1,up2,up3,qu,fpi,fpj
+      real*8 :: qui,u4a,u4b,u4c,u4d,qpts,qtps,qpps,qspt,qpst,qtpt,qptt
+      real*8 :: qppt
+      real*8 :: acex !entry point
+c
+
 c -------------------------
 c statement functions
 c error in rbrtr fixed 7/07
