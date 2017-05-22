@@ -245,7 +245,6 @@ c **********************************************************************
       !common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
       !real*8 eav,fsof,plm,qmin,qmax
       !common /pionic/ eav,fsof,plm,qmin,qmax
-      real*8 :: aj0, aj2
 c
       real*8 vpi(6),wpi(6),wpinn(6),wpind(6),wpidd(6)
       integer*4 :: lp,no,np,npi,npf
@@ -255,8 +254,6 @@ c
       real*8 :: totnn,totnd,totdd
       character*8 label,psilab(2)
       data psilab/'k-space ','r-space '/
-      aj0(z)=sin(z)/z
-      aj2(z)=sin(z)*(3./z**3-1./z)-3.*cos(z)/z**2
       lt=3-nm
       lst=lt+2
       ltnt=lst+2
@@ -331,8 +328,8 @@ c ======================================================================
    30 wpidd(l)=0.
       do 40 i=1,lp
       qr=qq*r(i)
-      aj0qr=aj0(qr)
-      aj2qr=aj2(qr)
+      aj0qr=sin(qr)/qr
+      aj2qr=sin(qr)*(3./qr**3-1./qr)-3.*cos(qr)/qr**2
       x=fsmpi3*fac*(ypi(i)*aj0qr-2.*tpi(i)*aj2qr)*rs(i)
       wpind(1)=wpind(1)-x*(16.*fsof/eav1)*gnn(i,1)
       wpidd(1)=wpidd(1)-x*(32.*fsof**2/(9.*eav2))*gnn(i,1)
