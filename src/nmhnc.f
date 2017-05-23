@@ -3,7 +3,7 @@
       implicit none
 
 
-      private      
+      private
       real*8 afe(6),afi(6,6,6),afj(6,6,6),afk(6,6,6),ahi(6,6,6)
      &,ahj(6,6,6),ahk(6,6,6),vco(6,3,3),vce(6,3),xcc(lgrid)
      &,xca(lgrid,6),xdd(lgrid,6),xde(lgrid,6),xee(lgrid,6),xgcc(lgrid)
