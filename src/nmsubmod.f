@@ -2,10 +2,14 @@ c *id* ac **************************************************************
 c subfuntions for matrices c,cex,cl2,cl2ex
 c **********************************************************************
       function ac(i,j,k)
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
+      !implicit real*8 (a-h,o-z)
+      !implicit integer*4 (i-n)
+      implicit none
+      integer*4 i,j,k
       real*8 b(112),bex(112),bl2(112),bl2ex(112)
+      integer*4  ns,nt
       integer*4 ms(14),mt(14)
+      real*8 ac,acex,acl2,acl2ex,al2
       data b/1.,4*0.,3.,4*0.,6.,18*0.,3.,2*0.,3.,-6.,4*0.,6.,19*0.
      $,6.,3*0.,6.,0.,2*6.,-12.,3*0.,-18.,3*0.,36.,3*0.,36.,3*0.,54.
      $,29*0./
