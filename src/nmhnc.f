@@ -43,6 +43,13 @@ c
       real*8 :: rmu,rlm,ermu,erlm,pac,pap
       integer*4 :: i,j,k,l,m,n,il,ia,jn,ma,mb,mli,np,ikj,jik,lj,dlk,dkn
       real*8 :: acex !entry point
+
+c -------------------
+c  data
+c -------------------
+      lit = [0,2,2,4,4,4]
+      mit = [0,2,4,2,4,4]
+      nit = [0,2,4,4,2,4]
 c -------------------
 c statement functions
 c -------------------
