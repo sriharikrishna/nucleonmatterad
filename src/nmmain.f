@@ -16,7 +16,7 @@ c **********************************************************************
 c ----------------------------------------------------------------------
       real*8 :: dor,bst,btn,bls,endiff,efree,gint(6)
       integer*4 :: np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-      integer*4 :: npi,npf
+      integer*4 :: npi,npf,l1,l2
       real*8 xsq(lgrid),xqq(lgrid),rllpp(lgrid),rdls(lgrid),rlss(lgrid)
      &,rlltp(lgrid),wkx(10),wjx(10),ya(6),zif(6,2),esum(14),echeck(14)
      &,vem(14)
@@ -28,7 +28,7 @@ c ----------------------------------------------------------------------
       real*8 :: zk,zf,zj,bvpk,bkpk,bjpk,wv2b,wvhb,wk2b,wf2b,wfhb,wj2b
       real*8 :: wjhb,wp2b,wphb,wv2q,wvhq,wvsq,wvsxq,wkhb,yd,ye,yc,xb
       real*8 :: xbex,xbe,xbc,xi,xicc,zi,bvik,bkik,bjik,bvif,bkif,bjif
-      integer*4:: ltd,irl,l,ir,kj,j,i,k,n,mp,m,nx,il,kl,lb,jp,jq
+      integer*4:: ltd,irl,l,ir,kj,j,i,k,n,mp,m,nx,il,kl,lb,jp,jq,jrl
       real*8 :: bvpf,yt,yr,yl,xcp,zr,zl,fdi,fdk,zkp,zkr,zkl,zkx,bkpf
       real*8 :: bjpf,x3,x4,x6,ytd,ytc,yqd,yqc,elj,yt1,yt2,yt4,xq,xqex
       real*8 :: w3,vemtot,vc1pp,vc1np,vmmpp,vmmnp,vmmnn,esq,tf,wv,wk
@@ -67,14 +67,18 @@ c ======================================================================
 c -------------------------------------------------------
 c find correlation functions and solve fhnc/soc equations
 c -------------------------------------------------------
-      do 4 irl=1,lgrid*14
-        gnn(irl,1)=0
-        v(irl,1)=0
+      do 4 irl=1,lgrid
+        do jrl=1,8
+          gnn(irl,jrl)=0
+          v(irl,jrl)=0
+        end do
     4 continue
-      do 6 irl=1,lgrid*8
-        f(irl,1)=0
-        fp(irl,1)=0
-        fds(irl,1)=0
+      do 6 irl=1,lgrid
+        do jrl=1,8
+        f(irl,jrl)=0
+        fp(irl,jrl)=0
+        fds(irl,jrl)=0
+        end do
     6 continue
 c ======================================================================
       call nmfts(lc,ls,lt,ll,lf,no,np,nt,nv)
@@ -133,15 +137,21 @@ c -----------------------
 c calculate w0,ws,wf0,wfs
 c -----------------------
    40 x=2*rho*pi*dr
-      do 50 kj=1,14*10
-        wx(kj,1)=0
+      do 50 kj=1,14
+        do l1=1,10
+          wx(kj,l1)=0
+        end do 
    50 continue
       do 51 j=1,10
         wkx(j)=0
         wjx(j)=0
    51 continue
-      do 52 kj=1,6*4*2
-        w3x(kj,1,1)=0
+      do 52 kj=1,6
+        do l1=1,4
+          do l2=1,2
+            w3x(kj,l1,l2)=0
+          end do
+       end do
    52 continue
       wv2=0
       wvh=0

@@ -43,6 +43,7 @@ c
       real*8 :: vfe,vfp,ffl,hl,fl2,hlh,ei,eij,x,y,z,xijk,xi,xj,xk,rxmu
       real*8 :: rmu,rlm,ermu,erlm,pac,pap
       integer*4 :: i,j,k,l,m,n,il,ia,jn,ma,mb,mli,np,ikj,jik,lj,dlk,dkn
+      integer*4 :: jl
 
 c -------------------
 c  data
@@ -112,31 +113,39 @@ c -------------
         sdee(i)=0
         seee(i)=0
    35 continue
-      do 40 il=1,lgrid*6
-        gca(il,1)=0
-        gcb(il,1)=0
-        gdd(il,1)=0
-        gde(il,1)=0
-        gee(il,1)=0
-        eca(il,1)=0
-        ecb(il,1)=0
-        edd(il,1)=0
-        ede(il,1)=0
-        eee(il,1)=0
+      do 40 il=1,lgrid
+        do jl=1,6
+          gca(il,jl)=0
+          gcb(il,jl)=0
+          gdd(il,jl)=0
+          gde(il,jl)=0
+          gee(il,jl)=0
+          eca(il,jl)=0
+          ecb(il,jl)=0
+          edd(il,jl)=0
+          ede(il,jl)=0
+          eee(il,jl)=0
+        end do
    40 continue
       v3cc(:,:,:)=0
       v3dd(:,:,:)=0
       v3de(:,:,:)=0
       v3ee(:,:,:)=0
-      do 50 il=1,lgrid*3
-        bcc(il,1)=0
-        bde(il,1)=0
+      do 50 il=1,lgrid
+        do jl=1,3
+          bcc(il,jl)=0
+          bde(il,jl)=0
+        end do
    50 continue
       do 55 l=1,6
         afe(l)=acex(l,1,l)
    55 continue
-      do 60 ljk=1,6*3*3
-        vc(ljk,1,1)=1
+      do 60 ljk=1,6
+        do il=1,3
+          do jl=1,3
+            vc(ljk,il,jl)=1
+          end do
+        end do
    60 continue
 c -------------------------------------
 c main iteration loop for hnc equations
@@ -303,12 +312,14 @@ c -----------------------
 c --------------------------------
 c three-body fhnc/soc integrations
 c --------------------------------
-      do 240 il=1,lgrid*6
-        gdd(il,1)=gdd(il,1)*co
-        gde(il,1)=gde(il,1)*co
-        gee(il,1)=gee(il,1)*co
-        gca(il,1)=gca(il,1)*co
-        gcb(il,1)=gcb(il,1)*co
+      do 240 il=1,lgrid
+        do jl=1,6
+          gdd(il,jl)=gdd(il,jl)*co
+          gde(il,jl)=gde(il,jl)*co
+          gee(il,jl)=gee(il,jl)*co
+          gca(il,jl)=gca(il,jl)*co
+          gcb(il,jl)=gcb(il,jl)*co
+        end do
   240 continue
 !$OMP PARALLEL SHARED(gdd,gde,gee,gca,gcb)
 !$OMP& PRIVATE(i,j,k,l)
@@ -357,12 +368,14 @@ c --------------------------------
 c -------------------------------
 c elementary diagram integrations
 c -------------------------------
-      do 340 il=1,lgrid*6
-        edd(il,1)=edd(il,1)*coe
-        ede(il,1)=ede(il,1)*coe
-        eee(il,1)=eee(il,1)*coe
-        eca(il,1)=eca(il,1)*coe
-        ecb(il,1)=ecb(il,1)*coe
+      do 340 il=1,lgrid
+        do jl=1,6
+          edd(il,jl)=edd(il,jl)*coe
+          ede(il,jl)=ede(il,jl)*coe
+          eee(il,jl)=eee(il,jl)*coe
+          eca(il,jl)=eca(il,jl)*coe
+          ecb(il,jl)=ecb(il,jl)*coe
+        end do
   340 continue
 !$OMP PARALLEL SHARED(edd,ede,eee,eca,ecb)
 !$OMP& PRIVATE(i,j,k,l)
@@ -611,8 +624,10 @@ c bj(l,4)=J^l(e,d,P)   - RMP(6.32)
 c bj(l,5)=J^l(d,e,P)   - RMP(6.33)
 c bj(l,6)=K^l(d,e,f^2) - W80(3.14)
 c --------------------------------
-      do 400 lj=1,8*6
-        bj(lj,1)=0
+      do 400 lj=1,8
+        do jl=1,6
+          bj(lj,jl)=0
+        end do
   400 continue
       do 420 l=1,6,nm
         if (l.eq.1) go to 420
@@ -700,22 +715,24 @@ c -------------
       do 505 k=1,lgrid
         xcc(k)=0
   505 continue
-      do 510 kl=1,lgrid*6
-        gfcc(kl,1)=0
-        gfdd(kl,1)=0
-        gfde(kl,1)=0
-        gfed(kl,1)=0
-        ghcc(kl,1)=0
-        ghdd(kl,1)=0
-        ghde(kl,1)=0
-        ghed(kl,1)=0
-        xca(kl,1)=0
-        xdd(kl,1)=0
-        xee(kl,1)=0
-        xgcb(kl,1)=0
-        xgdd(kl,1)=0
-        xgde(kl,1)=0
-        xgee(kl,1)=0
+      do 510 kl=1,lgrid
+        do jl=1,6
+          gfcc(kl,jl)=0
+          gfdd(kl,jl)=0
+          gfde(kl,jl)=0
+          gfed(kl,jl)=0
+          ghcc(kl,jl)=0
+          ghdd(kl,jl)=0
+          ghde(kl,jl)=0
+          ghed(kl,jl)=0
+          xca(kl,jl)=0
+          xdd(kl,jl)=0
+          xee(kl,jl)=0
+          xgcb(kl,jl)=0
+          xgdd(kl,jl)=0
+          xgde(kl,jl)=0
+          xgee(kl,jl)=0
+        end do
   510 continue
       do 530 l=1+nm,6,nm
         do 512 k=1,lg
@@ -854,17 +871,19 @@ c -------------
 c -------------------
 c sor-chain integrals
 c -------------------
-      do 555 kl=1,lgrid*6
-        grdc(kl,1)=0
-        grdd(kl,1)=0
-        grde(kl,1)=0
-        gred(kl,1)=0
-        gree(kl,1)=0
-        grfc(kl,1)=0
-        grfd(kl,1)=0
-        grfe(kl,1)=0
-        grmd(kl,1)=0
-        grme(kl,1)=0
+      do 555 kl=1,lgrid
+        do jl=1,6
+          grdc(kl,jl)=0
+          grdd(kl,jl)=0
+          grde(kl,jl)=0
+          gred(kl,jl)=0
+          gree(kl,jl)=0
+          grfc(kl,jl)=0
+          grfd(kl,jl)=0
+          grfe(kl,jl)=0
+          grmd(kl,jl)=0
+          grme(kl,jl)=0
+        end do
   555 continue
       do 590 i=1,lg
         ei=q2*ri(i)

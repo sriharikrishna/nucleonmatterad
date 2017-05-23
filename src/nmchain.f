@@ -9,7 +9,7 @@ c ----------------------------------------------------------------------
       !implicit integer*4 (i-n)
       !include "params.f"
       integer*4 :: nv,nt,no,lg,l3
-      integer*4 :: li,kj,j,lj,l,k,i,m,n,mp,ir,ka,kb,jk
+      integer*4 :: li,kj,j,lj,l,k,i,m,n,mp,ir,ka,kb,jk,l1
       real*8    :: wvc,wvcs,wfcdd,wfccc,wfcsdd,wfcscc,wpcdd,wpccc
       real*8    :: wpcsdd,wpcscc,x,vd,ve,vp,qx
       real*8    :: z,ze,zf,zfe,zk,zke,zp,zpe,zj,zje
@@ -42,11 +42,13 @@ c ----------------------------------------------------------------------
       w3v1=0
       w3va=0
       w3vc=0
-      do 50 kj=1,8*10
-        wcx(kj,1)=0
-        wcdx(kj,1)=0
-        wcmx(kj,1)=0
-        wcrx(kj,1)=0
+      do 50 kj=1,8
+        do l1=1,10
+          wcx(kj,l1)=0
+          wcdx(kj,l1)=0
+          wcmx(kj,l1)=0
+          wcrx(kj,l1)=0
+        end do
    50 continue
       do 52 j=1,10
         wckx(j)=0
@@ -842,8 +844,8 @@ c print ================================================================
         write(nlog,1310)
         write(nout,1310)
  1310   format(4x,'c',7x,'t',7x,'s',7x,'st',6x,'tn',6x,'tnt')
-        write(nlog,1150) (w3x(jk,1,1),jk=1,6*4)
-        write(nout,1150) (w3x(jk,1,1),jk=1,6*4)
+        write(nlog,1150) ((w3x(jk,l1,1),jk=1,6),l1=1,4)
+        write(nout,1150) ((w3x(jk,l1,1),jk=1,6),l1=1,4)
  1150   format(6f8.3)
         if (tnix.ne.0. .or. nt.eq.2 .or. nt.eq.3) then
           write(nlog,1315)
@@ -851,8 +853,8 @@ c print ================================================================
  1315     format(/4x,'w3v(e2b):df,ef,dg,eg - s-wave')
           write(nlog,1310)
           write(nout,1310)
-          write(nlog,1150) (w3x(jk,1,2),jk=1,6*4)
-          write(nout,1150) (w3x(jk,1,2),jk=1,6*4)
+          write(nlog,1150) ((w3x(jk,l1,2),jk=1,6),l1=1,4)
+          write(nout,1150) ((w3x(jk,l1,2),jk=1,6),l1=1,4)
         end if
       end if
       if (nt.ge.4) then
