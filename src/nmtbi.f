@@ -3,10 +3,7 @@
       use nmvar
       implicit none
 
-
-      private:: rrr,rry,ryr,rrz,zzz,zzr,zrz,rbybr,rbrtr,rbrty,rbytr,
-     &ybrtr,rtrtr,rtrty,rtytr,zbzbz,zbztz
-      
+      private
       integer*4, parameter :: n3s=5-nm
       integer*4, parameter :: n3t=7-nm
       real*8 afe(6),w3vm(10),w3vx(6,2),v3(2,2)
