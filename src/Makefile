@@ -11,6 +11,7 @@
 
 #include Makefile-theory
 include Makefile-g95
+#include Makefile-gfortran
 
 #
 # may invoke OPENMP=on
@@ -29,7 +30,7 @@ endif
 OBJ=$(CASE)/obj
 
 OBJFIL= $(OBJ)/nmchain.o $(OBJ)/nmfts.o $(OBJ)/nmhnc.o $(OBJ)/nmmain.o \
-   $(OBJ)/nmsub.o $(OBJ)/nmtbi.o
+   $(OBJ)/nmsub.o $(OBJ)/nmsubmod.o $(OBJ)/nmtbi.o
 
 # parameter file names
 
@@ -59,7 +60,7 @@ $(CASE)/$(CASE).x: $(CASE)/nm.o $(OBJFIL) $(OBJSUB)
 $(CASE)/nm.o: nm.f $(PARAMSMOD) $(OBJ)/nmvar.o
 	$(FC) $(OMP) -c nm.f -o $(CASE)/nm.o
 
-$(OBJ)/nmchain.o: nmchain.f $(PARAMS)
+$(OBJ)/nmchain.o: nmchain.f $(PARAMS) $(OBJ)/nmsubmod.o
 	$(FC) -c nmchain.f -o $(OBJ)/nmchain.o
 
 $(OBJ)/nmfts.o: nmfts.f $(PARAMS)
@@ -68,11 +69,14 @@ $(OBJ)/nmfts.o: nmfts.f $(PARAMS)
 $(OBJ)/nmhnc.o: nmhnc.f $(PARAMS)
 	$(FC) $(OMP) -c nmhnc.f -o $(OBJ)/nmhnc.o
 
-$(OBJ)/nmmain.o: nmmain.f $(PARAMS) $(OBJ)/nmhnc.o $(OBJ)/nmtbi.o
+$(OBJ)/nmmain.o: nmmain.f $(PARAMS) $(OBJ)/nmhnc.o $(OBJ)/nmtbi.o $(OBJ)/nmsubmod.o
 	$(FC) -c nmmain.f -o $(OBJ)/nmmain.o
 
 $(OBJ)/nmsub.o: nmsub.f $(PARAMS)
 	$(FC) -c nmsub.f -o $(OBJ)/nmsub.o
+
+$(OBJ)/nmsubmod.o: nmsubmod.f $(PARAMS)
+	$(FC) -c nmsubmod.f -o $(OBJ)/nmsubmod.o
 
 $(OBJ)/nmtbi.o: nmtbi.f $(PARAMS)
 	$(FC) -c nmtbi.f -o $(OBJ)/nmtbi.o
