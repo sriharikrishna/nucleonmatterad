@@ -159,9 +159,6 @@ c **********************************************************************
       !include "params.f"
       !parameter (ngrid=(20*lgrid+1))
       !parameter (nlog=0,nin=5,nout=6)
-      integer*4, parameter :: nlog=0
-      integer*4, parameter :: nin=5
-      integer*4, parameter :: nout=6
       !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       !common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
       !&       h2m,h2mcs,pi,s
@@ -201,6 +198,7 @@ c    -------------------------------
    10 continue
       return
       end
+
 c *id* nmpion **********************************************************
 c pion density subroutine
 c pion excess npi(q) in %/nucleon
@@ -219,10 +217,6 @@ c **********************************************************************
       !include "params.f"
       !parameter (ngrid=(20*lgrid+1))
       !parameter (nlog=0,nin=5,nout=6)
-      integer*4, parameter :: parameter nu=4/nm
-      integer*4, parameter :: nlog=0
-      integer*4, parameter :: nin=5
-      integer*4, parameter :: nout=6
       !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       !common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
       !&       h2m,h2mcs,pi,s
@@ -401,10 +395,6 @@ c **********************************************************************
       !include "params.f"
       !parameter (legrid=lgrid*(lgrid**2+1)/2)
       !parameter (nlog=0,nin=5,nout=6)
-      integer*4, parameter :: nlog=0
-      integer*4, parameter :: nin=5
-      integer*4, parameter :: nout=6
-
       !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       !common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
       !&       h2m,h2mcs,pi,s
