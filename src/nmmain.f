@@ -7,6 +7,7 @@ c **********************************************************************
       use nmvar
       use nmhncmod
       use nmtbimod
+      use nmsubmod
       implicit none
       !implicit real*8 (a-h,o-z)
       !implicit integer*4 (i-n)
@@ -32,11 +33,6 @@ c ----------------------------------------------------------------------
       real*8 :: bjpf,x3,x4,x6,ytd,ytc,yqd,yqc,elj,yt1,yt2,yt4,xq,xqex
       real*8 :: w3,vemtot,vc1pp,vc1np,vmmpp,vmmnp,vmmnn,esq,tf,wv,wk
       real*8 :: wf,wj,wp,epb,ejf,ev2,evm,ek2,ekm,ej2,ejm,energy
-      real*8    :: acex !entry point
-      real*8    :: acl2ex !entry point
-      real*8    :: acl2 !entry point
-      real*8    :: al2 !entry point
-      real*8    :: ac   !function
       if (kf.eq.0) kf=(1.5*nm*pi**2*rho)**(1./3.)
       if (rho.eq.0) rho=kf**3/(1.5*nm*pi**2)
       r0=(3/(4*pi*rho))**(1./3.)

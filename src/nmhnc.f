@@ -1,5 +1,6 @@
       module nmhncmod
       use nmvar
+      use nmsubmod
       implicit none
 
 
@@ -42,7 +43,6 @@ c
       real*8 :: vfe,vfp,ffl,hl,fl2,hlh,ei,eij,x,y,z,xijk,xi,xj,xk,rxmu
       real*8 :: rmu,rlm,ermu,erlm,pac,pap
       integer*4 :: i,j,k,l,m,n,il,ia,jn,ma,mb,mli,np,ikj,jik,lj,dlk,dkn
-      real*8 :: acex !entry point
 
 c -------------------
 c  data

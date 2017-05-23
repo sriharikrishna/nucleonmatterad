@@ -1,6 +1,7 @@
 
       module nmtbimod
       use nmvar
+      use nmsubmod
       implicit none
 
       private
@@ -33,7 +34,6 @@ c ----------------------------------------------------------------------
       real*8 :: u2,u3,u4,uf1,uf2,uf3,uf4,uf5,up1,up2,up3,qu,fpi,fpj
       real*8 :: qui,u4a,u4b,u4c,u4d,qpts,qtps,qpps,qspt,qpst,qtpt,qptt
       real*8 :: qppt
-      real*8 :: acex !entry point
 c
 
 c -------------------------

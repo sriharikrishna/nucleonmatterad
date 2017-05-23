@@ -1,20 +1,10 @@
-c *id* ac **************************************************************
-c subfuntions for matrices c,cex,cl2,cl2ex
-c **********************************************************************
-      function ac(i,j,k)
-      !implicit real*8 (a-h,o-z)
-      !implicit integer*4 (i-n)
-      implicit none
-      integer*4 i,j,k
-      real*8 b(112),bex(112),bl2(112),bl2ex(112)
-      integer*4  ns,nt
-      integer*4 ms(14),mt(14)
-      real*8 ac,acex,acl2,acl2ex,al2
+      module  nmsubmod
+      private
 c      data b/1.,4*0.,3.,4*0.,6.,18*0.,3.,2*0.,3.,-6.,4*0.,6.,19*0.
 c     $,6.,3*0.,6.,0.,2*6.,-12.,3*0.,-18.,3*0.,36.,3*0.,36.,3*0.,54.
 c     $,29*0./
 
-      b=[1.,0.,0.,0.,0.,3.,0.,0.,0.,0.,
+      real*8, dimension(112) :: b=[1.,0.,0.,0.,0.,3.,0.,0.,0.,0.,
      &   6.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
      &   0.,0.,0.,0.,0.,0.,0.,0.,0.,3.,
      &   0.,0.,3.,-6.,0.,0.,0.,0.,6.,0.,
@@ -31,7 +21,7 @@ c      data bex/1.,3.,2*0.,3.,-3.,4*0.,12.,17*0.,3.,-3.,2*0.,-3.
 c     $,15.,4*0.,12.,19*0.,12.,3*0.,12.,0.,2*12.,-24.,3*0.,-36.,3*0.,72.
 c     $,3*0.,72.,3*0.,108.,29*0./
 
-      bex = [1.,3.,0.,0.,3.,-3.,0.,0.,0.,0.,
+      real*8, dimension(112) :: bex = [1.,3.,0.,0.,3.,-3.,0.,0.,0.,0.,
      &      12.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
      &      0.,0.,0.,0.,0.,0.,0.,0.,3.,-3.,
      &      0.,0.,-3.,15.,0.,0.,0.,0.,12.,0.,
@@ -51,7 +41,7 @@ c     $,3*0.,72.,3*0.,108.,29*0./
       !$,1.,.5/
 
 
-       bl2 = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
+       real*8, dimension(112) :: bl2 = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
      &      0.,0.,0.,0.,0.,.5,1.,0.,0.,0.,
      &      0.,3.,0.,0.,.5,.5,-.5,-.25,0.,0.,
      &      0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
@@ -70,7 +60,7 @@ c     $,3*0.,72.,3*0.,108.,29*0./
       !$,3*0.,1.,3*0.,1.,3*0.,-1.,2*1.,-1.,-.5,3*0.,1.,3*0.,1.,2*-.5
       !$,2.,1./
 
-       bl2ex = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
+       real*8, dimension(112) :: bl2ex = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
      &         0.,0.,0.,0.,0.,1.,1.,3.,0.,0.,
      &         3.,-3.,0.,0.,1.,1.,-1.,-.5,0.,0.,
      &         0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,
@@ -84,36 +74,68 @@ c     $,3*0.,72.,3*0.,108.,29*0./
      &         2.,1.]
 
       !data ms/2*1,2*2,2*3,2*4,2*5,2*6,2*7/
-      ms = [1,1,2,2,3,3,4,4,5,5,6,6,7,7]
+      real*8, dimension(14) :: ms = [1,1,2,2,3,3,4,4,5,5,6,6,7,7]
 
       !data mt/1,2,1,2,1,2,1,2,1,2,1,2,1,2/
-      mt = [1,2,1,2,1,2,1,2,1,2,1,2,1,2]
+      real*8, dimension(14) :: mt = [1,2,1,2,1,2,1,2,1,2,1,2,1,2]
 
-      ns=ms(i)+4*ms(j)+28*ms(k)-32
-      nt=mt(i)+4*mt(j)+28*mt(k)-32
-      ac=b(ns)*b(nt)
+      public :: ac,acex,acl2,acl2ex,al2
+
+      contains
+c *id* ac **************************************************************
+c subfuntions for matrices c,cex,cl2,cl2ex
+c **********************************************************************
+      function ac(i,j,k)
+        implicit none
+        real*8 :: ac
+        integer*4 :: i,j,k
+        integer*4 :: ns,nt
+        ns=ms(i)+4*ms(j)+28*ms(k)-32
+        nt=mt(i)+4*mt(j)+28*mt(k)-32
+        ac=b(ns)*b(nt)
       return
+      end function
 c ****************************
-      entry acex(i,j,k)
-      ns=ms(i)+4*ms(j)+28*ms(k)-32
-      nt=mt(i)+4*mt(j)+28*mt(k)-32
-      acex=bex(ns)*bex(nt)
-      return
+      function acex(i,j,k)
+        implicit none
+        real*8 :: acex
+        integer*4 :: i,j,k
+        integer*4 :: ns,nt
+        ns=ms(i)+4*ms(j)+28*ms(k)-32
+        nt=mt(i)+4*mt(j)+28*mt(k)-32
+        acex=bex(ns)*bex(nt)
+        return
+      end function
 c ****************************
-      entry acl2(i,j,k)
-      ns=ms(i)+4*ms(j)+28*ms(k)-32
-      nt=mt(i)+4*mt(j)+28*mt(k)-32
-      acl2=bl2(ns)*b(nt)
-      return
+      function acl2(i,j,k)
+        implicit none
+        real*8 :: acl2
+        integer*4 :: i,j,k
+        integer*4 :: ns,nt
+        ns=ms(i)+4*ms(j)+28*ms(k)-32
+        nt=mt(i)+4*mt(j)+28*mt(k)-32
+        acl2=bl2(ns)*b(nt)
+        return
+      end function
 c ****************************
-      entry acl2ex(i,j,k)
-      ns=ms(i)+4*ms(j)+28*ms(k)-32
-      nt=mt(i)+4*mt(j)+28*mt(k)-32
-      acl2ex=bl2ex(ns)*bex(nt)
-      return
+      function acl2ex(i,j,k)
+        implicit none
+        real*8 :: acl2ex
+        integer*4 :: i,j,k
+        integer*4 :: ns,nt
+        ns=ms(i)+4*ms(j)+28*ms(k)-32
+        nt=mt(i)+4*mt(j)+28*mt(k)-32
+        acl2ex=bl2ex(ns)*bex(nt)
+        return
+      end function
 c ****************************
-      entry al2(i,j,k)
-      ns=ms(i)+4*ms(j)+28*ms(k)-32
-      al2=bl2(ns)
-      return
-      end
+      function al2(i,j,k)
+        implicit none
+        real*8 :: al2
+        integer*4 :: i,j,k
+        integer*4 :: ns,nt
+        ns=ms(i)+4*ms(j)+28*ms(k)-32
+        al2=bl2(ns)
+        return
+      end function
+      end module nmsubmod

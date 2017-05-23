@@ -3,6 +3,7 @@ c subroutine for calculating chain contributions
 c ----------------------------------------------------------------------
       subroutine nmchain(nv,nt,no,lg,l3)
       use nmvar
+      use nmsubmod
       implicit none
       !implicit real*8 (a-h,o-z)
       !implicit integer*4 (i-n)
@@ -23,8 +24,6 @@ c ----------------------------------------------------------------------
       real*8    :: wfcm,wfcms,wpcm,wpcms,wvcr,wfcr,wpcr,wkcr,wjcr
       real*8    :: xx,yy,zz,z1,z2,z3,z4,z5
       real*8    :: di1dk1,ditdkt,dli,dlj,dlk,d3
-      real*8    :: acex !entry point
-      real*8    :: ac   !function
 c ----------------------------------------------------------------------
       real*8 wckx(10),wcjx(10),wcdkx(10),wcdjx(10),wcmjx(10),wcmkx(10)
      &,wcrjx(10),wcrkx(10)
