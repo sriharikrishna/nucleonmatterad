@@ -31,6 +31,9 @@
 *.out
 *.app
 
+# Temp files
+params.f
+
 #OpenAD
 .o
 *.lo
