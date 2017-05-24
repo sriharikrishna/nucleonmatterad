@@ -10,8 +10,8 @@
 #
 
 #include Makefile-theory
-include Makefile-g95
-#include Makefile-gfortran
+#include Makefile-g95
+include Makefile-gfortran
 
 #
 # may invoke OPENMP=on
@@ -30,7 +30,7 @@ endif
 OBJ=$(CASE)/obj
 
 OBJFIL= $(OBJ)/nmchain.o $(OBJ)/nmfts.o $(OBJ)/nmhnc.o $(OBJ)/nmmain.o \
-   $(OBJ)/nmsub.o $(OBJ)/nmsubmod.o $(OBJ)/nmtbi.o
+   $(OBJ)/nmsub.o $(OBJ)/nmtbi.o $(OBJ)/params.o $(OBJ)/nmsubmod.o $(OBJ)/nmvar.o
 
 # parameter file names
 
@@ -39,7 +39,7 @@ PARAMS=nclude/params.$(CASE)
 # subroutine object files (almost) independent of nucleus
 
 OBJSUB= sub/dtime.o sub/headtime.o sub/linpack.o sub/minimi.o sub/numrec.o \
-   sub/pot.o sub/eft_pot_r.o sub/dgamma.o
+   sub/pot.o sub/eft_pot_r.o sub/dgamma.o 
 
 
 all: $(CASE)/$(CASE).x
@@ -47,41 +47,39 @@ all: $(CASE)/$(CASE).x
 prep: 
 	cp -p $(PARAMS) nclude/params.f
 
-PARAMSMOD = params.mod
-
-params.mod: nclude/params.f
-	$(FC) $(OMP) -c nclude/params.f -o params.o
+$(OBJ)/params.o: nclude/params.f
+	$(FC) $(OMP) -c nclude/params.f -o $(OBJ)/params.o
 
 $(CASE)/$(CASE).x: $(CASE)/nm.o $(OBJFIL) $(OBJSUB)
 	$(FC) $(OMP) $(CASE)/nm.o $(OBJFIL) $(OBJSUB) $(MLIB) -o $(CASE)/$(CASE).x
 
 # case specific subroutines
 
-$(CASE)/nm.o: nm.f $(PARAMSMOD) $(OBJ)/nmvar.o
+$(CASE)/nm.o: nm.f $(OBJ)/params.o $(OBJ)/nmvar.o
 	$(FC) $(OMP) -c nm.f -o $(CASE)/nm.o
 
-$(OBJ)/nmchain.o: nmchain.f $(PARAMS) $(OBJ)/nmsubmod.o
+$(OBJ)/nmchain.o: nmchain.f $(OBJ)/params.o $(OBJ)/nmsubmod.o
 	$(FC) -c nmchain.f -o $(OBJ)/nmchain.o
 
-$(OBJ)/nmfts.o: nmfts.f $(PARAMS)
+$(OBJ)/nmfts.o: nmfts.f $(OBJ)/params.o
 	$(FC) -c nmfts.f -o $(OBJ)/nmfts.o
 
-$(OBJ)/nmhnc.o: nmhnc.f $(PARAMS)
+$(OBJ)/nmhnc.o: nmhnc.f $(OBJ)/params.o
 	$(FC) $(OMP) -c nmhnc.f -o $(OBJ)/nmhnc.o
 
-$(OBJ)/nmmain.o: nmmain.f $(PARAMS) $(OBJ)/nmhnc.o $(OBJ)/nmtbi.o $(OBJ)/nmsubmod.o
+$(OBJ)/nmmain.o: nmmain.f $(OBJ)/params.o $(OBJ)/nmhnc.o $(OBJ)/nmtbi.o $(OBJ)/nmsubmod.o
 	$(FC) -c nmmain.f -o $(OBJ)/nmmain.o
 
-$(OBJ)/nmsub.o: nmsub.f $(PARAMS)
+$(OBJ)/nmsub.o: nmsub.f $(OBJ)/params.o
 	$(FC) -c nmsub.f -o $(OBJ)/nmsub.o
 
-$(OBJ)/nmsubmod.o: nmsubmod.f $(PARAMS)
+$(OBJ)/nmsubmod.o: nmsubmod.f $(OBJ)/params.o
 	$(FC) -c nmsubmod.f -o $(OBJ)/nmsubmod.o
 
-$(OBJ)/nmtbi.o: nmtbi.f $(PARAMS)
+$(OBJ)/nmtbi.o: nmtbi.f $(OBJ)/params.o
 	$(FC) -c nmtbi.f -o $(OBJ)/nmtbi.o
 
-$(OBJ)/nmvar.o: nmvar.f $(PARAMSMOD)
+$(OBJ)/nmvar.o: nmvar.f $(OBJ)/params.o
 	$(FC) -c nmvar.f -o $(OBJ)/nmvar.o
 
 # common subroutines
