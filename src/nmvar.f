@@ -218,7 +218,8 @@ c     !&      as(6),at(8,8),ax(6,6,6)
       real*8     :: cut,cut0,w3v0,w3v1,w3va,w3vc
 
       !common hotted 
-      real*8     :: temp,chmpot,entrpy,ksav,kqav,mstar
+      real*8     :: temp,chmpot,ksav,kqav,mstar
+      real*8     :: entrpy = 0.
 
       !common eblock 
       real*8     :: ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6

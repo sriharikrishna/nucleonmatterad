@@ -35,7 +35,7 @@ c ----------------------------------------------------------------------
       real*8 :: qui,u4a,u4b,u4c,u4d,qpts,qtps,qpps,qspt,qpst,qtpt,qptt
       real*8 :: qppt,fc2,fc2p,fl2,ffl,fl2p,fflp
 c
-
+      acx = 0.0
 c -------------------------
 c statement functions
 c error in rbrtr fixed 7/07
