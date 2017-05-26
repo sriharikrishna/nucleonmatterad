@@ -27,13 +27,13 @@ c ----------------------------------------------------------------------
       subroutine nmtbi(lt,lg,le,l3,nie,no,nt)
       implicit none
       integer*4 :: lt,lg,le,l3,nie,no,nt
-      integer*4 :: i,j,k,l,kb,ltd,fc2,fc2p,fl2,ffl,fl2p,fflp,ijk,ikj
+      integer*4 :: i,j,k,l,kb,ltd,ijk,ikj
       integer*4 :: jik,kji,ka
       real*8 :: vid,vie,vip,vpd,vpe,vpp,vfd,vfe,vfp,pa,pap,pb,pc,pd,qv
       real*8 :: v0,ac,qvi,w3vma,w3vmb,x,y,z,qttt,qtts,qtst,qstt,acx,u1
       real*8 :: u2,u3,u4,uf1,uf2,uf3,uf4,uf5,up1,up2,up3,qu,fpi,fpj
       real*8 :: qui,u4a,u4b,u4c,u4d,qpts,qtps,qpps,qspt,qpst,qtpt,qptt
-      real*8 :: qppt
+      real*8 :: qppt,fc2,fc2p,fl2,ffl,fl2p,fflp
 c
 
 c -------------------------
