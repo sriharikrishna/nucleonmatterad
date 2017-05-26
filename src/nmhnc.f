@@ -41,8 +41,8 @@ c
       integer*4 :: lmax,kji,ka,kb,ljk,ijk,kl,it
       real*8 :: a,b,c4,c3c4,r34s,xp,xm,sddp,sdep,seep,vpd,vpe,vpp,vfd
       real*8 :: vfe,vfp,ffl,hl,fl2,hlh,ei,eij,x,y,z,xijk,xi,xj,xk,rxmu
-      real*8 :: rmu,rlm,ermu,erlm,pac,pap
-      integer*4 :: i,j,k,l,m,n,il,ia,jn,ma,mb,mli,np,ikj,jik,lj,dlk,dkn
+      real*8 :: rmu,rlm,ermu,erlm,pac,pap,dlk,dkn
+      integer*4 :: i,j,k,l,m,n,il,ia,jn,ma,mb,mli,np,ikj,jik,lj
       integer*4 :: jl
 
 c -------------------
