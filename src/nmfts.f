@@ -5,8 +5,9 @@ c short-range behavior fixed 2/16/2016
 c **********************************************************************
       subroutine nmfts(lc,ls,lt,ll,lf,no,np,nt,nv)
       use nmvar
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
+      implicit none
+      !implicit real*8 (a-h,o-z)
+      !implicit integer*4 (i-n)
 c
       !include "params.f"
       
@@ -14,6 +15,15 @@ c
       real*8 rix(ngrid),rsx(ngrid),slsx(ngrid),slpsx(ngrid),
      & chi(ngrid),phir(10,ngrid),pm(8,ngrid),psi(8,ngrid),vx(14,ngrid),
      & rlm(8,ngrid),rlx(2,ngrid),ets(2,2),c(3,8),ca(3,8),blm(8)
+      real*8 blmn,blmo,c0,chi0,chim,cm,dldifo,e1,e2,fac,fbn,fcm,ftp
+      real*8 gam,gchi0,gchim,gp,gpsi0,gpsim,h,h2cp,del,dldif
+      real*8 h0,hm,hp,cp,de,fbm,h2,omg,phip,pqpcs,pqqpqs,psi0
+      real*8 psim,rdlsx,rllpx,rllpy,rsy,rt2,rt5,ry,sldpy
+      real*8 pqpc,slpy,spsy,sly,small,trpidr,x,xfb,xft,xmn,y
+      real*8 yb,ybb,yc,yq,yt,z,slsy,xx
+      integer*4 i,iloop,j,jm,jp,k,kqq,l,lcx,lfh,lfk,kbb,kp
+      integer*4 kq,lkf,llx,loop,ltx,m,n
+      integer*4 lc,ls,lt,ll,lf,no,np,nt,nv
       !data ets/4*0./
       ets(1,1) = 0.
       ets(1,2) = 0.
