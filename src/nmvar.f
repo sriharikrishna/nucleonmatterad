@@ -14,9 +14,10 @@
       integer*4  :: ncon,ntype
       
       !common consts
-      real*8     :: rho,acn,ast,atn,als,cn,cne
+      real*8     :: rho=0.
+      real*8     :: acn,ast,atn,als,cn,cne
       real*8     :: dt,dr,evx,h2m,h2mcs,pi,s
-      real*8  :: kf
+      real*8     :: kf=0.
 
       !common rslate 
       real*8, dimension(lgrid) :: r,ri,rs,sl,sls,slp,slps
