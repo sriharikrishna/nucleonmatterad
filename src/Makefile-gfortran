@@ -1,11 +1,11 @@
 # regular options
-OPTFLAGS=   -g3 -fcheck=all -Wall -fbacktrace -Include
+OPTFLAGS=   -g3  -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero -fbacktrace -Include
 FC= gfortran $(OPTFLAGS)
 # variable avoids magnetic moment bug in Intel Fortran compilation
-OPTFLAGSX=  -g3 -fcheck=all -Wall -fbacktrace -Include
+OPTFLAGSX=  -g3  -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero -fbacktrace -Include
 FCX=gfortran $(OPTFLAGSX)
 # variable for debug options
-OPTFLAGSD=  -g3 -fcheck=all -Wall -fbacktrace -Include
+OPTFLAGSD=  -g3  -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero -fbacktrace -Include
 FCD=gfortran $(OPTFLAGSD)
 
 # flag for linking
