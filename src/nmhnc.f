@@ -4,18 +4,18 @@
       implicit none
 
 
-      private
-      real*8 afe(6),afi(6,6,6),afj(6,6,6),afk(6,6,6),ahi(6,6,6)
-     &,ahj(6,6,6),ahk(6,6,6),vco(6,3,3),vce(6,3),xcc(lgrid)
-     &,xca(lgrid,6),xdd(lgrid,6),xde(lgrid,6),xee(lgrid,6),xgcc(lgrid)
+      public
+      real*8 afel(6),afi(6,6,6),afj(6,6,6),afk(6,6,6),ahi(6,6,6)
+     &,ahj(6,6,6),ahk(6,6,6),vco(6,3,3),vce(6,3),xccl(lgrid)
+     &,xca(lgrid,6),xddl(lgrid,6),xdel(lgrid,6),xeel(lgrid,6)
+     &,xgcc(lgrid)
      &,xgcb(lgrid,6),xgdd(lgrid,6),xgde(lgrid,6),xgee(lgrid,6)
      &,xgca(lgrid,6)
      &,qcc(6),qdd(6),qde(6),qee(6),pcc(6),pdd(6),pde(6),pee(6)
-     &,zca(6),zcb(6),zdd(6),zde(6),zee(6),v3st(6)
-      integer lit(6),mit(6),nit(6)
-
-      real*8 :: eijk
-      public :: nmhnc
+     &,zca(6),zcb(6),zddl(6),zdel(6),zeel(6),v3st(6), eijk
+      !integer lit(6),mit(6),nit(6)
+      !real*8 :: eijk
+      public :: nmhnc, three_point_superbonds
       
       contains
 
@@ -23,6 +23,8 @@ c *id* nmhnc ***********************************************************
 c subroutine for fhnc/soc equations
 c **********************************************************************
       subroutine nmhnc(lg,le,l3,ni,nie,no,nt,nv)
+      use nmvar
+      use nmsubmod
       implicit none
       integer*4, parameter :: n3s=5-nm
       integer*4, parameter :: n3t=7-nm
@@ -34,7 +36,7 @@ c
      &,sddx(0:lx),sdex(0:lx),seex(0:lx),cphi(nphi)
      &,sccr(lgrid),sddr(lgrid),sder(lgrid),seer(lgrid)
       real*8 :: coe,dphi,q3,q3cne,q4,dx,dxi,co,q1,q2,q2cn,fc2
-      real*8 :: c3,s3,s4,yddd,ydde,dya,dyb,dyc,ydee,yeee,yccd,ycce,cg
+      real*8 :: c3,s3,s4,dya,dyb,dyc
       real*8 :: s3s4,rdddde,rdeeee,reeeee,rddddd,rdeede,reeede,rcccc,dln
       real*8 :: x1,x2,x3,x4,x5,x6,axi,axj,axk,rde,rdd,ree,rcut0,xlm,xlm2
       real*8 :: y1,y2,y3,y4,y5,y6,z1,z2,z3,z4,z5,z6,xmu,pa,pb,pc,rcut
@@ -138,7 +140,7 @@ c -------------
         end do
    50 continue
       do 55 l=1,6
-        afe(l)=acex(l,1,l)
+        afel(l)=acex(l,1,l)
    55 continue
       do 60 ljk=1,6
         do il=1,3
@@ -168,7 +170,7 @@ c ---------------
         xgcc(i)=xgcb(i,1)
         xgca(i,1)=xgcc(i)
         xca(i,1)=0
-        xcc(i)=xgcc(i)+gl(i)/nu
+        xccl(i)=xgcc(i)+gl(i)/nu
         sddr(i)=xgdd(i,1)*r(i)
         sder(i)=xgde(i,1)*r(i)
         seer(i)=xgee(i,1)*r(i)
@@ -282,9 +284,9 @@ c -----------------------
           xgee(i,l)=(hl*(gy(i)**2+gz(i))+fc2*(gee(i,l)+eee(i,l)
      &     -af(l)*gl(i)**2/nu+2*(gde(i,l)+ede(i,l))*gy(i)))*gx(i)
           xca(i,l)=xgca(i,l)-gca(i,l)
-          xdd(i,l)=xgdd(i,l)-gdd(i,l)
-          xde(i,l)=xgde(i,l)-gde(i,l)
-          xee(i,l)=xgee(i,l)-gee(i,l)
+          xddl(i,l)=xgdd(i,l)-gdd(i,l)
+          xdel(i,l)=xgde(i,l)-gde(i,l)
+          xeel(i,l)=xgee(i,l)-gee(i,l)
 c -----------------------
           fl2=f(i,l)**2
           hlh=ffl+.5*fc2*gdd(i,l)
@@ -298,16 +300,16 @@ c -----------------------
      &     +gz(i))+hl*((gee(i,l)-af(l)*gl(i)**2/nu)*vpe**2
      &     +2*gde(i,l)*gy(i)*vpe*vpp)+fc2*(gde(i,l)**2*vpe**2
      &     +2*af(l)*(gca(i,l)+gcb(i,l))*gl(i)*vpe))*gx(i)
-     &     -afe(l)*fl2*gl(i)**2*gx(i)*vfe**2/nu
+     &     -afel(l)*fl2*gl(i)**2*gx(i)*vfe**2/nu
           xgcb(i,1)=xgcb(i,1)+aa(l)*af(l)*vpe*fc2*gx(i)*gca(i,l)
           xgca(i,1)=xgca(i,1)+aa(l)*af(l)*vpe*(fc2*gx(i)-1)*gcb(i,l)
           xca(i,1)=xca(i,1)+aa(l)*af(l)*vpe*(fc2*gx(i)-1)*gcb(i,l)
   210   continue
   220 continue
       do 230 i=1,lmax
-        xdd(i,1)=xgdd(i,1)-gdd(i,1)
-        xde(i,1)=xgde(i,1)-gde(i,1)
-        xee(i,1)=xgee(i,1)-gee(i,1)
+        xddl(i,1)=xgdd(i,1)-gdd(i,1)
+        xdel(i,1)=xgde(i,1)-gde(i,1)
+        xeel(i,1)=xgee(i,1)-gee(i,1)
   230 continue
 c --------------------------------
 c three-body fhnc/soc integrations
@@ -345,12 +347,12 @@ c --------------------------------
               gde(i,l)=gde(i,l)+sde(j,k,l,l)
               gee(i,l)=gee(i,l)+see(j,k,l,l)
               gca(i,l)=gca(i,l)+eijk*xca(j,l)*xgcc(k)
-              gcb(i,l)=gcb(i,l)+eijk*xcc(j)*xgcb(k,l)
+              gcb(i,l)=gcb(i,l)+eijk*xccl(j)*xgcb(k,l)
               gdd(i,l+2)=gdd(i,l+2)+sdd(j,k,l+2,l+2)+xi*sdd(j,k,l+4,l+4)
               gde(i,l+2)=gde(i,l+2)+sde(j,k,l+2,l+2)+xi*sde(j,k,l+4,l+4)
               gee(i,l+2)=gee(i,l+2)+see(j,k,l+2,l+2)+xi*see(j,k,l+4,l+4)
               gca(i,l+2)=gca(i,l+2)+eijk*xca(j,l+2)*xgcc(k)
-              gcb(i,l+2)=gcb(i,l+2)+eijk*xcc(j)*xgcb(k,l+2)
+              gcb(i,l+2)=gcb(i,l+2)+eijk*xccl(j)*xgcb(k,l+2)
               gdd(i,l+4)=gdd(i,l+4)+xijk*sdd(j,k,l+4,l+4)
      &                  +xk*sdd(j,k,l+4,l+2)+xj*sdd(j,k,l+2,l+4)
               gde(i,l+4)=gde(i,l+4)+xijk*sde(j,k,l+4,l+4)
@@ -358,7 +360,7 @@ c --------------------------------
               gee(i,l+4)=gee(i,l+4)+xijk*see(j,k,l+4,l+4)
      &                  +xk*see(j,k,l+4,l+2)+xj*see(j,k,l+2,l+4)
               gca(i,l+4)=gca(i,l+4)+eijk*xk*xca(j,l+4)*xgcc(k)
-              gcb(i,l+4)=gcb(i,l+4)+eijk*xj*xcc(j)*xgcb(k,l+4)
+              gcb(i,l+4)=gcb(i,l+4)+eijk*xj*xccl(j)*xgcb(k,l+4)
   260       continue
   270     continue
   280   continue
@@ -651,7 +653,7 @@ c --------------------------------
      &     *(vpd+gy(i)*vpp)+(gde(i,l)+ede(i,l))*vpe)*x
           bj(l,5)=bj(l,5)-aa(l)*af(l)*(ffl+f(i,1)**2
      &     *(gdd(i,l)+edd(i,l)))*gl(i)**2*vpe*x/nu
-          bj(l,6)=bj(l,6)-afe(l)*fl2*gl(i)**2*vfe*x/nu
+          bj(l,6)=bj(l,6)-afel(l)*fl2*gl(i)**2*vfe*x/nu
   410   continue
   420 continue
 c --------------------------------
@@ -682,9 +684,9 @@ c --------------------------------
           do 440 n=1,4,nm
             dkn=ad(k,n)
             dln=ad(l,n)
-            vce(k,2)=vce(k,2)+dkn*(ak(l,l,n)*aa(n)/afe(l))*bj(l,6)/8
-            vce(k,3)=vce(k,3)+dkn*(ak(l,l,n)*aa(n)/afe(l))*bj(l,6)/4
-            vc(k,3,2)=vc(k,3,2)+dln*(ak(k,k,n)*aa(n)/afe(k))*(bj(l,2)/4
+            vce(k,2)=vce(k,2)+dkn*(ak(l,l,n)*aa(n)/afel(l))*bj(l,6)/8
+            vce(k,3)=vce(k,3)+dkn*(ak(l,l,n)*aa(n)/afel(l))*bj(l,6)/4
+            vc(k,3,2)=vc(k,3,2)+dln*(ak(k,k,n)*aa(n)/afel(k))*(bj(l,2)/4
      &       +bj(l,4)/8)
   440     continue
   450   continue
@@ -713,7 +715,7 @@ c -------------
 c moc integrals
 c -------------
       do 505 k=1,lgrid
-        xcc(k)=0
+        xccl(k)=0
   505 continue
       do 510 kl=1,lgrid
         do jl=1,6
@@ -726,8 +728,8 @@ c -------------
           ghde(kl,jl)=0
           ghed(kl,jl)=0
           xca(kl,jl)=0
-          xdd(kl,jl)=0
-          xee(kl,jl)=0
+          xddl(kl,jl)=0
+          xeel(kl,jl)=0
           xgcb(kl,jl)=0
           xgdd(kl,jl)=0
           xgde(kl,jl)=0
@@ -736,7 +738,7 @@ c -------------
   510 continue
       do 530 l=1+nm,6,nm
         do 512 k=1,lg
-          xee(k,l)=xee(k,l)+aa(l)*2*f(k,1)*f(k,l)*(-gl(k)**2/nu)*gx(k)
+          xeel(k,l)=xeel(k,l)+aa(l)*2*f(k,1)*f(k,l)*(-gl(k)**2/nu)*gx(k)
           xgee(k,l)=xgee(k,l)+aa(l)*2*f(k,1)*f(k,l)*(-gl(k)**2/nu)*gx(k)
   512   continue
         do 526 i=1+nm,6,nm
@@ -757,10 +759,11 @@ c -------------
   516       continue
             do 518 k=1,lg
               xca(k,l)=xca(k,l)-x4*f(k,i)*f(k,j)*gl(k)*gx(k)/nu
-              xcc(k)=xcc(k)-x3*f(k,i)*f(k,j)*gl(k)*gx(k)/nu
+              xccl(k)=xccl(k)-x3*f(k,i)*f(k,j)*gl(k)*gx(k)/nu
      &              *vc(i,3,2)*vc(j,3,2)
-              xdd(k,l)=xdd(k,l)+x1*f(k,i)*f(k,j)*gx(k)
-              xee(k,l)=xee(k,l)+x1*2*f(k,1)*f(k,i)*(-af(j)*gl(k)**2/nu)
+              xddl(k,l)=xddl(k,l)+x1*f(k,i)*f(k,j)*gx(k)
+              xeel(k,l)=xeel(k,l)+x1*2*f(k,1)*f(k,i)*(-af(j)
+     &                *gl(k)**2/nu)
      &                *gx(k)
               xgcb(k,l)=xgcb(k,l)-x6*f(k,i)*f(k,j)*gl(k)*gx(k)/nu
               xgdd(k,l)=xgdd(k,l)+x2*f(k,i)*f(k,j)*gx(k)
@@ -834,19 +837,19 @@ c -------------
                 gfcc(i,l)=gfcc(i,l)+eijk*axk
      &           *(qcc(m)*xgde(k,n)-pcc(m)*xgcb(k,n)*af(l))*vc(l,3,3)
                 gfdd(i,l)=gfdd(i,l)+eijk*axk
-     &           *qdd(m)*(5*xdd(k,n)+7*xgdd(k,n))*vc(l,3,1)/12
+     &           *qdd(m)*(5*xddl(k,n)+7*xgdd(k,n))*vc(l,3,1)/12
                 gfed(i,l)=gfed(i,l)+eijk*axk
-     &           *qdd(m)*(xee(k,n)+2*xgee(k,n))*vc(l,2,3)/3
+     &           *qdd(m)*(xeel(k,n)+2*xgee(k,n))*vc(l,2,3)/3
                 gfde(i,l)=gfde(i,l)+eijk*axk
-     &           *qee(m)*.5*(xdd(k,n)+xgdd(k,n))*vc(l,3,3)
+     &           *qee(m)*.5*(xddl(k,n)+xgdd(k,n))*vc(l,3,3)
                 ghcc(i,l)=ghcc(i,l)+eijk*axk
      &           *(qcc(m)*xca(k,n)-pcc(m)*xgcb(k,n)*af(l))*vc(l,3,3)
                 ghdd(i,l)=ghdd(i,l)+eijk*axk
-     &           *qdd(m)*.5*(xdd(k,n)+xgdd(k,n))*vc(l,3,1)
+     &           *qdd(m)*.5*(xddl(k,n)+xgdd(k,n))*vc(l,3,1)
                 ghed(i,l)=ghed(i,l)+eijk*axk
-     &           *qdd(m)*.25*(xee(k,n)+3*xgee(k,n))*vc(l,2,3)
+     &           *qdd(m)*.25*(xeel(k,n)+3*xgee(k,n))*vc(l,2,3)
                 ghde(i,l)=ghde(i,l)+eijk*axk
-     &           *qee(m)*xdd(k,n)*vc(l,3,3)
+     &           *qee(m)*xddl(k,n)*vc(l,3,3)
                 rde=-2*f(k,1)*f(k,n)*gl(k)*gx(k)/nu
                 gfcc(i,l)=gfcc(i,l)+eijk*(axi*afi(l,m,n)+axj*afj(l,m,n)
      &           +axk*afk(l,m,n))*qde(m)*rde*vc(l,2,3)
@@ -857,7 +860,7 @@ c -------------
   540     continue
           do 546 k=ka,kb
             eijk=eij*r(k)
-            ghcc(i,1)=ghcc(i,1)+eijk*(2*qcc(3)-pcc(3))*xcc(k)
+            ghcc(i,1)=ghcc(i,1)+eijk*(2*qcc(3)-pcc(3))*xccl(k)
             do 544 n=1+nm,4,nm
               rde=-2*f(k,1)*f(k,n)*gl(k)*gx(k)/nu
               do 542 m=1+nm,4,nm
@@ -901,9 +904,9 @@ c -------------------
             qee(l)=pdd(l)*gz(j)+qde(l)*gy(j)
             qcc(l)=pde(l)*gy(j)
             zca(l)=-f(j,l)**2*gx(j)*gl(j)**2/nu
-            zdd(l)=aa(l)*f(j,l)**2*gx(j)
-            zde(l)=zdd(l)*gy(j)
-            zee(l)=zdd(l)*gz(j)+zde(l)*gy(j)
+            zddl(l)=aa(l)*f(j,l)**2*gx(j)
+            zdel(l)=zddl(l)*gy(j)
+            zeel(l)=zddl(l)*gz(j)+zdel(l)*gy(j)
   560     continue
           ka=iabs(i-j)+1
           kb=min(i+j-1,lg)
@@ -927,13 +930,13 @@ c -------------------
      &         +rde*vc(l,2,3))+(pee(l)*vc(l,2,2)+qcc(l)*vc(l,2,3))*rdd)
               gree(i,l)=gree(i,l)+eijk*(pde(l)*(rde*vc(l,2,1)
      &         +ree*vc(l,2,3))+(pee(l)*vc(l,2,2)+qcc(l)*vc(l,2,3))*rde)
-              grfd(i,l)=grfd(i,l)+eijk*(zdd(l)*(rdd*vc(l,3,1)
-     &         +rde*vc(l,3,3))+zde(l)*rdd*vc(l,3,3))
-              grfe(i,l)=grfe(i,l)+eijk*(zdd(l)*(rde*vc(l,3,1)
-     &         +ree*vc(l,3,3))+zde(l)*(rdd*vc(l,3,1)+2*rde*vc(l,3,3))
-     &         +zee(l)*rdd*vc(l,3,3))
-              grfc(i,l)=grfc(i,l)+eijk*(zde(l)*(rde*vc(l,3,1)
-     &         +ree*vc(l,3,3))+zee(l)*rde*vc(l,3,3))
+              grfd(i,l)=grfd(i,l)+eijk*(zddl(l)*(rdd*vc(l,3,1)
+     &         +rde*vc(l,3,3))+zdel(l)*rdd*vc(l,3,3))
+              grfe(i,l)=grfe(i,l)+eijk*(zddl(l)*(rde*vc(l,3,1)
+     &         +ree*vc(l,3,3))+zdel(l)*(rdd*vc(l,3,1)+2*rde*vc(l,3,3))
+     &         +zeel(l)*rdd*vc(l,3,3))
+              grfc(i,l)=grfc(i,l)+eijk*(zdel(l)*(rde*vc(l,3,1)
+     &         +ree*vc(l,3,3))+zeel(l)*rde*vc(l,3,3))
               grmd(i,l)=grmd(i,l)+eijk*zca(l)*rdd*vc(l,3,2)
               grme(i,l)=grme(i,l)+eijk*zca(l)*rde*vc(l,3,2)
   565       continue
@@ -1313,40 +1316,48 @@ cdir$ ivdep
           end if
   880   continue
   890 continue
+      end if
+      end if
+      end if
   900 continue
+      write(*,*) "NMHNC in main iteration loop19"
       return
       end subroutine nmhnc
 
       function sdd(j,k,l,m)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: sdd 
         integer*4 :: j,k,l,m
-        sdd = eijk*(xdd(j,l)*xgdd(k,m)*vc(l,2,1)
-     &            +(xdd(j,l)*xgde(k,m)+xde(j,l)*xgdd(k,m))*vc(l,2,2))
+        sdd = eijk*(xddl(j,l)*xgdd(k,m)*vc(l,2,1)
+     &            +(xddl(j,l)*xgde(k,m)+xdel(j,l)*xgdd(k,m))*vc(l,2,2))
       end function
 
       function sde(j,k,l,m)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: sde 
         integer*4 :: j,k,l,m
-        sde = eijk*(xdd(j,l)*xgde(k,m)*vc(l,2,1)
-     &            +(xdd(j,l)*xgee(k,m)+xde(j,l)*xgde(k,m))*vc(l,2,2))
+        sde = eijk*(xddl(j,l)*xgde(k,m)*vc(l,2,1)
+     &            +(xddl(j,l)*xgee(k,m)+xdel(j,l)*xgde(k,m))*vc(l,2,2))
       end function
 
 
       function see(j,k,l,m)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: see 
         integer*4 :: j,k,l,m
-        see = eijk*(xde(j,l)*xgde(k,m)*vc(l,2,1)
-     &            +(xde(j,l)*xgee(k,m)+xee(j,l)*xgde(k,m))*vc(l,2,2))
+        see = eijk*(xdel(j,l)*xgde(k,m)*vc(l,2,1)
+     &            +(xdel(j,l)*xgee(k,m)+xeel(j,l)*xgde(k,m))*vc(l,2,2))
       end function
 
 
       function udd(j,k,l,m)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 udd 
@@ -1357,6 +1368,7 @@ cdir$ ivdep
 
 
       function ude(j,k,l,m)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 ude 
@@ -1366,6 +1378,7 @@ cdir$ ivdep
       end function
 
       function uee(j,k,l,m)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 uee 
