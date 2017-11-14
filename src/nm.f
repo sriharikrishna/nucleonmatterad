@@ -8,7 +8,7 @@ c **********************************************************************
       !implicit integer*4 (i-n)
       external nucmat
       parameter (maxdim=15)
-      external nucmat, nmvarinit
+      external nmvarinit
       character*50 sysdat
       character*20 timdat
       logical lprt
