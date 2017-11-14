@@ -206,58 +206,9 @@ c ----------------------------
           ka=iabs(i-j)+1
           kb=min(i+j-1,le)
           do 140 k=ka,kb                         ! r23
-            kji=index(k,j,i)
-            c3=xtheta(kji)                       ! cos(theta3)
-            s3=stheta(kji)                       ! sin(theta3)
-            yddd=0.
-            ydde=0.
-            ydee=0.
-            yeee=0.
-            yccd=0.
-            ycce=0.
-            do 130 l=1,lg                        ! r14
-              a=rs(j)+rs(l)
-              b=2*r(j)*r(l)
-              ma=iabs(i-l)+1
-              mb=min(i+l-1,lg)
-              do 120 m=ma,mb                     ! r24
-                mli=index(m,l,i)
-                c4=xtheta(mli)                   ! cos(theta4)
-                s4=stheta(mli)                   ! sin(theta4)
-                c3c4=c3*c4
-                s3s4=s3*s4
-                rdddde=sddr(l)*sddr(m)
-                rdeeee=sddr(l)*sder(m)
-                reeeee=sder(l)*sder(m)
-                rddddd=rdddde+rdeeee+sder(l)*sddr(m)
-                rdeede=rdeeee+reeeee+sddr(l)*seer(m)
-                reeede=reeeee+(sder(l)*seer(m)+seer(l)*sder(m))
-                rcccc=sccr(l)*sccr(m)
-                do 110 np=1,nphi                 ! phi4
-                  cg=c3c4+s3s4*cphi(np)          ! cos(gamma)
-                  r34s=a-b*cg                    ! r34**2
-                  n=int(r34s*dxi)
-                  xp=(r34s-rsx(n))*dxi
-                  xm=(rsx(n+1)-r34s)*dxi
-                  sddp=xm*sddx(n)+xp*sddx(n+1)
-                  sdep=xm*sdex(n)+xp*sdex(n+1)
-                  seep=xm*seex(n)+xp*seex(n+1)
-                  yddd=yddd+rddddd*sddp+rdddde*sdep
-                  ydde=ydde+rddddd*sdep+rdddde*seep
-                  ydee=ydee+rdeede*sdep+rdeeee*seep
-                  yeee=yeee+reeede*sdep+reeeee*seep
-                  yccd=yccd+rcccc*sddp
-                  ycce=ycce+rcccc*sdep
-  110           continue
-  120         continue
-  130       continue
-            ijk=index(i,j,k)
-            sddd(ijk)=q4*ri(i)*yddd
-            sdde(ijk)=q4*ri(i)*ydde
-            sdee(ijk)=q4*ri(i)*ydee
-            seee(ijk)=q4*ri(i)*yeee
-            sccd(ijk)=q4*ri(i)*yccd
-            scce(ijk)=q4*ri(i)*ycce
+            call three_point_superbonds(i,j,k,
+     &           lg,le,l3,ni,nie,no,nt,nv,dxi,q4,sddr,sder,seer,sccr,
+     &           cphi,rsx,sddx,sdex,seex)
   140     continue
   150   continue
   160 continue
@@ -1330,6 +1281,84 @@ cdir$ ivdep
       write(*,*) "NMHNC in main iteration loop19"
       return
       end subroutine nmhnc
+
+      subroutine three_point_superbonds(i,j,k,lg,le,l3,ni,nie,no,nt,nv,
+     &  dxi,q4,sddr,sder,seer,sccr,cphi,rsx,sddx,sdex,seex)
+      !$openad xxx template ad_template.split.f
+      ! ad_template.joint.f
+      use nmvar
+      use nmsubmod
+      implicit none
+c      integer*4, parameter :: n3s=5-nm
+c      integer*4, parameter :: n3t=7-nm
+      integer*4, parameter :: nphi=5
+      integer*4, parameter :: lx=512
+
+c      real*8 :: xa(4),ya(4),yb(4),yc(4),jx(0:lx),rsx(0:lx)
+c     &,seex(0:lx),
+c     &,sccr(lgrid),sddr(lgrid),sder(lgrid),seer(lgrid)
+      real*8 :: sddr(lgrid),sder(lgrid),seer(lgrid),sccr(lgrid)
+      real*8 ::cphi(nphi),rsx(0:lx),sddx(0:lx),sdex(0:lx),seex(0:lx)
+      integer*4 lg,le,l3,ni,nie,no,nt,nv
+      integer*4 :: i,j,k
+      real*8 :: dxi,q4
+      real*8 :: a,b,c3,s3,c4,s4,yddd,ydde,ydee,yeee,yccd,ycce,cg
+      real*8 :: s3s4,rdddde,rdeeee,reeeee,rddddd,rdeede,reeede,rcccc,dln
+      real*8 :: c3c4,r34s,xp,xm,sddp,sdep,seep,vpd,vpe,vpp,vfd
+      integer*4 :: ka,kb,l,ma,mb,m,mli,np,kji,n,ijk
+            kji=index(k,j,i)
+            c3=xtheta(kji)                       ! cos(theta3)
+            s3=stheta(kji)                       ! sin(theta3)
+            yddd=0.
+            ydde=0.
+            ydee=0.
+            yeee=0.
+            yccd=0.
+            ycce=0.
+            do 130 l=1,lg                        ! r14
+              a=rs(j)+rs(l)
+              b=2*r(j)*r(l)
+              ma=iabs(i-l)+1
+              mb=min(i+l-1,lg)
+              do 120 m=ma,mb                     ! r24
+                mli=index(m,l,i)
+                c4=xtheta(mli)                   ! cos(theta4)
+                s4=stheta(mli)                   ! sin(theta4)
+                c3c4=c3*c4
+                s3s4=s3*s4
+                rdddde=sddr(l)*sddr(m)
+                rdeeee=sddr(l)*sder(m)
+                reeeee=sder(l)*sder(m)
+                rddddd=rdddde+rdeeee+sder(l)*sddr(m)
+                rdeede=rdeeee+reeeee+sddr(l)*seer(m)
+                reeede=reeeee+(sder(l)*seer(m)+seer(l)*sder(m))
+                rcccc=sccr(l)*sccr(m)
+                do 110 np=1,nphi                 ! phi4
+                  cg=c3c4+s3s4*cphi(np)          ! cos(gamma)
+                  r34s=a-b*cg                    ! r34**2
+                  n=int(r34s*dxi)
+                  xp=(r34s-rsx(n))*dxi
+                  xm=(rsx(n+1)-r34s)*dxi
+                  sddp=xm*sddx(n)+xp*sddx(n+1)
+                  sdep=xm*sdex(n)+xp*sdex(n+1)
+                  seep=xm*seex(n)+xp*seex(n+1)
+                  yddd=yddd+rddddd*sddp+rdddde*sdep
+                  ydde=ydde+rddddd*sdep+rdddde*seep
+                  ydee=ydee+rdeede*sdep+rdeeee*seep
+                  yeee=yeee+reeede*sdep+reeeee*seep
+                  yccd=yccd+rcccc*sddp
+                  ycce=ycce+rcccc*sdep
+  110           continue
+  120         continue
+  130       continue
+            ijk=index(i,j,k)
+            sddd(ijk)=q4*ri(i)*yddd
+            sdde(ijk)=q4*ri(i)*ydde
+            sdee(ijk)=q4*ri(i)*ydee
+            seee(ijk)=q4*ri(i)*yeee
+            sccd(ijk)=q4*ri(i)*yccd
+            scce(ijk)=q4*ri(i)*ycce
+      end subroutine three_point_superbonds
 
       function sdd(j,k,l,m)
       !$openad xxx template ad_template.split.f
