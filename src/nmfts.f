@@ -261,7 +261,7 @@ c -----------------------------
 c ---------------
 c central channel
 c ---------------
-          havetobreakb=0
+          havetobreakb=0.0
           do loop=1,20
             do i=1,lcx
               rlm(l,i)=blm(l)
