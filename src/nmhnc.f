@@ -179,7 +179,7 @@ c ---------------
 c --------------------------------------------
 c skip elementary diagrams in first iterations
 c --------------------------------------------
-      if (ia.le.(ni-nie)) go to 200
+      if (.not.(ia.le.(ni-nie))) then
 c ----------------------------------------
 c construct interpolated table of sxx(r34)
 c ----------------------------------------
@@ -263,10 +263,11 @@ c ----------------------------
   160 continue
 !$OMP END DO NOWAIT
 !$OMP END PARALLEL
+      end if
 c -----------------------
 c set soc input functions
 c -----------------------
-  200 do 220 l=1+nm,6,nm
+      do 220 l=1+nm,6,nm
         vpd=vc(l,2,1)
         vpe=vc(l,2,2)
         vpp=vc(l,2,3)
@@ -632,7 +633,7 @@ c --------------------------------
         end do
   400 continue
       do 420 l=1,6,nm
-        if (l.eq.1) go to 420
+        if (.not.(l.eq.1)) then
         vpd=vc(l,2,1)
         vpe=vc(l,2,2)
         vpp=vc(l,2,3)
@@ -655,6 +656,7 @@ c --------------------------------
      &     *(gdd(i,l)+edd(i,l)))*gl(i)**2*vpe*x/nu
           bj(l,6)=bj(l,6)-afel(l)*fl2*gl(i)**2*vfe*x/nu
   410   continue
+        end if
   420 continue
 c --------------------------------
 c --------------------------------
@@ -946,7 +948,7 @@ c -------------------
 c -------------
 c l.s integrals
 c -------------
-      if (nv.le.6) go to 690
+      if (.not.(nv.le.6)) then
       do 605 l=7,8,nm
         do 600 i=1,lg
           bj(l,1)=bj(l,1)+f(i,l)**2*rs(i)**2*gx(i)
@@ -1019,7 +1021,7 @@ c       bde(i,1)=rs(i)*bde(i,1)/nu
 c       bcc(i,1)=gl(i)*rs(i)*bcc(i,1)/nu**2
 c ----------------------------------------------------------
   630 continue
-      if (nv.le.8) go to 690
+      if (.not.(nv.le.8)) then
 c --------------
 c l**2 integrals
 c --------------
@@ -1052,8 +1054,10 @@ c --------------
         bq(i,1)=-(2./3.)*q1*aa(i)*bq(i,1)
         bq(i,2)=(2./3.)*q1*aa(i)*bq(i,2)/nu
   670 continue
+      end if
+      end if
 c print ================================================================
-  690 if (no.eq.0) go to 700
+      if (.not.(no.eq.0)) then
       write(nlog,1000) ni,cn,co
       write(nout,1000) ni,cn,co
  1000 format(/4x,'# chain iterations (new/old) = ',i3,' (',f3.2
@@ -1074,11 +1078,12 @@ c print ================================================================
       end if
       if (no.ge.1) write(nout,1020) vc
  1020 format(/4x,'m(i,xt(i,p,f2),xy(d,e,ep))',9(/,6f8.3))
+      end if
 c ======================================================================
 c ------------------------------
 c set three-body force functions
 c ------------------------------
-  700 if (nt.eq.0) go to 900
+      if (.not.(nt.eq.0)) then
       if (nt.le.1.or.nt.ge.4) then
         xmu=.7
         do 710 j=1,lmax
@@ -1112,7 +1117,7 @@ c ------------------------------
 c -------------------------------
 c calculate effective two-body v3
 c -------------------------------
-      if (nt.ge.4) go to 900
+      if (.not.(nt.ge.4)) then
       do 730 i=1,l3
         xgdd(i,1)=f(i,1)**2*gx(i)
         xgde(i,1)=xgdd(i,1)*gy(i)
@@ -1152,7 +1157,7 @@ cdir$ ivdep
 c ------------
 c s-wave parts
 c ------------
-            if (tnix.eq.0.) go to 750
+            if (.not.(tnix.eq.0.)) then
             pap=tnix*xt1(j)*xt1(k)/z
             v3st(n3s)=pap*(xi+1)
             v3st(n3t)=pap*(xijk+xj+xk)
@@ -1162,6 +1167,7 @@ c ------------
               v3ee(i,l,2)=v3ee(i,l,2)+v3st(l)*uee(j,k,1,1)
               v3cc(i,l,2)=v3cc(i,l,2)+v3st(l)*eijk*xgcc(j)*xgcc(k)
   745       continue
+            end if
   750     continue
 c -------------------
 c tucson-melbourne v3
@@ -1190,7 +1196,7 @@ cdir$ ivdep
 c ------------
 c s-wave parts
 c ------------
-            if (tnix.eq.0.) go to 770
+            if (.not.(tnix.eq.0.)) then
             pac=((pa-2*pc)*xt1(j)*xt1(k)
      &         +pc*(xt0(j)*xt1(k)+xt1(j)*xt0(k)))/z
             v3st(n3s)=pac*(xi+1)
@@ -1201,6 +1207,7 @@ c ------------
               v3ee(i,l,2)=v3ee(i,l,2)+v3st(l)*uee(j,k,1,1)
               v3cc(i,l,2)=v3cc(i,l,2)+v3st(l)*eijk*xgcc(j)*xgcc(k)
   765       continue
+            end if
   770     continue
           end if
   780   continue
@@ -1208,7 +1215,7 @@ c ------------
 c --------------------------
 c fhnc/4 contributions to v3
 c --------------------------
-      if (nie.eq.0) go to 900
+      if (.not.(nie.eq.0)) then
       do 890 i=1,le
         ei=q2/r(i)
         do 880 j=1,le
