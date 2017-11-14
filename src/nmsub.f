@@ -26,7 +26,7 @@ c **********************************************************************
       !common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
       !real*8 rx(ngrid),slx(ngrid),slpx(ngrid),sldpx(ngrid),sltpx(ngrid)
       !common /hotfun/ rx,slx,slpx,sldpx,sltpx
-      integer*4 :: lkf,ld,no,lk,ik,ii,il,im,in,ir
+      integer*4 :: lkf,ld,no,lk,ik,ii,il,im,in,ir,havetobreak
       real*8 ek(401),k(401),ks(401),nk(401),wk(401),kinc
       real*8 :: sml,htms,fact,tkfc,drho,x,drhos,chmpts,y
       real*8 :: zlx,zlpx,zldpx,zltpx,z
@@ -57,7 +57,9 @@ c -------------------------------
 c -----------------------
 c find chemical potential
 c -----------------------
+      havetobreak = 0
       do 20 ii=1,20
+        if(havetobreak.eq.0) then
         drho=0.
         do 10 ik=1,lk+1
           x=(ek(ik)-chmpot)/temp
@@ -66,16 +68,21 @@ c -----------------------
           drho=drho+wk(ik)*ks(ik)/(1.+exp(x))
    10   continue
         drho=fact*drho-rho
-        if (ii.gt.1) go to 15
+        if (.not.(ii.gt.1)) then
         drhos=drho
         chmpts=chmpot
         chmpot=.99*chmpot
-        go to 20
-   15   if (abs(drhos-drho).lt.sml) go to 25
+        else
+   15   if (abs(drhos-drho).lt.sml) then
+          havetobreak = 1
+        else
         x=(drhos*chmpot-drho*chmpts)/(drhos-drho)
         drhos=drho
         chmpts=chmpot
         chmpot=x
+        end if
+        end if
+        end if
    20 continue
    25 continue
 c ---------------------------------
@@ -103,7 +110,7 @@ c ---------------------------------
       ksav=fact*ksav
       kqav=fact*kqav
 c print ================================================================
-      if (no.eq.0) go to 39
+      if (.not.(no.eq.0)) then
       write(nlog,1000) mstar,chmpot,lk,lkf,ksav,kqav,entrpy
       write(nout,1000) mstar,chmpot,lk,lkf,ksav,kqav,entrpy
  1000 format(/4x,'finite temperature spectrum has m*/m =',f5.2,
@@ -122,11 +129,12 @@ c print ================================================================
    37   continue
  1015   format(1x,1p,8e9.2)
       end if
+      end if
 c ======================================================================
 c -------------------------------
 c calculate slater function, etc.
 c -------------------------------
-   39 do 45 ir=1,ld
+      do 45 ir=1,ld
         zlx=0.
         zlpx=0.
         zldpx=0.
@@ -355,7 +363,7 @@ c ======================================================================
       totnd=totnd+tempnd
       totdd=totdd+tempdd
 c print ================================================================
-      if (no.eq.0) go to 100
+      if (.not.(no.eq.0)) then
       write(nlog,1505) qq,temp,wpi
       write(nout,1505) qq,temp,wpi
  1505 format(8f8.3)
@@ -365,6 +373,7 @@ c print ================================================================
         write(nout,1510) tempdd,wpidd
  1510 format(8x,7f8.3)
       end if
+      end if
 c ======================================================================
   100 continue
       totpi=totpi*dq
@@ -372,7 +381,7 @@ c ======================================================================
       totnd=totnd*dq
       totdd=totdd*dq
 c print ================================================================
-      if (no.eq.0) go to 120
+      if (.not.(no.eq.0)) then
       write(nlog,1515) totpi
       write(nout,1515) totpi
  1515 format(/4x,'total excess = ',f8.3,' % pions/nucleon')
@@ -381,8 +390,9 @@ c print ================================================================
  1520 format(4x,'of which nn part = ',f8.3,' nd part = ',f8.3
      &,' dd part = ',f8.3)
       end if
+      end if
 c ======================================================================
-  120 return
+      return
       end
 c *id* nmout ***********************************************************
 c subroutine for printing out f, fp, fds, v, g, etc.
@@ -507,7 +517,7 @@ c   ---------------
         write(nout,2082) (r(j),(gnn(j,i),i=13,14),j=1,2*lt)
       end if
 c   ---------------
-      if (no.le.2) go to 100
+      if (.not.(no.le.2)) then
       write(nout,3001)
  3001 format(/3x,'r',10x,'f01**2',5x,'f11**2',5x,'g01',8x,'g11',8x
      &                  ,'h01',8x,'h11')
@@ -516,7 +526,7 @@ c   ---------------
 c   ---------------
 c   output g chains
 c   ---------------
-      if (no.le.3) go to 100
+      if (.not.(no.le.3)) then
       write(nout,3005)
  3005 format(/3x,'r',10x,'gdd(r,p)')
       write(nout,2006)
@@ -610,7 +620,7 @@ c   ---------------
 c   -----------------
 c   ouput v3xx chains
 c   -----------------
-   10 if (nt.eq.0.or.nt.ge.4) go to 100
+   10 if (.not.(nt.eq.0.or.nt.ge.4)) then
       write(nout,5000)
  5000 format(/3x,'r',10x,'v3dd(r,p)')
       write(nout,2006)
@@ -627,5 +637,8 @@ c   -----------------
  5030 format(/3x,'r',10x,'v3cc(r,p)')
       write(nout,2006)
       write(nout,2011) (r(j),(v3cc(j,i,1),i=1,6),j=1,l3)
-  100 return
+      end if
+      end if
+      end if
+      return
       end
