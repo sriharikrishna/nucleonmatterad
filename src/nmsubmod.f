@@ -86,6 +86,7 @@ c *id* ac **************************************************************
 c subfuntions for matrices c,cex,cl2,cl2ex
 c **********************************************************************
       function ac(i,j,k)
+      !$openad xxx template ad_template.split.f
         implicit none
         real*8 :: ac
         integer*4 :: i,j,k
@@ -97,6 +98,7 @@ c **********************************************************************
       end function
 c ****************************
       function acex(i,j,k)
+      !$openad xxx template ad_template.split.f
         implicit none
         real*8 :: acex
         integer*4 :: i,j,k
@@ -108,6 +110,7 @@ c ****************************
       end function
 c ****************************
       function acl2(i,j,k)
+      !$openad xxx template ad_template.split.f
         implicit none
         real*8 :: acl2
         integer*4 :: i,j,k
@@ -119,6 +122,7 @@ c ****************************
       end function
 c ****************************
       function acl2ex(i,j,k)
+      !$openad xxx template ad_template.split.f
         implicit none
         real*8 :: acl2ex
         integer*4 :: i,j,k
@@ -130,6 +134,7 @@ c ****************************
       end function
 c ****************************
       function al2(i,j,k)
+      !$openad xxx template ad_template.split.f
         implicit none
         real*8 :: al2
         integer*4 :: i,j,k
