@@ -24,6 +24,7 @@ c
       integer*4 i,iloop,j,jm,jp,k,kqq,l,lcx,lfh,lfk,kbb,kp
       integer*4 kq,lkf,llx,loop,ltx,m,n
       integer*4 lc,ls,lt,ll,lf,no,np,nt,nv
+      real*8 havetobreaka,havetobreakb,havetobreakc,havetobreakd
       !data ets/4*0./
       ets(1,1) = 0.
       ets(1,2) = 0.
@@ -49,7 +50,7 @@ c
 c   --------------------
 c   set up r,sl,phi,etc.
 c   --------------------
-      do 50 i=1,ltx+1
+      do i=1,ltx+1
         rx(i)=h*float(i)
         rix(i)=1/rx(i)
         rsx(i)=rx(i)*rx(i)
@@ -151,7 +152,7 @@ c   --------------------
         rlm(1,i)=vx(1,i)+vx(9,i)*(phir(8,i)/phir(1,i))**2
         rlx(1,i)=vx(3,i)+(vx(11,i)+(2./3.)*vx(13,i))
      &   *(phir(7,i)/phir(3,i))**2
-   50 continue
+      end do
       rr=0.
       if (np.le.100) then
         call pot(1,rr,vv,vp,vw)
@@ -169,17 +170,18 @@ c   --------------------
 c   ---------------------------
 c   single-channel psi equation
 c   ---------------------------
-      do 190 k=1,2,nm
+      do k=1,2,nm
         kp=9-k
         kq=k+8
         blm(k)=0.
         small=1.e-10
         lcx=lf*lc
         if (k.eq.2) lcx=lf*ls
-        do 140 loop=1,20
-          do 110 i=1,lcx
+        havetobreaka = 0.0
+        do loop=1,20
+          do i=1,lcx
             rlm(k,i)=blm(k)
-  110     continue
+          end do
           psim=0.
           fcm=3*psi(k,1)/phir(k,1)-3*psi(k,2)/phir(k,2)
      &         +psi(k,3)/phir(k,3)
@@ -188,7 +190,7 @@ c   ---------------------------
           psi0=psi(k,1)
           gpsi0=h2*(vx(k,1)-pm(k,1)-blm(k)
      &             +vx(kq,1)*(phir(kp,1)/phir(k,1))**2)*psi0
-          do 120 j=2,lcx+1
+          do j=2,lcx+1
             gp=h2*(vx(k,j)-pm(k,j)-blm(k)
      &            +vx(kq,j)*(phir(kp,j)/phir(k,j))**2)
             psi(k,j)=(2*psi0+10*gpsi0-psim+gpsim)/(1-gp)
@@ -196,7 +198,7 @@ c   ---------------------------
             gpsim=gpsi0
             psi0=psi(k,j)
             gpsi0=gp*psi0
-  120     continue
+          end do
           dldif=phir(k,lcx)*(psi(k,lcx+1)-psi(k,lcx-1))
      &         -psi(k,lcx)*(phir(k,lcx+1)-phir(k,lcx-1))
           if (loop.eq.1) then
@@ -204,23 +206,28 @@ c   ---------------------------
             blmo=blm(k)
             blm(k)=(-1.)**k
           else
-            if (abs(dldifo-dldif).le.small) go to 170
-            blmn=(dldifo*blm(k)-dldif*blmo)/(dldifo-dldif)
-            dldifo=dldif
-            blmo=blm(k)
-            blm(k)=blmn
+            if (abs(dldifo-dldif).le.small) then
+              havetobreaka = 1.0
+            else
+              if(havetobreaka.eq.0.0) then
+                blmn=(dldifo*blm(k)-dldif*blmo)/(dldifo-dldif)
+                dldifo=dldif
+                blmo=blm(k)
+                blm(k)=blmn
+              end if
+            end if
           end if
-  140   continue
-  170   fac=phir(k,lcx)/psi(k,lcx)
-        do 180 j=1,lcx
+        end do
+        fac=phir(k,lcx)/psi(k,lcx)
+        do j=1,lcx
           psi(k,j)=fac*psi(k,j)
-  180   continue
+        end do
         psi(k,lcx+1)=phir(k,lcx+1)
-  190 continue
+      end do
 c -----------------------------
 c coupled-channel psi equations
 c -----------------------------
-      do 510 l=3,4,nm
+      do l=3,4,nm
         m=l+2
         n=l+4
         k=l-2
@@ -233,31 +240,32 @@ c -----------------------------
         lcx=lf*ls
         if (k.eq.2) lcx=lf*lc
         llx=lcx
-        do 201 i=1,lcx
+        do i=1,lcx
           rlm(l,i)=0.
-  201   continue
-        do 202 i=lcx+1,ltx+1
+        end do
+        do i=lcx+1,ltx+1
           rlm(l,i)=rlx(l-2,i)
-  202   continue
-        do 203 i=1,ltx
+        end do
+        do i=1,ltx
           rlm(m,i)=0.
-  203   continue
+        end do
         pqpcs=(phir(n,ltx+1)/phir(l,ltx+1))**2
         rlm(m,ltx+1)=vx(m,ltx+1)-(1./12.)*pqpcs*vx(kbb,ltx+1)
-        do 204 i=1,llx
+        do i=1,llx
           rlm(n,i)=0.
-  204   continue
-        do 205 i=llx+1,ltx+1
+        end do
+        do i=llx+1,ltx+1
           rlm(n,i)=vx(n,i)-.5*vx(kbb,i)
-  205   continue
-        do 500 iloop=1,10
+        end do
+        do iloop=1,10
 c ---------------
 c central channel
 c ---------------
-          do 240 loop=1,20
-            do 210 i=1,lcx
+          havetobreakb=0
+          do loop=1,20
+            do i=1,lcx
               rlm(l,i)=blm(l)
-  210       continue
+            end do
             psim=0.
             chim=0.
             if (iloop.eq.1.and.loop.eq.1) then
@@ -286,7 +294,7 @@ c ---------------
             gchi0=h2*(yc+pqpcs*(yq+(2./3.)*ybb)-pm(l,1))*chi0
             h0=h2*((8.*yt-(2./3.)*pqpcs*ybb)*psi(m,1)
      &            +(2./3.)*pqpc*(yb-.5*ybb)*psi(n,1))
-            do 220 j=2,lcx+1
+            do j=2,lcx+1
               yc=vx(l,j)-rlm(l,j)
               yt=vx(m,j)-rlm(m,j)
               yb=vx(n,j)-rlm(n,j)
@@ -309,11 +317,11 @@ c ---------------
               gchim=gchi0
               chi0=chi(j)
               gchi0=gp*chi0
-  220       continue
+            end do
             fac=(phir(l,lcx)-psi(l,lcx))/chi(lcx)
-            do 230 j=1,lcx+1
+            do j=1,lcx+1
               psi(l,j)=psi(l,j)+fac*chi(j)
-  230       continue
+            end do
             dldif=phir(l,lcx)*(psi(l,lcx+1)-psi(l,lcx-1))
      &           -psi(l,lcx)*(phir(l,lcx+1)-phir(l,lcx-1))
             if (loop.eq.1) then
@@ -321,33 +329,39 @@ c ---------------
               blmo=blm(l)
               blm(l)=blmo+(-1.)**(l-1)
             else
-              if (abs(dldifo-dldif).le.small) go to 290
-              blmn=(dldifo*blm(l)-dldif*blmo)/(dldifo-dldif)
-              dldifo=dldif
-              blmo=blm(l)
-              blm(l)=blmn
+              if (abs(dldifo-dldif).le.small) then
+                havetobreakb = 1.0
+              else
+                if(havetobreakb.eq.0.0) then
+                  blmn=(dldifo*blm(l)-dldif*blmo)/(dldifo-dldif)
+                  dldifo=dldif
+                  blmo=blm(l)
+                  blm(l)=blmn
+                end if
+              end if
             end if
-  240     continue
-  290     psi(l,lcx+1)=phir(l,lcx+1)
+          end do
+          psi(l,lcx+1)=phir(l,lcx+1)
 c --------------
 c tensor channel
 c --------------
-          if (nv.le.4) go to 500
-          do 360 loop=1,20
-            do 310 i=lcx+1,ltx+1
+          if (.not.(nv.le.4)) then
+          havetobreakc = 0.0
+          do loop=1,20
+            do i=lcx+1,ltx+1
               xft=psi(m,i)/phir(m,i)
               xfb=psi(n,i)/phir(n,i)
               rlm(l,i)=rlx(l-2,i)+8.*(vx(m,i)-rlm(m,i))*xft
      &         +(2./3.)*((vx(n,i)-rlm(n,i)-.5*vx(kbb,i))*xfb
      &         -vx(kbb,i)*xft)*(phir(n,i)/phir(l,i))**2
-  310       continue
-            do 320 i=1,ltx
+            end do
+            do i=1,ltx
               rlm(m,i)=blm(m)
-  320       continue
-            do 330 i=llx+1,ltx+1
+            end do
+            do i=llx+1,ltx+1
               xft=psi(m,i)/phir(m,i)
               rlm(n,i)=vx(n,i)-.5*vx(kbb,i)*(1.-4.*xft)/(1.-xft)
-  330       continue
+            end do
             psim=0.
             chim=0.
             gpsim=0.
@@ -377,7 +391,7 @@ c --------------
      &       +pqpcs*(yq+(5./6.)*ybb)-pm(m,1))*chi0
             h0=h2*((yt-(1./12.)*pqpcs*ybb)*psi(l,1)
      &          -(1./12.)*pqpc*(yb-2.*ybb)*psi(n,1))
-            do 340 j=2,ltx+1
+            do j=2,ltx+1
               yc=vx(l,j)-rlm(l,j)
               yt=vx(m,j)-rlm(m,j)
               yb=vx(n,j)-rlm(n,j)
@@ -401,11 +415,11 @@ c --------------
               gchim=gchi0
               chi0=chi(j)
               gchi0=gp*chi0
-  340       continue
+            end do
             fac=-psi(m,ltx)/chi(ltx)
-            do 350 j=1,ltx+1
+            do j=1,ltx+1
               psi(m,j)=psi(m,j)+fac*chi(j)
-  350       continue
+            end do
             dldif=phir(m,ltx)*(psi(m,ltx+1)-psi(m,ltx-1))
      &           -psi(m,ltx)*(phir(m,ltx+1)-phir(m,ltx-1))
             if (loop.eq.1) then
@@ -413,29 +427,35 @@ c --------------
               blmo=blm(m)
               blm(m)=blmo+(-1.)**(l-1)
             else
-              if (abs(dldifo-dldif).le.small) go to 390
-              blmn=(dldifo*blm(m)-dldif*blmo)/(dldifo-dldif)
-              dldifo=dldif
-              blmo=blm(m)
-              blm(m)=blmn
+              if ((abs(dldifo-dldif).le.small)) then
+                havetobreakc = 1.0
+              else
+                if(havetobreakc.eq.0.0) then
+                  blmn=(dldifo*blm(m)-dldif*blmo)/(dldifo-dldif)
+                  dldifo=dldif
+                  blmo=blm(m)
+                  blm(m)=blmn
+                end if
+              end if
             end if
-  360     continue
-  390     psi(m,ltx+1)=0.
+          end do
+          psi(m,ltx+1)=0.
 c ------------------
 c spin-orbit channel
 c ------------------
-          if (nv.le.6) go to 500
-          do 460 loop=1,20
-            do 410 i=lcx+1,ltx+1
+          if (.not.(nv.le.6)) then
+          havetobreakd = 0.0
+          do loop=1,20
+            do i=lcx+1,ltx+1
               xft=psi(m,i)/phir(m,i)
               xfb=psi(n,i)/phir(n,i)
               rlm(l,i)=rlx(l-2,i)+8*(vx(m,i)-rlm(m,i))*xft
      &         +(2./3.)*((vx(n,i)-rlm(n,i)-.5*vx(kbb,i))*xfb
      &         -vx(kbb,i)*xft)*(phir(n,i)/phir(l,i))**2
-  410       continue
-            do 420 i=1,llx
+            end do
+            do i=1,llx
               rlm(n,i)=blm(n)
-  420       continue
+            end do
             psim=0
             chim=0
             if (iloop.eq.1.and.loop.eq.1) then
@@ -464,7 +484,7 @@ c ------------------
             gpsi0=h2*(yc-yt-.5*yb+pqqpqs*(yq+ybb)-pm(n,1))*psi0
             gchi0=h2*(yc-yt-.5*yb+pqqpqs*(yq+ybb)-pm(n,1))*chi0
             h0=h2*pqpc*((yb-.5*ybb)*psi(l,1)-(yb-2*ybb)*psi(m,1))
-            do 440 j=2,llx+1
+            do j=2,llx+1
               yc=vx(l,j)-rlm(l,j)
               yt=vx(m,j)-rlm(m,j)
               yb=vx(n,j)-rlm(n,j)
@@ -487,11 +507,11 @@ c ------------------
               gchim=gchi0
               chi0=chi(j)
               gchi0=gp*chi0
-  440       continue
+            end do
             fac=-psi(n,llx)/chi(llx)
-            do 450 j=1,llx+1
+            do j=1,llx+1
               psi(n,j)=psi(n,j)+fac*chi(j)
-  450       continue
+            end do
             dldif=phir(n,llx)*(psi(n,llx+1)-psi(n,llx-1))
      &           -psi(n,llx)*(phir(n,llx+1)-phir(n,llx-1))
             if (loop.eq.1) then
@@ -499,18 +519,25 @@ c ------------------
               blmo=blm(n)
               blm(n)=blmo+(-1)**k
             else
-              if (abs(dldifo-dldif).le.small) go to 490
-              blmn=(dldifo*blm(n)-dldif*blmo)/(dldifo-dldif)
-              dldifo=dldif
-              blmo=blm(n)
-              blm(n)=blmn
+              if (abs(dldifo-dldif).gt.small) then
+                if(havetobreakd.eq.0.0) then
+                  blmn=(dldifo*blm(n)-dldif*blmo)/(dldifo-dldif)
+                  dldifo=dldif
+                  blmo=blm(n)
+                  blm(n)=blmn
+                end if
+              else
+                 havetobreakd = 1.0
+              end if
             end if
-  460     continue
-  490     psi(n,llx+1)=0.
-  500   continue
-  510 continue
+          end do
+          psi(n,llx+1)=0.
+          end if
+          end if
+        end do
+      end do
 c print ================================================================
-      if (no.eq.0) go to 520
+      if (.not.(no.eq.0)) then
       write(nlog,950) ltx,lt
       write(nout,950) ltx,lt
   950 format(/4x,'wave equations solved in t,s projected channels'
@@ -532,16 +559,17 @@ c print ================================================================
         open(unit=16,file='fnmout',status='unknown',form='unformatted')
         write(16) (rx(j),(psi(k,j)/phir(k,j),k=1,8),j=1,ltx)
       end if
+      end if
 c ======================================================================
 c -------------------
 c projections for r<d
 c -------------------
-  520 do 690 i=1,lt
+      do i=1,lt
         j=lf*i-lfh
         jp=j+1
         jm=j-1
         rr=rx(j)
-        do 610 k=1,8,nm
+        do k=1,8,nm
           blm(k)=rlm(k,j)
           cp=psi(k,jp)/phir(k,jp)
           c0=psi(k,j)/phir(k,j)
@@ -549,8 +577,8 @@ c -------------------
           c(1,k)=c0
           c(2,k)=.5*(cp-cm)/h
           c(3,k)=(cp-2*c0+cm)/h**2+2*c(2,k)*rix(j)
-  610   continue
-        do 620 k=1,2,nm
+        end do
+        do k=1,2,nm
           l=k+2
           m=k+4
           n=k+6
@@ -560,13 +588,13 @@ c -------------------
      &     +(4./3.)*pqpc*blm(n)*psi(n,j))+psi(m,j)*(8*(blm(l)-2*blm(m)
      &     -3*blm(n))*psi(m,j)-(4./3.)*pqpc*blm(n)*psi(n,j))
      &     +(2./3.)*psi(n,j)**2*(blm(l)-blm(m)-.5*blm(n))
-  620   continue
-        do 630 k=1,3
+        end do
+        do k=1,3
           ca(k,1)=.25*(3*c(k,3)+c(k,1))
           ca(k,3)=.25*(c(k,3)-c(k,1))
           ca(k,5)=c(k,5)
           ca(k,7)=c(k,7)
-          if (nm.eq.2) go to 630
+          if (.not.(nm.eq.2)) then
           ca(k,2)=.25*ca(k,1)-.0625*(3*c(k,4)+c(k,2))
           ca(k,4)=.25*ca(k,3)-.0625*(c(k,4)-c(k,2))
           ca(k,6)=.25*(ca(k,5)-c(k,6))
@@ -575,8 +603,9 @@ c -------------------
           ca(k,3)=.75*ca(k,3)+.0625*(c(k,4)-c(k,2))
           ca(k,5)=.25*(3*ca(k,5)+c(k,6))
           ca(k,7)=.25*(3*ca(k,7)+c(k,8))
-  630   continue
-        do 640 k=1,8,nm
+          end if
+        end do
+        do k=1,8,nm
           f(i,k)=ca(1,k)
           fp(i,k)=ca(2,k)
           if (k.le.4) then
@@ -586,7 +615,7 @@ c -------------------
           else
             fds(i,k)=ca(3,k)-6*ca(1,k)/rsx(j)
           end if
-  640   continue
+        end do
         if (np.le.100) then
 c -------------------------------------
 c special case to use av8' correlations
@@ -600,9 +629,9 @@ c ----------------------------------------
         else if (np.gt.100 .and. np.le.200) then
           call pot_chiral(rr,vv,vp)
         end if
-        do 670 l=1,nv,nm
+        do l=1,nv,nm
           v(i,l)=vv(l)
-  670   continue
+        end do
         r(i)=rx(j)
         ri(i)=rix(j)
         rs(i)=rsx(j)
@@ -617,20 +646,21 @@ c ----------------------------------------
         sldp(i)=3*(-slp(i)+(sl(i)+z-2*y/x)*ri(i))*ri(i)
         sltp(i)=3*(-sldp(i)*r(i)+2*slp(i)
      &         -2*(sl(i)+z-2*y/x)*ri(i)-kf*(y+2*z/x-2*y/xx))/rs(i)
-        if (nm.eq.1) go to 690
-        do 680 l=1,nv,2
+        if (.not.(nm.eq.1)) then
+        do l=1,nv,2
           v(i,l)=v(i,l)+vv(l+1)
           v(i,l+1)=0
-  680   continue
+        end do
         v(i,1)=v(i,1)+2*(vv(15)-vv(19))
         v(i,3)=v(i,3)+2*vv(16)
         v(i,5)=v(i,5)+2*vv(17)
         v(i,7)=v(i,7)+2*vv(18)
-  690 continue
+        end if
+      end do
 c -------------------
 c projections for r>d
 c -------------------
-      do 790 i=lt+1,lgrid
+      do i=lt+1,lgrid
         ry=h*float(lf*i-lfh)
         rsy=ry*ry
         x=kf*ry
@@ -658,14 +688,14 @@ c -------------------
      &   +(vv(9)+vv(11)-3*(vv(10)+vv(12))+2*(vv(13)-3*vv(14))/3)
      &   *(.2*xx+rllpy))
         end if
-        do 750 l=1,nv,nm
+        do l=1,nv,nm
           v(i,l)=vv(l)
-  750   continue
+        end do
         if (nm.eq.2) then
-          do 760 l=1,nv,2
+          do l=1,nv,2
             v(i,l)=v(i,l)+vv(l+1)
             v(i,l+1)=0
-  760     continue
+          end do
           v(i,1)=v(i,1)+2*(vv(15)-vv(19))
           v(i,3)=v(i,3)+2*vv(16)
           v(i,5)=v(i,5)+2*vv(17)
@@ -683,9 +713,9 @@ c -------------------
         sldp(i)=sldpy
         sltp(i)=3*(-sldpy*ry+2*slpy-2*(sly+z-2*y/x)/ry
      &   -kf*(y+2*z/x-2*y/xx))/rsy
-  790 continue
-      evx=.25*ets(1,1)+.75*ets(1,2)
-      if (nm.eq.1) evx=.75*evx+.0625*ets(2,1)+.1875*ets(2,2)
+      end do
+      evx=.25_8*ets(1,1)+.75_8*ets(1,2)
+      if (nm.eq.1) evx=.75_8*evx+.0625_8*ets(2,1)+.1875_8*ets(2,2)
       e1=.3*h2m*kf**2
       trpidr=2*rho*pi*lf*h
       ets(1,1)=ets(1,1)*trpidr*.25
