@@ -26,10 +26,6 @@ c
       integer*4 lc,ls,lt,ll,lf,no,np,nt,nv
       real*8 havetobreaka,havetobreakb,havetobreakc,havetobreakd
       !data ets/4*0./
-      ets(1,1) = 0.
-      ets(1,2) = 0.
-      ets(2,1) = 0.
-      ets(2,2) = 0.
       rt2=sqrt(2.)
       rt5=sqrt(5.)
       lfh=lf/2
@@ -165,7 +161,9 @@ c   --------------------
      &       -3*ast*(vv(3)+vv(4)+2*vv(16))
         end if
       else
-        rv(:)=0.
+        do i=1,6
+          rv(i)=0.
+        end do
       end if
 c   ---------------------------
 c   single-channel psi equation
@@ -564,6 +562,10 @@ c ======================================================================
 c -------------------
 c projections for r<d
 c -------------------
+      ets(1,1) = 0.
+      ets(1,2) = 0.
+      ets(2,1) = 0.
+      ets(2,2) = 0.
       do i=1,lt
         j=lf*i-lfh
         jp=j+1
