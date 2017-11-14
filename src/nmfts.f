@@ -714,8 +714,6 @@ c -------------------
         sltp(i)=3*(-sldpy*ry+2*slpy-2*(sly+z-2*y/x)/ry
      &   -kf*(y+2*z/x-2*y/xx))/rsy
       end do
-      evx=.25_8*ets(1,1)+.75_8*ets(1,2)
-      if (nm.eq.1) evx=.75_8*evx+.0625_8*ets(2,1)+.1875_8*ets(2,2)
       e1=.3*h2m*kf**2
       trpidr=2*rho*pi*lf*h
       ets(1,1)=ets(1,1)*trpidr*.25
