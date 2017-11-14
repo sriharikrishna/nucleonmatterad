@@ -1,4 +1,4 @@
       module params
-        parameter (nm=1)
-        parameter (lgrid=100)
+        integer, parameter ::nm=1
+        integer, parameter ::lgrid=100
       end module params
