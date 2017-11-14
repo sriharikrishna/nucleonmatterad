@@ -91,29 +91,32 @@ c ======================================================================
       if (ns.eq.1) call nmsps(ltd)
 c ======================================================================
       do 13 l=1,4,nm
-        if (l.eq.1) go to 13
+        if (.not.(l.eq.1)) then
         do 12 ir=1,lt
           f(ir,l)=bst*f(ir,l)
           fp(ir,l)=bst*fp(ir,l)
           fds(ir,l)=bst*fds(ir,l)
    12   continue
+        end if
    13 continue
-      if (nv.le.4) go to 20
+      if (.not.(nv.le.4)) then
       do 14 l=5,6,nm
       do 14 ir=1,lt
         f(ir,l)=btn*f(ir,l)
         fp(ir,l)=btn*fp(ir,l)
         fds(ir,l)=btn*fds(ir,l)
    14 continue
-      if (nv.le.6) go to 20
+      if (.not.(nv.le.6)) then
       do 16 l=7,8,nm
       do 16 ir=1,lt
         f(ir,l)=bls*f(ir,l)
         fp(ir,l)=bls*fp(ir,l)
         fds(ir,l)=bls*fds(ir,l)
    16 continue
+      end if
+      end if
 c print ================================================================
-   20 if (no.gt.0) then
+      if (no.gt.0) then
         write(nlog,1030) dg,de,bst,btn,bls
         write(nout,1030) dg,de,bst,btn,bls
  1030   format(/4x,'dg',6x,'de',6x,'bs',6x,'bt',6x,'bl'/5f8.3)
@@ -186,7 +189,7 @@ c ---------------
       do 145 i=1,6,nm
       do 140 k=1,i,nm
       x2=acex(i,j,k)
-      if (x2.eq.0.) go to 140
+      if (.not.(x2.eq.0.)) then
       x1=ac(i,j,k)
       qx=2*x
       if (i.eq.k) qx=x
@@ -205,7 +208,7 @@ c -------------------------
       dlj=ad(l,j)
       dlk=ad(l,k)
       y3=.25*(dli+dlk)
-      if (x1.eq.0.) go to 100
+      if (.not.(x1.eq.0.)) then
       y1=y3+.25*dlj
       y2=.5*y1+y3/3
       wdd=wdd+y1*bj(l,1)+y2*bj(l,3)
@@ -216,7 +219,8 @@ c -------------------------
    95   wde=wde+ak(l,l,n)*aa(n)*(y1+.125*(ad(i,n)+ad(k,n))*at(j,1))
      &   *bj(l,6)/afe
       end if
-  100 do 105 n=1,4,nm
+      end if
+      do 105 n=1,4,nm
       y4=.25*(dlj+ad(l,n))
       do 105 mp=1,6,nm
   105 wcc=wcc+.5*(ak(n,i,mp)*ak(j,k,mp)+ak(n,k,mp)*ak(i,j,mp))*aa(mp)
@@ -347,6 +351,7 @@ c -------------------
      &   *rlssx(ir)*zcc*qx/nu
   135   continue
       end if
+      end if
   140 continue
   145 continue
       wv2=wv2+wx(j,1)+wx(j,2)
@@ -390,11 +395,11 @@ c -------------------------------------------------
       wvhq=0
       wvsq=0
       wvsxq=0
-      if (nv.le.6) go to 400
+      if (.not.(nv.le.6)) then
       nx=nm
       if (nm.eq.4) nx=2
       do 250 j=1,8,nx
-      if (nm.eq.4 .and. j.eq.3) go to 250
+      if (.not.(nm.eq.4 .and. j.eq.3)) then
       il=7
       if (j.ge.7) il=5
       do 240 i=il,8,nx
@@ -402,7 +407,7 @@ c -------------------------------------------------
       if (j.ge.7) kl=1
       if (i.le.6) kl=5
       do 240 k=kl,i,nx
-      if (nm.eq.4 .and. k.eq.3) go to 240
+      if (.not.(nm.eq.4 .and. k.eq.3)) then
       if (i.le.6) then
         x2=acex(i,j,k)
         x1=ac(i,j,k)
@@ -428,27 +433,30 @@ c -------------------------------
       y3=.25*(dli+dlk)
       y1=y3+.25*dlj
       y2=.5*y1+y3/3
-      if (x1.eq.0.) go to 200
+      if (.not.(x1.eq.0.)) then
       yd=yd+y1*bj(l,2)+y2*bj(l,4)
       ye=ye+y3*bj(l,5)
       if (l.le.4) then
         yb=yb+y1*bk(l,2)+bk(l,1)
         if (k.le.6) yb=yb+.5*(y1*(bk(l,3)-bk(l,2))-bk(l,1))
       end if
-  200 do 205 n=1,4,nm
+      end if
+      do 205 n=1,4,nm
       y4=.25*(dlj+ad(l,n))
       do 205 mp=1,8,nx
-      if (nm.eq.4 .and. mp.eq.3) go to 205
+      if (.not.(nm.eq.4 .and. mp.eq.3)) then
       yc=yc+.5*(ak(n,i,mp)*ak(j,k,mp)+ak(n,k,mp)*ak(i,j,mp))*ab(mp)
      & *((.5*ad(l,mp)+y4)*bj(l,2)+(.25*ad(l,mp)+.5*y4+y3/3)*bj(l,4))
+      end if
   205 continue
   210 continue
       ydd=2*yd+ye+yb
       yde=2*yd
       ycc=al2(i,j,k)*yc/x2
-      if (i.ge.7) go to 215
+      if (.not.(i.ge.7)) then
       ydd=ydd+ye-yb
       ycc=-36*yc/x2
+      end if
 c --------------------------------------
 c integrations for w2b,whb,wsb(bik),wf2b
 c --------------------------------------
@@ -521,10 +529,12 @@ c ---------------------------
       gnn(ir,j)=gnn(ir,j)+f(ir,i)*f(ir,k)*(x1*xb*(1+xde+xbe
      & +ydd+xde*yde)-x2*(xcc+xbc+xcc*ycc))*xdd*qx/x
   230 continue
+      end if
   240 continue
       wv2b=wv2b+wx(j,1)+wx(j,2)
       wvhb=wvhb+wx(j,3)+wx(j,4)
       wvsb=wvsb+wx(j,5)+wx(j,6)
+      end if
   250 continue
       wv2b=wv2b-wv2
       wvhb=wvhb-wvh
@@ -631,7 +641,7 @@ c --------
         do 288 i=1,6,nm
         do 288 k=1,6,nm
           x2=acex(i,j,k)
-          if (x2.eq.0.) go to 288
+          if (.not.(x2.eq.0.)) then
           x1=ac(i,j,k)
           qx=x
           ye=0
@@ -708,6 +718,7 @@ c --------
               end if
   284       continue
           end if
+          end if
   288   continue
         bvpf=bvpf+wx(j,9)+wx(j,10)
   290 continue
@@ -717,7 +728,7 @@ c --------
       wvsb=wvsb+bvpf
       wksb=wksb+bkpf
       wjsb=wjsb+bjpf
-      if (nv.le.8) go to 400
+      if (.not.(nv.le.8)) then
 c -----------------------------
 c l**2 & (l.s)**2 contributions
 c -----------------------------
@@ -726,13 +737,13 @@ c -----------------------------
       jq=j-8
       if (j.ge.13) jq=j-12
       do 316 i=1,8,nx
-      if (nm.eq.4 .and. i.eq.3) go to 316
+      if (.not.(nm.eq.4 .and. i.eq.3)) then
       if (j.ge.13.and.i.le.4) jp=j-10
       if (j.ge.13.and.i.ge.5) jp=j-8
       do 315 k=1,i,nx
-      if (nm.eq.4 .and. k.eq.3) go to 315
+      if (.not.(nm.eq.4 .and. k.eq.3)) then
       x2=acl2ex(i,j,k)
-      if (x2.eq.0.) go to 315
+      if (.not.(x2.eq.0.)) then
       x1=acl2(i,j,k)
       x3=ac(i,j,k)
       x4=acex(i,j,k)
@@ -748,7 +759,7 @@ c -----------------------------
       ytc=0
       yqd=0
       yqc=0
-      if (i.ge.7) go to 309
+      if (.not.(i.ge.7)) then
       do 303 l=1+nm,6,nm
       dli=ad(l,i)
       dlj=ad(l,jp)
@@ -812,10 +823,11 @@ c ---------------------------------
      &   *(.5+.25*ad(l,m)+.125*(ad(l,jq+2)+ad(l,n)))*bq(l,1)/3
       end if
   308 continue
+      end if
 c ------------------------
 c integration for w2q, wsq
 c ------------------------
-  309 do 310 ir=1,ltd
+      do 310 ir=1,ltd
       z=f(ir,i)*v(ir,j)*f(ir,k)*qx*rs(ir)
       if (k.le.6) then
         xq=xsq(ir)
@@ -837,17 +849,22 @@ c ---------------------------
      & +x3*(1+ytd)-x4*(1+ytc)*sls(ir)/nu+.5*rs(ir)*(yqd-yqc*sls(ir)/nu))
      & *qx/x
   310 continue
+      end if
+      end if
   315 continue
+      end if
   316 continue
       wv2q=wv2q+wx(j,1)+wx(j,2)
       wvsq=wvsq+wx(j,5)+wx(j,6)
       wvsxq=wvsxq+wx(j,9)+wx(j,10)
   320 continue
-  400 do 410 j=1,10
+      end if
+      end if
+      do 410 j=1,10
       wjx(j)=.5*(wkx(j)+wjx(j))
   410 continue
 c print ================================================================
-      if (no.eq.0) go to 420
+      if (.not.(no.eq.0)) then
       write(nlog,1100) wv2,wk2,wf2,wj2,wp2,wv2b,wk2b,wf2b,wj2b,wp2b
       write(nout,1100) wv2,wk2,wf2,wj2,wp2,wv2b,wk2b,wf2b,wj2b,wp2b
  1100 format(/4x,'wv2',5x,'wk2',5x,'wf2',5x,'wj2',5x,'wp2'
@@ -915,8 +932,9 @@ c print ================================================================
         write(nout,1144)
         write(nout,1150) ((wx(i,j),i=9,14),j=9,10)
       end if
+      end if
 c ======================================================================
-  420 ev6=wv2+wvh+wvs+wvs2
+      ev6=wv2+wvh+wvs+wvs2
       evb=wv2b+wvhb+wvsb
       evq=wv2q+wvhq+wvsq+wvsxq
       ek6=wk2+wkh+wks+wks2
