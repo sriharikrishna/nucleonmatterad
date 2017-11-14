@@ -106,7 +106,7 @@ c ----------------------------------------------------------------------
 c ------------------------
 c exchange potential terms
 c ------------------------
-            if (x4.eq.0..and.x5.eq.0..and.x6.eq.0.) go to 521
+            if (.not.(x4.eq.0..and.x5.eq.0..and.x6.eq.0.)) then
             do 520 ir=1,li
               xdd=gx(ir)
               xcc=gl(ir)
@@ -140,7 +140,8 @@ c ----------------------------
 c ----------------------
 c direct potential terms
 c ----------------------
-  521       if (x1.eq.0..and.x2.eq.0..and.x3.eq.0.) go to 523
+            end if
+            if (.not.(x1.eq.0..and.x2.eq.0..and.x3.eq.0.)) then
             do 522 ir=1,li
               xdd=gx(ir)
               xde=gy(ir)
@@ -182,8 +183,9 @@ c ----------------------------
 c -------------------------
 c exchange kinetic energies
 c -------------------------
-  523 if (j.gt.1) go to 530
-      if (x4.eq.0..and.x5.eq.0..and.x6.eq.0.) go to 525
+      end if
+      if (.not.(j.gt.1)) then
+      if (.not.(x4.eq.0..and.x5.eq.0..and.x6.eq.0.)) then
       do 524 ir=1,li
       xdd=gx(ir)
       xcc=gl(ir)
@@ -211,10 +213,11 @@ c -------------------------
       wcjx(5)=wcjx(5)+zj*(4*yca*x5-2*ycb*x6)*xcc
       wcjx(10)=wcjx(10)+zj*(4*yca*x5-2*ycb*x6)*xcc*ve**2
   524 continue
+      end if
 c -----------------------
 c direct kinetic energies
 c -----------------------
-  525 if (x1.eq.0..and.x2.eq.0..and.x3.eq.0.) go to 530
+      if (.not.(x1.eq.0..and.x2.eq.0..and.x3.eq.0.)) then
       do 526 ir=1,li
       xdd=gx(ir)
       xde=gy(ir)
@@ -239,6 +242,8 @@ c -----------------------
       wcjx(3)=wcjx(3)+zj*yee*x3
       wcjx(8)=wcjx(8)+zj*yee*x3*ve**2
   526 continue
+      end if
+      end if
   530 continue
   540 continue
 cdir$ ivdep
@@ -266,7 +271,7 @@ cdir$ ivdep
 c -------------
 c calculate wcb
 c -------------
-      if (nv.le.6) go to 590
+      if (.not.(nv.le.6)) then
       qe=x**2*dr/(8*s)
       qd=x**2*dr*ksav/12
       wvcb=wcx(1,1)+wcx(1,2)
@@ -320,8 +325,9 @@ c -------------
       wvcb=wcx(1,1)+wcx(7,1)+wcx(1,2)+wcx(7,2)+wcx(8,2)-wvcb
       wkcb=wckx(1)+wckx(2)-wkcb
       wjcb=wcjx(1)+wcjx(2)-wjcb
+      end if
 c print ================================================================
-  590 if (no.eq.0) go to 600
+      if (.not.(no.eq.0)) then
       write(nlog,1200) wvc,wkc,wfc,wjc,wpc,wvcs,wkcs,wfcs,wjcs,wpcs
       write(nout,1200) wvc,wkc,wfc,wjc,wpc,wvcs,wkcs,wfcs,wjcs,wpcs
  1200 format(/4x,'wvc',5x,'wkc',5x,'wfc',5x,'wjc',5x,'wpc',5x,'wvcs'
@@ -340,11 +346,12 @@ c print ================================================================
  1140 format(10f8.3)
       write(nout,1220) wfcdd,wfccc,wpcdd,wpccc
  1220 format(/4x,'wfc:dd(ex),cc   wpc:dd(ex),cc'/4f8.3)
+      end if
 c ======================================================================
 c ------------------
 c calculate wcd,wcds
 c ------------------
-  600 wvcd=0
+      wvcd=0
       wvcds=0
       wfcddd=0
       wfcdcc=0
@@ -370,7 +377,7 @@ c ------------------
   610   continue
         x5=aa(l)*af(l)*aa(m)*af(m)
       end if
-      if (x1.eq.0..and.x2.eq.0..and.x3.eq.0..and.x4.eq.0.) go to 635
+      if (.not.(x1.eq.0..and.x2.eq.0..and.x3.eq.0..and.x4.eq.0.)) then
 c ---------------
 c potential terms
 c ---------------
@@ -551,6 +558,7 @@ c       --------------
      &   +.5*x3*(gdd(ir,l)*gee(ir,m)+gee(ir,l)*gdd(ir,m)))*ve**2
   630   continue
       end if
+      end if
   635 continue
   640 continue
   645 continue
@@ -718,7 +726,7 @@ c ------------------
       do 745 i=1,6,nm
       do 740 k=1,i,nm
       x2=acex(i,j,k)
-      if (x2.eq.0.) go to 740
+      if (.not.(x2.eq.0.)) then
       x1=ac(i,j,k)
       qx=4*x
       if (i.eq.k) qx=2*x
@@ -790,6 +798,7 @@ c     -------------------
   720   continue
       end if
   730 continue
+      end if
   740 continue
   745 continue
       wvcr=wvcr+wcrx(j,1)+wcrx(j,2)
@@ -800,7 +809,7 @@ c     -------------------
       wkcr=wcrkx(1)+wcrkx(2)
       wjcr=wcrjx(1)+wcrjx(2)
 c print ================================================================
-      if (no.eq.0) go to 800
+      if (.not.(no.eq.0)) then
       write(nlog,1230) wvcd,wkcd,wfcd,wjcd,wpcd,wvcds,wkcds,wfcds,wjcds
      &,wpcds
       write(nout,1230) wvcd,wkcd,wfcd,wjcd,wpcd,wvcds,wkcds,wfcds,wjcds
@@ -862,7 +871,8 @@ c print ================================================================
         write(nout,1320) tniu,tnia,tnic
  1320   format(/4x,'gam1',4x,'gam2',4x,'gam3',/f8.3,f8.0,f8.1)
       end if
-  800 ev6=ev6+wvc+wvcs+wvcd+wvcds+wvcm+wvcms+wvcr
+      end if
+      ev6=ev6+wvc+wvcs+wvcd+wvcds+wvcm+wvcms+wvcr
       evb=evb+wvcb
       ek6=ek6+wkc+wkcs+wkcd+wkcds+wkcm+wkcms+wkcr
       ekb=ekb+wkcb
