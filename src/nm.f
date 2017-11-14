@@ -58,6 +58,12 @@ c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
       subroutine nucmat(x,n,flocal,lprt)
       use nmvar
+#ifdef ALLOW_OPENAD
+      use OAD_tape
+      use OAD_rev
+      use OAD_active
+      use OAD_cp
+#endif
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
       logical lprt
@@ -77,11 +83,17 @@ c
       !common /pionic/ eav,fsof,plm,qmin,qmax
       !real*8 temp,mstar,chmpot,entrpy,ksav,kqav
       !common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
+#ifdef ALLOW_OPENAD
+      type(active) :: bst,btn,bls,dor
+      type(active) :: gint(6),final,flocal,endiff
+#endif
       save nmlocal,np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt
      &,ll,lg,le,l3,lk,npi,npf
      &,bst,btn,bls,nosave,npisav
 c
+#ifndef ALLOW_OPENAD
       real*8 gint(6)
+#endif
       character*20 pname(30),tname(0:5),ptnnam
       character*20 timdat
       character*32 mname(4)
@@ -102,23 +114,64 @@ c
      &          ,' + Tucson Vijk  ',' + Brazil Vijk  '
      &          ,' + DD TNR       ',' + DD TNR & TNA '/
 c
+      
+#ifndef ALLOW_OPENAD
       dor=x(1)
+#else
+      dor%v=x(1)
+#endif
       if (n.ge.2) then
+#ifndef ALLOW_OPENAD
         ast=x(2)
         atn=ast
         als=ast
+#else
+        ast%v=x(2)
+        atn%v=ast%v
+        als%v=ast%v
+#endif
       end if
       if (n.eq.4) then
+#ifndef ALLOW_OPENAD
         bst=x(3)
         btn=x(4)
         bls=bst
+#else
+        bst%v=x(3)
+        btn%v=x(4)
+        bls%v=bst%v
+#endif
       end if
+#ifndef ALLOW_OPENAD
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do 5 l=1,2,nmlocal
     5 g2=g2+(gint(l)+1.)**2
       flocal=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+#else
+      our_rev_mode%plain=.TRUE.
+      our_rev_mode%arg_store=.TRUE.
+      our_rev_mode%arg_restore=.FALSE.
+      our_rev_mode%tape=.FALSE.
+      our_rev_mode%adjoint=.FALSE.
+      our_rev_mode%topsplit=.FALSE.
+      call cp_init()
+      call oad_tape_init()
+      call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
+     &           ,nmlocal)
+      flocal%d = 1.0
+      our_rev_mode%plain=.FALSE.
+      our_rev_mode%arg_store=.FALSE.
+      our_rev_mode%arg_restore=.TRUE.
+      our_rev_mode%tape=.TRUE.
+      our_rev_mode%adjoint=.FALSE.
+      our_rev_mode%topsplit=.TRUE.
+      call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
+     &           ,nmlocal)
+#endif
       no=0
       return
 c ************************
@@ -138,15 +191,28 @@ c   ------------------
       read(nin,1001) nmlocal,np,nv,nt,ni,nie,no,ns,lf,
      &lc,ls,lt,ll,lg,le,l3,lk
  1001 format(5x,i3)
+#ifndef ALLOW_OPENAD
       read(nin,1002) kf,rho,dor,acn,ast,atn,als,bst,btn,bls,cn,cne
+#else
+      read(nin,1002) kf,rho,dor%v,acn,ast%v,atn%v,als%v,
+     &bst%v,btn%v,bls%v,cn,cne
+#endif
  1002 format(5x,f10.4)
+#ifndef ALLOW_OPENAD
       read(nin,1002) temp,mstar,tnia,tnic,tniu,tnix,cut,cut0
+#else
+      read(nin,1002) temp%v,mstar,tnia,tnic,tniu,tnix,cut,cut0
+#endif
       read(nin,1001) npi,npf
       read(nin,1002) eav,fsof,plm,qmin,qmax
       write(nlog,1010) mname(nmlocal)
       write(nout,1010) mname(nmlocal)
  1010 format(/4x,a32)
+#ifndef ALLOW_OPENAD
       if (temp.gt.0.) then
+#else
+      if (temp%v.gt.0.) then
+#endif
         write(nlog,1011) temp
         write(nout,1011) temp
  1011   format(/4x,'at T =',f6.2,' MeV')
@@ -162,11 +228,21 @@ c   ------------------
       write(nout,1012) ptnnam,tname(nt)
  1012 format(/4x,2a20)
       s=float(4/nmlocal)
+#ifndef ALLOW_OPENAD
       x(1)=dor
       if (n.ge.2) x(2)=ast
+#else
+      x(1)=dor%v
+      if (n.ge.2) x(2)=ast%v
+#endif
       if (n.eq.4) then
+#ifndef ALLOW_OPENAD
         x(3)=bst
         x(4)=btn
+#else
+        x(3)=bst%v
+        x(4)=btn%v
+#endif
       end if
       nosave=no
       npisav=npi
@@ -188,17 +264,34 @@ c     ll=2*ll
 c     lg=2*lg
 c     le=2*le
 c     l3=2*l3
+#ifndef ALLOW_OPENAD
       dor=x(1)
+#else
+      dor%v=x(1)
+#endif
       if (n.ge.2) then
+#ifndef ALLOW_OPENAD
         ast=x(2)
         atn=ast
         als=ast
+#else
+        ast%v=x(2)
+        atn%v=ast%v
+        als%v=ast%v
+#endif
       end if
       if (n.eq.4) then
+#ifndef ALLOW_OPENAD
         bst=x(3)
         btn=x(4)
         bls=bst
+#else
+        bst%v=x(3)
+        btn%v=x(4)
+        bls%v=bst%v
+#endif
       end if
+#ifndef ALLOW_OPENAD
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
@@ -206,6 +299,18 @@ c     l3=2*l3
   995 g2=g2+(gint(l)+1.)**2
       final=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
       fplus=final+abs(endiff)
+#else
+      our_rev_mode%plain=.TRUE.
+      our_rev_mode%arg_store=.FALSE.
+      our_rev_mode%arg_restore=.FALSE.
+      our_rev_mode%tape=.FALSE.
+      our_rev_mode%adjoint=.FALSE.
+      our_rev_mode%topsplit=.FALSE.
+      call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree
+     &           ,final,nmlocal)
+      fplus=final%v+abs(endiff%v)
+#endif
       write(nlog,1095) final,fplus
       write(nout,1095) final,fplus
  1095 format(/2x,'final   fplus',/2f8.3)
@@ -384,6 +489,9 @@ c     l3=2*l3
      & 0.,0.,0.,0.,0.,0.,
      & 0.,0.,0.,1.,0.,1.],[6,6,6])
 
-
+#ifndef ALLOW_OPENAD
        entrpy = 0.
+#else
+       entrpy%v = 0.
+#endif
       end subroutine nmvarinit
