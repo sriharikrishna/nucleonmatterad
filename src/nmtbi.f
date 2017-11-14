@@ -25,6 +25,7 @@ c nmtbi
 c subprogram for three-body integrations
 c ----------------------------------------------------------------------
       subroutine nmtbi(lt,lg,le,l3,nie,no,nt)
+      !$openad xxx template ad_template.split.f
       implicit none
       integer*4 :: lt,lg,le,l3,nie,no,nt
       integer*4 :: i,j,k,l,kb,ltd,ijk,ikj
@@ -570,6 +571,7 @@ c ======================================================================
       end subroutine nmtbi
 
       function rrr(i,j,k,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rrr
@@ -606,6 +608,7 @@ c ======================================================================
       end function rrr
 
       function rry(i,j,k,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rry
@@ -643,6 +646,7 @@ c ======================================================================
       end function rry
 
       function ryr(i,j,k,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: ryr
@@ -680,6 +684,7 @@ c ======================================================================
       end function ryr
 
       function rrz(i,j,k,l,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rrz
@@ -717,6 +722,7 @@ c ======================================================================
       end function rrz
 
       function zzz(i,j,k,l,m,n,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: zzz
@@ -743,6 +749,7 @@ c ======================================================================
       end function zzz
 
       function zzr(i,j,k,l,m,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: zzr
@@ -770,6 +777,7 @@ c ======================================================================
       end function zzr
 
       function zrz(i,j,k,l,n,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: zrz
@@ -796,6 +804,7 @@ c ======================================================================
       end function zrz
 
       function rbybr(i,j,k,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rbybr
@@ -832,6 +841,7 @@ c ======================================================================
       end function rbybr
 
       function rbrtr(i,j,k,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rbrtr
@@ -848,6 +858,7 @@ c ======================================================================
       end function rbrtr
 
       function rbrty(i,j,k,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rbrty
@@ -864,6 +875,7 @@ c ======================================================================
       end function rbrty
 
       function rbytr(i,j,k,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rbytr
@@ -879,6 +891,7 @@ c ======================================================================
       end function rbytr
 
       function ybrtr(i,j,k,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: ybrtr
@@ -896,6 +909,7 @@ c ======================================================================
       end function ybrtr
 
       function rtrtr(i,j,k,ijk,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rtrtr
@@ -906,6 +920,7 @@ c ======================================================================
       end function rtrtr
 
       function rtrty(i,j,k,ijk,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rtrty
@@ -916,6 +931,7 @@ c ======================================================================
       end function rtrty
 
       function rtytr(i,j,k,ijk,kji)
+      !$openad xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: rtytr
@@ -926,6 +942,7 @@ c ======================================================================
       end function rtytr
 
       function zbzbz(i,j,k,l,m,n,ijk,ikj,jik,kji)
+      !$openad xxx template ad_template.split.f
         implicit none
         real*8 :: zbzbz
         integer*4 :: i,j,k,l,m,n,ijk,ikj,jik,kji
@@ -951,6 +968,7 @@ c ======================================================================
       end function zbzbz
 
       function zbztz(i,j,k,l,m,n,ijk,jik)
+      !$openad xxx template ad_template.split.f
         implicit none
         real*8 :: zbztz
         integer*4 :: i,j,k,l,m,n,ijk,jik
