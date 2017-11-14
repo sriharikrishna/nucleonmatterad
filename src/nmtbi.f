@@ -224,7 +224,7 @@ c ------------------------------------------
             v3(2,1)=xt2(i)*xt3(j)
             v3(2,2)=xt2(i)*xt2(j)
           end if
-          if (tniu.eq.0.) go to 240
+          if (.not.(tniu.eq.0.)) then
 c ----------------------
 c central v3 integration
 c w3vm(1) := diagram 3.1
@@ -270,6 +270,7 @@ c ----------------------
   220       continue
             w3vm(3)=w3vm(3)+w3vma+w3vmb
   230     continue
+          end if
 c ----------------------------
 c 2pi-exchange v3 integrations
 c ----------------------------
@@ -280,7 +281,7 @@ c   w3vm(5)  ~ diagram 2.4
 c   w3vm(9) := diagram 2.2-s
 c   w3vm(10) ~ diagram 2.4-s
 c ----------------------------
-  240     do 250 k=ka,kb
+          do 250 k=ka,kb
             ijk=index(i,j,k)
             ikj=index(i,k,j)
             jik=index(j,i,k)
@@ -331,7 +332,7 @@ c ----------------------------
      &        -24*qttt*(v3(1,1)+acx))*zddm(i,n3t)*zddm(j,n3t))
      &             *zddm(k,n3t)/vc(n3t,1,1)**3
   250     continue
-          if (nm.eq.2) go to 290
+          if (.not.(nm.eq.2)) then
 c ------------------------
 c commutator zzr zrz terms
 c ------------------------
@@ -407,6 +408,7 @@ c ------------------------------
      &        -12*(qtts-2*(qttt+1))*v3(2,2))*zddm(i,n3t)*zddm(j,n3t))
      &             *zddm(k,n3t)/vc(n3t,1,1)**3
   270     continue
+          end if
   290   continue
   300 continue
       w3v0=w3vm(1)+w3vm(2)+w3vm(3)
@@ -420,7 +422,7 @@ c -----------------------------------------------------------
       w3va=w3va+w3vm(4)+w3vm(5)
       w3vc=w3vm(6)+w3vm(7)+w3vm(8)
 c print ================================================================
-      if (no.eq.0) go to 500
+      if (.not.(no.eq.0)) then
       write(nlog,973)
       write(nout,973)
   973 format(/4x,'w3v0(g3):',15x,'w3va(g3):',7x,'w3vc(g3):'/4x,'rrr'
@@ -438,6 +440,8 @@ c print ================================================================
       write(nlog,974) w3v0,w3v1,w3va,w3vc
       write(nout,974) w3v0,w3v1,w3va,w3vc
   974 format(/4x,'w3v0',4x,'w3v1',4x,'w3va',4x,'w3vc'/4f8.3)
+      endif
+      endif
 c ======================================================================
 c --------------------
 c calculate u, uf & up
@@ -547,7 +551,7 @@ c ----------------
   540   continue
   550 continue
 c print ================================================================
-  600 if (no.eq.0) go to 999
+  600 if (.not.(no.eq.0)) then
       write(nlog,970) u1,u2,u3,u4
       write(nout,970) u1,u2,u3,u4
   970 format(/4x,'u1',6x,'u2',6x,'u3',6x,'u4'/4f8.3)
@@ -557,8 +561,9 @@ c print ================================================================
       write(nlog,975) up1,up2,up3
       write(nout,975) up1,up2,up3
   975 format(/4x,'up1',5x,'up2',5x,'up3'/3f8.3)
+      end if
 c ======================================================================
-  999 u=u1+u2+u3+u4
+      u=u1+u2+u3+u4
       uf=uf1+uf2+uf3+uf4+uf5
       up=up1+up2+up3
       return
