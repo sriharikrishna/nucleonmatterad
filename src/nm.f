@@ -311,8 +311,13 @@ c     l3=2*l3
      &           ,final,nmlocal)
       fplus=final%v+abs(endiff%v)
 #endif
+#ifndef ALLOW_OPENAD
       write(nlog,1095) final,fplus
       write(nout,1095) final,fplus
+#else
+      write(nlog,1095) final%v,fplus
+      write(nout,1095) final%v,fplus
+#endif
  1095 format(/2x,'final   fplus',/2f8.3)
       if (no.le.1) go to 999
       call nmout(le,lg,lt,l3,nie,no,nt,nv)
