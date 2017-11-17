@@ -1,6 +1,7 @@
       module nmhncmod
       use nmvar
       use nmsubmod
+      
       implicit none
 
 
@@ -13,7 +14,9 @@
      &,xgca(lgrid,6)
      &,qcc(6),qdd(6),qde(6),qee(6),pcc(6),pdd(6),pde(6),pee(6)
      &,zca(6),zcb(6),zddl(6),zdel(6),zeel(6),v3st(6), eijk
-      !integer lit(6),mit(6),nit(6)
+      integer, dimension(6) :: lit = [0,2,2,4,4,4]
+      integer, dimension(6) :: mit = [0,2,4,2,4,4]
+      integer, dimension(6) :: nit = [0,2,4,4,2,4]
       !real*8 :: eijk
       public :: nmhnc, three_point_superbonds
       
@@ -50,9 +53,6 @@ c
 c -------------------
 c  data
 c -------------------
-      lit = [0,2,2,4,4,4]
-      mit = [0,2,4,2,4,4]
-      nit = [0,2,4,4,2,4]
 c -------------------
 c statement functions
 c -------------------
