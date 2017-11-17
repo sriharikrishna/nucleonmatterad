@@ -82,7 +82,7 @@ numCore.pre.xb.x2w.w2f.post.f90 :  head_sf.pre.xb.x2w.w2f.f w2f__types.f90 OAD_t
 
 RTSUPP=w2f__types OAD_active OAD_cp OAD_tape OAD_rev
 nmad:   $(addsuffix .o, $(RTSUPP) iaddr) numCore.pre.xb.x2w.w2f.post.o nm.o $(OBJSUB)
-	${F90C} $@  nm.o numCore.pre.xb.x2w.w2f.post.o $(OBJSUB) $(addsuffix .o, $(RTSUPP) iaddr) -lm
+	${F90C} -o $@  nm.o numCore.pre.xb.x2w.w2f.post.o $(OBJSUB) $(addsuffix .o, $(RTSUPP) iaddr) -lm
 
 ad_inline.f: openad/ad_inline_formatted.f
 	cp $< $@
