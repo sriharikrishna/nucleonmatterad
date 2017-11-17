@@ -1278,7 +1278,6 @@ cdir$ ivdep
       end if
       end if
   900 continue
-      write(*,*) "NMHNC in main iteration loop19"
       return
       end subroutine nmhnc
 
