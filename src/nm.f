@@ -16,6 +16,9 @@ c **********************************************************************
       !common /minim/ econ,ncon,ntype
       character*4 etype(3)
       data etype/' jf ',' av ',' pb '/
+#ifdef ALLOW_OPENAD
+      call processargs(argval)
+#endif
       timeit=timer(0.)
       call nmvarinit()
       call header(sysdat,timdat)
@@ -53,6 +56,21 @@ c **********************************************************************
   999 format(/5x,'job time =',f8.3,' seconds')
       stop
       end
+c *id* processargs *****************************************************
+c subroutine for processing command line arguments for OpenAD Case
+c ----------------------------------------------------------------------
+      subroutine processargs(argval)
+      implicit none
+      character(len=32)  :: argval
+      integer argpos, totarg
+      totarg = iargc()  
+      if (totarg .ne. 1) then
+        stop "ERROR: This program takes only one option"
+      end if
+      DO argpos = 1, totarg
+        CALL getarg(argpos, argval)
+      END DO
+      end subroutine processargs
 c *id* nucmat **********************************************************
 c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
@@ -150,6 +168,18 @@ c
     5 g2=g2+(gint(l)+1.)**2
       flocal=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
 #else
+
+      if (argval .eq. "p") then
+      our_rev_mode%plain=.TRUE.
+      our_rev_mode%arg_store=.FALSE.
+      our_rev_mode%arg_restore=.FALSE.
+      our_rev_mode%tape=.FALSE.
+      our_rev_mode%adjoint=.FALSE.
+      our_rev_mode%topsplit=.FALSE.
+      call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
+     &           ,nmlocal)
+      else if (argval .eq. "a") then
       our_rev_mode%plain=.TRUE.
       our_rev_mode%arg_store=.TRUE.
       our_rev_mode%arg_restore=.FALSE.
@@ -171,6 +201,9 @@ c
       call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
      &           ,nmlocal)
+      else
+        stop ("ERROR : Argument must be 'a' or 'p'")
+      end if
 #endif
       no=0
       return
