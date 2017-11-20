@@ -4,8 +4,8 @@ c program for nuclear/neutron matter
 c **********************************************************************
       program nmprog
       use nmvar
-      !implicit real*8 (a-h,o-z)
-      !implicit integer*4 (i-n)
+      implicit real*8 (a-h,o-z)
+      implicit integer*4 (i-n)
       external nucmat
       parameter (maxdim=15)
       external nmvarinit
