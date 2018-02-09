@@ -24,13 +24,15 @@ c
       integer*4 i,iloop,j,jm,jp,k,kqq,l,lcx,lfh,lfk,kbb,kp
       integer*4 kq,lkf,llx,loop,ltx,m,n
       integer*4 lc,ls,lt,ll,lf,no,np,nt,nv
+      real*8 dltx,di,dlfilfh
       real*8 havetobreaka,havetobreakb,havetobreakc,havetobreakd
       !data ets/4*0./
       rt2=sqrt(2.)
       rt5=sqrt(5.)
       lfh=lf/2
       ltx=lf*lt
-      h=dt/float(ltx)
+      dltx = ltx
+      h=dt/dltx
       if (np.le.100) then
         gam=1. ; del=1. ; xmn=1. ; chi=1. ; omg=1. ; ftp=1.
         if (nt.ge.4) then
@@ -47,7 +49,8 @@ c   --------------------
 c   set up r,sl,phi,etc.
 c   --------------------
       do i=1,ltx+1
-        rx(i)=h*float(i)
+        di = i
+        rx(i)=h*di
         rix(i)=1/rx(i)
         rsx(i)=rx(i)*rx(i)
         x=kf*rx(i)
@@ -663,7 +666,8 @@ c -------------------
 c projections for r>d
 c -------------------
       do i=lt+1,lgrid
-        ry=h*float(lf*i-lfh)
+        dlfilfh = lf*i-lfh
+        ry=h*dlfilfh
         rsy=ry*ry
         x=kf*ry
         xx=x*x

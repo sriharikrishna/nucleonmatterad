@@ -30,6 +30,7 @@ c **********************************************************************
       real*8 ek(401),k(401),ks(401),nk(401),wk(401),kinc
       real*8 :: sml,htms,fact,tkfc,drho,x,drhos,chmpts,y
       real*8 :: zlx,zlpx,zldpx,zltpx,z
+      real*8 :: dlk
 c -------------------------------,
 c set k, k**2, e(k), weights w(k)
 c -------------------------------
@@ -37,7 +38,8 @@ c -------------------------------
       htms=.5*h2m/mstar
       chmpot=htms*kf**2
       lk=400
-      kinc=lkf*kf/float(lk)
+      dlk = lk
+      kinc=lkf*kf/dlk
       k(1)=0.
       do 5 ik=2,lk+1
         k(ik)=k(ik-1)+kinc

@@ -33,23 +33,30 @@ c ----------------------------------------------------------------------
       real*8 :: bjpf,x3,x4,x6,ytd,ytc,yqd,yqc,elj,yt1,yt2,yt4,xq,xqex
       real*8 :: w3,vemtot,vc1pp,vc1np,vmmpp,vmmnp,vmmnn,esq,tf,wv,wk
       real*8 :: wf,wj,wp,epb,ejf,ev2,evm,ek2,ekm,ej2,ejm,energy
+      real*8 :: dlc,dls,dlt,dll,dlg,dle
+      dlg=(lg*1.0)
+      dle=(le*1.0)
+      dlc=(lc*1.0)
+      dls=(ls*1.0)
+      dlt=(lt*1.0)
+      dll=(ll*1.0)
       if (kf.eq.0) kf=(1.5*nm*pi**2*rho)**(1./3.)
       if (rho.eq.0) rho=kf**3/(1.5*nm*pi**2)
       r0=(3/(4*pi*rho))**(1./3.)
       if (nm.eq.1) then
         dt=dor*r0
-        dr=dt/float(lt)
+        dr=dt/(dlt)
       else if (nm.ge.2) then
         dc=dor*r0
-        dr=dc/float(lc)
+        dr=dc/(dlc)
       end if
       ltd=2*lt
-      dg=dr*float(lg)
-      de=dr*float(le)
-      dc=dr*float(lc)
-      ds=dr*float(ls)
-      dt=dr*float(lt)
-      dl=dr*float(ll)
+      dg=dr*dlg
+      de=dr*dle
+      dc=dr*dlc
+      ds=dr*dls
+      dt=dr*dlt
+      dl=dr*dll
       dcor=dc/r0
       dtor=dt/r0
 c print ================================================================

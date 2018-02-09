@@ -49,6 +49,7 @@ c
       real*8 :: rmu,rlm,ermu,erlm,pac,pap,dlk,dkn
       integer*4 :: i,j,k,l,m,n,il,ia,jn,ma,mb,mli,np,ikj,jik,lj
       integer*4 :: jl
+      real*8 :: dn
 
 c -------------------
 c  data
@@ -86,7 +87,8 @@ c ---------------------------------------
         q3cne=q3*cne
         q4=2*rho*dr*dr*dphi
         do 20 n=1,nphi
-          cphi(n)=cos((float(n)-.5)*dphi)
+          dn = n
+          cphi(n)=cos((dn-.5)*dphi)
    20   continue
         dx=((le+lg)*dr)**2/lx
         dxi=1/dx
