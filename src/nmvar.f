@@ -100,7 +100,5 @@ c     !&      as(6),at(8,8),ax(6,6,6)
       real*8, dimension(legrid) :: xtheta,ytheta,ztheta,stheta
       integer*4  :: index(lgrid,lgrid,lgrid)
 
-#ifdef ALLOW_OPENAD
       character(len=32) :: argval
-#endif
       end module nmvar
