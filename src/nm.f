@@ -16,9 +16,7 @@ c **********************************************************************
       !common /minim/ econ,ncon,ntype
       character*4 etype(3)
       data etype/' jf ',' av ',' pb '/
-#ifdef ALLOW_OPENAD
       call processargs(argval)
-#endif
       timeit=timer(0.)
       call nmvarinit()
       call header(sysdat,timdat)
@@ -161,12 +159,137 @@ c
 #endif
       end if
 #ifndef ALLOW_OPENAD
+      if (argval .eq. "p" .or. argval .eq. "") then
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do 5 l=1,2,nmlocal
     5 g2=g2+(gint(l)+1.)**2
       flocal=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      else if (argval .eq. "f") then
+      h = 0.0000001
+      
+      call var_transfer_store()
+      
+!! dor
+      call var_transfer_restore()
+      tmp = dor
+      dor = dor + dor * h
+      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,npi,npf)
+      g2=0.
+      do l=1,2,nmlocal
+      g2=g2+(gint(l)+1.)**2
+      end do
+      dor_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      tmp=dor
+!!
+!! bst
+      call var_transfer_restore()
+      tmp = bst
+      bst = bst + bst * h
+      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,npi,npf)
+      g2=0.
+      do l=1,2,nmlocal
+      g2=g2+(gint(l)+1.)**2
+      end do
+      bst_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      tmp=bst
+!!
+!! btn
+      call var_transfer_restore()
+      tmp = btn
+      btn = btn + btn * h
+      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,npi,npf)
+      g2=0.
+      do l=1,2,nmlocal
+      g2=g2+(gint(l)+1.)**2
+      end do
+      btn_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      btn=tmp
+!!
+!! bls
+      call var_transfer_restore()
+      tmp = bls
+      bls = bls + bls * h
+      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,npi,npf)
+      g2=0.
+      do l=1,2,nmlocal
+      g2=g2+(gint(l)+1.)**2
+      end do
+      bls_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      bls=tmp
+!!
+!! ast
+      call var_transfer_restore()
+      tmp = ast
+      ast = ast + ast * h
+      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,npi,npf)
+      g2=0.
+      do l=1,2,nmlocal
+      g2=g2+(gint(l)+1.)**2
+      end do
+      ast_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      ast=tmp
+
+!!
+!! atn
+      call var_transfer_restore()
+      tmp = atn
+      atn = atn + atn * h
+      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,npi,npf)
+      g2=0.
+      do l=1,2,nmlocal
+      g2=g2+(gint(l)+1.)**2
+      end do
+      atn_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      atn=tmp
+
+!!
+!! als
+      call var_transfer_restore()
+      tmp = als
+      als = als + als * h
+      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,npi,npf)
+      g2=0.
+      do l=1,2,nmlocal
+      g2=g2+(gint(l)+1.)**2
+      end do
+      als_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      als = tmp
+!!
+      call var_transfer_restore()
+      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,npi,npf)
+      g2=0.
+      do l=1,2,nmlocal
+      g2=g2+(gint(l)+1.)**2
+      end do
+      flocal=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      dor_d=(dor_d-flocal)/(h)      
+      bst_d=(bst_d-flocal)/(h)      
+      btn_d=(btn_d-flocal)/(h)      
+      bls_d=(bls_d-flocal)/(h)      
+      ast_d=(ast_d-flocal)/(h)      
+      atn_d=(atn_d-flocal)/(h)      
+      als_d=(als_d-flocal)/(h)      
+!!
+      write(*,*) "dor%d", dor_d
+      write(*,*) "bst%d", bst_d
+      write(*,*) "btn%d", btn_d
+      write(*,*) "bls%d", bls_d
+      write(*,*) "ast%d", ast_d
+      write(*,*) "atn%d", atn_d
+      write(*,*) "als%d", als_d
+      else
+        stop ("ERROR : Argument must be 'p' or 'f'")
+      end if
 #else
 
       if (argval .eq. "p") then
