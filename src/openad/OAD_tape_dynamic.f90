@@ -25,12 +25,12 @@ module OAD_tape
   integer, dimension(:), allocatable :: oad_it, itt
   logical, dimension(:), allocatable :: oad_lt, ltt
   character(80), dimension(:), allocatable :: oad_st, stt
-  integer :: oad_dt_ptr=0, oad_it_ptr=0
-  integer :: oad_dt_sz=0, oad_it_sz=0
-  integer :: oad_lt_ptr=0, oad_st_ptr=0
-  integer :: oad_lt_sz=0, oad_st_sz=0
-  integer :: increment
-  integer :: oad_chunk_size
+  integer*8 :: oad_dt_ptr=0, oad_it_ptr=0
+  integer*8 :: oad_dt_sz=0, oad_it_sz=0
+  integer*8 :: oad_lt_ptr=0, oad_st_ptr=0
+  integer*8 :: oad_lt_sz=0, oad_st_sz=0
+  integer*8 :: increment
+  integer*8 :: oad_chunk_size
 
   interface oad_tape_init
     module procedure init
