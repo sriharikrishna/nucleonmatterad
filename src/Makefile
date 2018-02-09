@@ -30,7 +30,7 @@ endif
 OBJ=$(CASE)/obj
 
 OBJFIL= $(OBJ)/nmchain.o $(OBJ)/nmfts.o $(OBJ)/nmhnc.o $(OBJ)/nmmain.o \
-   $(OBJ)/nmsub.o $(OBJ)/nmtbi.o $(OBJ)/params.o $(OBJ)/nmsubmod.o $(OBJ)/nmvar.o
+   $(OBJ)/nmsub.o $(OBJ)/nmtbi.o $(OBJ)/params.o $(OBJ)/nmsubmod.o $(OBJ)/nmvar.o $(OBJ)/nmvarcopypassive.o 
 
 # parameter file names
 
@@ -55,7 +55,7 @@ $(CASE)/$(CASE).x: $(CASE)/nm.o $(OBJFIL) $(OBJSUB)
 
 # case specific subroutines
 
-$(CASE)/nm.o: nm.f $(OBJ)/params.o $(OBJ)/nmvar.o
+$(CASE)/nm.o: nm.f $(OBJ)/params.o $(OBJ)/nmvar.o $(OBJ)/nmvarcopypassive.o
 	$(FC) $(OMP) -c nm.f -o $(CASE)/nm.o
 
 $(OBJ)/nmchain.o: nmchain.f $(OBJ)/params.o $(OBJ)/nmsubmod.o
@@ -81,6 +81,9 @@ $(OBJ)/nmtbi.o: nmtbi.f $(OBJ)/params.o
 
 $(OBJ)/nmvar.o: nmvar.f $(OBJ)/params.o
 	$(FC) -c nmvar.f -o $(OBJ)/nmvar.o
+
+$(OBJ)/nmvarcopypassive.o: nmvar.f $(OBJ)/params.o $(OBJ)/nmvar.o
+	$(FC) -c nmvarcopypassive.f -o $(OBJ)/nmvarcopypassive.o
 
 # common subroutines
 
