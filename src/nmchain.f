@@ -27,6 +27,7 @@ c ----------------------------------------------------------------------
 c ----------------------------------------------------------------------
       real*8 wckx(10),wcjx(10),wcdkx(10),wcdjx(10),wcmjx(10),wcmkx(10)
      &,wcrjx(10),wcrkx(10)
+      real*8    :: dl3
       li=max(lg,l3)
       wvc=0
       wvcs=0
@@ -842,7 +843,8 @@ c print ================================================================
       write(nout,1133)
       write(nout,1140) ((wcrx(i,j),i=1,8),wcrkx(j),wcrjx(j),j=1,2)
       if (nt.ge.1.and.nt.le.3) then
-        d3=dr*float(l3)
+        dl3 = l3
+        d3=dr*dl3
         write(nlog,1300) d3,tnia,tnic,tniu,tnix,cut,cut0
         write(nout,1300) d3,tnia,tnic,tniu,tnix,cut,cut0
  1300   format(/4x,'d3',6x,'a',7x,'c',7x,'u',7x,'x',7x,'cut',5x,'cut0'
