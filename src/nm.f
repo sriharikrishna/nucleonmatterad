@@ -323,11 +323,20 @@ c
       our_rev_mode%tape=.TRUE.
       our_rev_mode%adjoint=.FALSE.
       our_rev_mode%topsplit=.FALSE.
+      call flush(6)
       call cp_init()
       call oad_tape_init()
       call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
      &           ,nmlocal)
+      call flush(6)
+      dor%d = 0.0
+      bst%d = 0.0
+      btn%d = 0.0
+      bls%d = 0.0
+      ast%d = 0.0
+      atn%d = 0.0
+      als%d = 0.0
       flocal%d = 1.0
       our_rev_mode%plain=.FALSE.
       our_rev_mode%arg_store=.FALSE.
@@ -341,6 +350,15 @@ c
       call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
      &           ,nmlocal)
+      write(*,*) "flo%d", flocal%d
+      write(*,*) "dor%d", dor%d
+      write(*,*) "bst%d", bst%d
+      write(*,*) "btn%d", btn%d
+      write(*,*) "bls%d", bls%d
+      write(*,*) "ast%d", ast%d
+      write(*,*) "atn%d", atn%d
+      write(*,*) "als%d", als%d
+      call flush(6)
       else
         stop ("ERROR : Argument must be 'a' or 'p'")
       end if
