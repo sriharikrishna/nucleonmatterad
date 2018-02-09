@@ -49,26 +49,19 @@
 
           if (our_rev_mode%arg_store) then 
             my_cp_file_number = cp_fNumber()
-            write(*,*) "write open cp_file_number", my_cp_file_number!, "ptr", oad_it_ptr
+            !write(*,*) "write open cp_file_number", my_cp_file_number!, "ptr", oad_it_ptr
             call cp_write_open()
-            !if (oad_it_sz.lt.oad_it_ptr) call oad_it_grow()
-            !oad_it(oad_it_ptr) = my_cp_file_number
-            !oad_it_ptr = oad_it_ptr+1
 C store arguments
 !$PLACEHOLDER_PRAGMA$ id=4
-            write(*,*) "write close cp_fNumber()", cp_fNumber(), "my_cp_file_number", my_cp_file_number
+            !write(*,*) "write close cp_fNumber()", cp_fNumber(), "my_cp_file_number", my_cp_file_number
             call cp_close()
           end if 
           if (our_rev_mode%arg_restore) then
-             !oad_it_ptr = oad_it_ptr-1
-             !my_cp_file_number = oad_it(oad_it_ptr)
-             !write(*,*) "read open cp_file_number", my_cp_file_number, "ptr", oad_it_ptr
-             !call cp_read_open(my_cp_file_number)
             call cp_read_open()
-            write(*,*) "read open cp_file_number", cp_fNumber()
+            !write(*,*) "read open cp_file_number", cp_fNumber()
 C restore arguments
 !$PLACEHOLDER_PRAGMA$ id=6
-            write(*,*) "read close cp_file_number", cp_fNumber()
+            !write(*,*) "read close cp_file_number", cp_fNumber()
             call cp_close_and_delete()
           end if
           if (our_rev_mode%plain) then
