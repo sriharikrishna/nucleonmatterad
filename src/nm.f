@@ -74,6 +74,9 @@ c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
       subroutine nucmat(x,n,flocal,lprt)
       use nmvar
+#ifndef ALLOW_OPENAD
+      use nmvarcopypassive
+#endif
 #ifdef ALLOW_OPENAD
       use OAD_tape
       use OAD_rev
@@ -84,6 +87,7 @@ c ----------------------------------------------------------------------
       implicit integer*4 (i-n)
       logical lprt
       real*8 x(n)
+      real*8 tmp, h
       !common /minim/ econ,ncon,ntype
 c
       !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
