@@ -29,8 +29,8 @@ c ----------------------------------------------------------------------
         g2=g2+(gint(l)+1.)**2
       end do 
       flocal=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-!openad DEPENDENT(endiff)
-!openad DEPENDENT(efree)
-!openad DEPENDENT(gint)
+! DEPENDENT(endiff)
+! DEPENDENT(efree)
+! DEPENDENT(gint)
 !$openad DEPENDENT(flocal)
       end
