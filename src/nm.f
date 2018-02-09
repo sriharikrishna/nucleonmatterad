@@ -113,6 +113,7 @@ c
 c
 #ifndef ALLOW_OPENAD
       real*8 gint(6)
+      real*8 dor_d, bst_d, btn_d, bls_d, ast_d, atn_d, als_d
 #endif
       character*20 pname(30),tname(0:5),ptnnam
       character*20 timdat
