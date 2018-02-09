@@ -50,8 +50,8 @@ sico_specs.h: ../runs/headers/sico_specs_$(HEADER).h
 	sed 's%INPATH .*%INPATH '\'''${INDIR}\''%' sico_specs_temp.h | sed 's%OUTPATH .*%OUTPATH '\'''${RESDIR}\''%' > $@
 
 PREPROCESS_FLAGS=--mode=r --inputFormat=fixed
-POSTPROCESS_FLAGS=--mode=r --infoUnitFile w2f__types.f90 -t ad_template.joint.f
-
+#POSTPROCESS_FLAGS=--mode=r --infoUnitFile w2f__types.f90 -t ad_template.joint.f
+POSTPROCESS_FLAGS=--mode=r --infoUnitFile w2f__types.f90 -t ad_template.split.f
 # preprocess F
 head_sf.pre.f: numCore.f90
 	${OPENADROOT}/OpenADFortTk/tools/SourceProcessing/preProcess.py $(PREPROCESS_FLAGS) --timing -o $@ numCore.f90
