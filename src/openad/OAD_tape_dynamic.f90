@@ -75,8 +75,10 @@ module OAD_tape
 contains
 
   subroutine init
-    integer :: initialSize=1048576
-    increment=16777216
+    !integer :: initialSize=1048576
+    integer :: initialSize=1073741824
+    increment=1073741824
+    !increment=16777216
     ! DT
     oad_dt_ptr=1
     if (allocated(oad_dt)) then 
@@ -130,7 +132,7 @@ contains
 
   subroutine dt_grow
     integer status
-    print *, "OAD: DT+ ", oad_dt_sz
+    !print *, "OAD: DT+ ", oad_dt_sz
     allocate(dtt(oad_dt_sz),STAT=status)
     if (status .gt. 0 ) then
        print *,'OAD: allocation (1)failed with', status
@@ -150,7 +152,7 @@ contains
 
   subroutine it_grow
     integer status
-    print *, "OAD: IT+ ", oad_it_sz
+    !print *, "OAD: IT+ ", oad_it_sz
     allocate(itt(oad_it_sz),STAT=status)
     if (status .gt. 0 ) then
        print *,'OAD: allocation (1)failed with', status
@@ -170,7 +172,7 @@ contains
 
   subroutine lt_grow
     integer status
-    print *, "OAD: LT+ ", oad_lt_sz
+    !print *, "OAD: LT+ ", oad_lt_sz
     allocate(ltt(oad_lt_sz),STAT=status)
     if (status .gt. 0 ) then
        print *,'OAD: allocation (1)failed wlth', status
@@ -190,7 +192,7 @@ contains
 
   subroutine st_grow
     integer status
-    print *, "OAD: ST+ ", oad_st_sz
+    !print *, "OAD: ST+ ", oad_st_sz
     allocate(stt(oad_st_sz),STAT=status)
     if (status .gt. 0 ) then
        print *,'OAD: allocation (1)failed wsth', status
