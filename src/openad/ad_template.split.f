@@ -21,15 +21,15 @@
 !$PLACEHOLDER_PRAGMA$ id=1
           end if
           if (our_rev_mode%tape) then
-          if(our_rev_mode%topsplit) then
-            our_rev_mode%topsplit = .FALSE.
-          end if
+          !if(our_rev_mode%topsplit) then
+          !  our_rev_mode%topsplit = .FALSE.
+          !end if
 ! taping
 !$PLACEHOLDER_PRAGMA$ id=2
-          if(our_orig_mode%topsplit) then
-            our_rev_mode%tape = .FALSE.
-            our_rev_mode%adjoint = .TRUE.
-          endif
+          !if(our_orig_mode%topsplit) then
+          !  our_rev_mode%tape = .FALSE.
+          !  our_rev_mode%adjoint = .TRUE.
+          !endif
           end if 
           if (our_rev_mode%adjoint) then
 ! adjoint

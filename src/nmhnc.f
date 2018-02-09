@@ -1283,7 +1283,7 @@ cdir$ ivdep
 
       subroutine three_point_superbonds(i,j,k,lg,le,l3,ni,nie,no,nt,nv,
      &  dxi,q4,sddr,sder,seer,sccr,cphi,rsx,sddx,sdex,seex)
-      !$openad xxx template ad_template.split.f
+      !$ xxx template ad_template.split.f
       ! ad_template.joint.f
       use nmvar
       use nmsubmod
@@ -1360,7 +1360,7 @@ c     &,sccr(lgrid),sddr(lgrid),sder(lgrid),seer(lgrid)
       end subroutine three_point_superbonds
 
       function sdd(j,k,l,m)
-      !$openad xxx template ad_template.split.f
+      !$ xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: sdd 
@@ -1370,7 +1370,7 @@ c     &,sccr(lgrid),sddr(lgrid),sder(lgrid),seer(lgrid)
       end function
 
       function sde(j,k,l,m)
-      !$openad xxx template ad_template.split.f
+      !$ xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: sde 
@@ -1381,7 +1381,7 @@ c     &,sccr(lgrid),sddr(lgrid),sder(lgrid),seer(lgrid)
 
 
       function see(j,k,l,m)
-      !$openad xxx template ad_template.split.f
+      !$ xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 :: see 
@@ -1392,7 +1392,7 @@ c     &,sccr(lgrid),sddr(lgrid),sder(lgrid),seer(lgrid)
 
 
       function udd(j,k,l,m)
-      !$openad xxx template ad_template.split.f
+      !$ xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 udd 
@@ -1403,7 +1403,7 @@ c     &,sccr(lgrid),sddr(lgrid),sder(lgrid),seer(lgrid)
 
 
       function ude(j,k,l,m)
-      !$openad xxx template ad_template.split.f
+      !$ xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 ude 
@@ -1413,7 +1413,7 @@ c     &,sccr(lgrid),sddr(lgrid),sder(lgrid),seer(lgrid)
       end function
 
       function uee(j,k,l,m)
-      !$openad xxx template ad_template.split.f
+      !$ xxx template ad_template.split.f
         use nmvar
         implicit none
         real*8 uee 

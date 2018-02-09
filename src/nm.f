@@ -180,10 +180,20 @@ c
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
      &           ,nmlocal)
       else if (argval .eq. "a") then
-      our_rev_mode%plain=.TRUE.
-      our_rev_mode%arg_store=.TRUE.
+      !our_rev_mode%plain=.TRUE.
+      !our_rev_mode%arg_store=.TRUE.
+      write(*,*) "1flo%d", flocal%d
+      write(*,*) "1dor%d", dor%d
+      write(*,*) "1bst%d", bst%d
+      write(*,*) "1btn%d", btn%d
+      write(*,*) "1bls%d", bls%d
+      write(*,*) "1ast%d", ast%d
+      write(*,*) "1atn%d", atn%d
+      write(*,*) "1als%d", als%d
+      our_rev_mode%plain=.FALSE.
+      our_rev_mode%arg_store=.FALSE.
       our_rev_mode%arg_restore=.FALSE.
-      our_rev_mode%tape=.FALSE.
+      our_rev_mode%tape=.TRUE.
       our_rev_mode%adjoint=.FALSE.
       our_rev_mode%topsplit=.FALSE.
       call cp_init()
@@ -194,10 +204,13 @@ c
       flocal%d = 1.0
       our_rev_mode%plain=.FALSE.
       our_rev_mode%arg_store=.FALSE.
-      our_rev_mode%arg_restore=.TRUE.
-      our_rev_mode%tape=.TRUE.
-      our_rev_mode%adjoint=.FALSE.
-      our_rev_mode%topsplit=.TRUE.
+      !our_rev_mode%arg_restore=.TRUE.
+      !our_rev_mode%tape=.TRUE.
+      our_rev_mode%arg_restore=.FALSE.
+      our_rev_mode%tape=.FALSE.
+      !our_rev_mode%adjoint=.FALSE.
+      our_rev_mode%adjoint=.TRUE.
+      our_rev_mode%topsplit=.FALSE.
       call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
      &           ,nmlocal)
