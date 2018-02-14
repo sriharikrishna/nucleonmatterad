@@ -186,33 +186,33 @@ c
       tmp = dor
       dor = dor + dor * h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,npi,npf)
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do l=1,2,nmlocal
       g2=g2+(gint(l)+1.)**2
       end do
       dor_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      tmp=dor
+      dor=tmp
 !!
 !! bst
       call var_transfer_restore()
       tmp = bst
       bst = bst + bst * h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,npi,npf)
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do l=1,2,nmlocal
       g2=g2+(gint(l)+1.)**2
       end do
       bst_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      tmp=bst
+      bst=tmp
 !!
 !! btn
       call var_transfer_restore()
       tmp = btn
       btn = btn + btn * h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,npi,npf)
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do l=1,2,nmlocal
       g2=g2+(gint(l)+1.)**2
@@ -225,7 +225,7 @@ c
       tmp = bls
       bls = bls + bls * h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,npi,npf)
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do l=1,2,nmlocal
       g2=g2+(gint(l)+1.)**2
@@ -238,7 +238,7 @@ c
       tmp = ast
       ast = ast + ast * h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,npi,npf)
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do l=1,2,nmlocal
       g2=g2+(gint(l)+1.)**2
@@ -252,7 +252,7 @@ c
       tmp = atn
       atn = atn + atn * h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,npi,npf)
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do l=1,2,nmlocal
       g2=g2+(gint(l)+1.)**2
@@ -266,7 +266,7 @@ c
       tmp = als
       als = als + als * h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,npi,npf)
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do l=1,2,nmlocal
       g2=g2+(gint(l)+1.)**2
@@ -276,7 +276,7 @@ c
 !!
       call var_transfer_restore()
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,npi,npf)
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do l=1,2,nmlocal
       g2=g2+(gint(l)+1.)**2
