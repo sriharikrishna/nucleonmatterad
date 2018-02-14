@@ -340,14 +340,6 @@ c
       else if (argval .eq. "a") then
       !our_rev_mode%plain=.TRUE.
       !our_rev_mode%arg_store=.TRUE.
-      write(*,*) "1flo%d", flocal%d
-      write(*,*) "1dor%d", dor%d
-      write(*,*) "1bst%d", bst%d
-      write(*,*) "1btn%d", btn%d
-      write(*,*) "1bls%d", bls%d
-      write(*,*) "1ast%d", ast%d
-      write(*,*) "1atn%d", atn%d
-      write(*,*) "1als%d", als%d
       our_rev_mode%plain=.FALSE.
       our_rev_mode%arg_store=.FALSE.
       our_rev_mode%arg_restore=.FALSE.
@@ -383,7 +375,6 @@ c
       call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocaload
      &           ,nmlocal)
-      write(*,*) "flo%d", flocaload%d
       write(*,*) "dor%d", dor%d
       write(*,*) "bst%d", bst%d
       write(*,*) "btn%d", btn%d
