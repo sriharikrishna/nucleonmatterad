@@ -310,8 +310,9 @@ c
       our_rev_mode%adjoint=.FALSE.
       our_rev_mode%topsplit=.FALSE.
       call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocaload
      &           ,nmlocal)
+      flocal=flocaload%v
       else if (argval .eq. "a") then
       !our_rev_mode%plain=.TRUE.
       !our_rev_mode%arg_store=.TRUE.
