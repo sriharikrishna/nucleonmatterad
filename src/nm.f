@@ -313,6 +313,30 @@ c
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocaload
      &           ,nmlocal)
       flocal=flocaload%v
+#ifdef ALLOW_OPENAD_FORWARD
+      else if (argval .eq. "f") then
+      call flush(6)
+      dor%d(1) = 1.0
+      bst%d(2) = 1.0
+      btn%d(3) = 1.0
+      bls%d(4) = 1.0
+      ast%d(5) = 1.0
+      atn%d(6) = 1.0
+      als%d(7) = 1.0
+      flocaload%d = 0.0
+      call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocaload
+     &           ,nmlocal)
+      flocal=flocaload%v
+      write(*,*) "dor%d", flocaload%d(1)
+      write(*,*) "bst%d", flocaload%d(2)
+      write(*,*) "btn%d", flocaload%d(3)
+      write(*,*) "bls%d", flocaload%d(4)
+      write(*,*) "ast%d", flocaload%d(5)
+      write(*,*) "atn%d", flocaload%d(6)
+      write(*,*) "als%d", flocaload%d(7)
+      call flush(6)
+#else
       else if (argval .eq. "a") then
       !our_rev_mode%plain=.TRUE.
       !our_rev_mode%arg_store=.TRUE.
@@ -368,6 +392,7 @@ c
       write(*,*) "atn%d", atn%d
       write(*,*) "als%d", als%d
       call flush(6)
+#endif
       else
         stop ("ERROR : Argument must be 'a' or 'p'")
       end if
