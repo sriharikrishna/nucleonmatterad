@@ -301,15 +301,6 @@ c     !&      as(6),at(8,8),ax(6,6,6)
 
       c_argval = argval
 
-      c_bst = bst
-      c_btn = btn
-      c_bls = bls
-      c_dor = dor
-      c_gint = gint
-      c_final = final
-      c_flocal = flocal
-      c_endiff = endiff
-      c_efree = efree
       end subroutine var_transfer_store
 
 
@@ -503,14 +494,5 @@ c     !&      as(6),at(8,8),ax(6,6,6)
 
       argval = argval
 
-      bst = c_bst
-      btn = c_btn
-      bls = c_bls
-      dor = c_dor
-      gint = c_gint
-      final = final
-      flocal = c_flocal
-      endiff = c_endiff
-      efree = c_efree
       end subroutine var_transfer_restore
       end module nmvarcopypassive
