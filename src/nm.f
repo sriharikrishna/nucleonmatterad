@@ -392,6 +392,7 @@ c
       write(*,*) "atn%d", atn%d
       write(*,*) "als%d", als%d
       call flush(6)
+      call oad_tape_delete()
 #endif
       else
         stop ("ERROR : Argument must be 'a' or 'p'")
