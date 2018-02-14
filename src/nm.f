@@ -105,7 +105,11 @@ c
       !common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
 #ifdef ALLOW_OPENAD
       type(active) :: bst,btn,bls,dor
-      type(active) :: gint(6),final,flocal,endiff
+      type(active) :: gint(6),final,flocaload,endiff
+#else
+      !real*8:: bst,btn,bls,dor
+      !real*8 :: final,flocal,endiff
+
 #endif
       save nmlocal,np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt
      &,ll,lg,le,l3,lk,npi,npf
@@ -140,6 +144,7 @@ c
       dor=x(1)
 #else
       dor%v=x(1)
+      flocaload%v = flocal 
 #endif
       if (n.ge.2) then
 #ifndef ALLOW_OPENAD
@@ -327,9 +332,11 @@ c
       call flush(6)
       call cp_init()
       call oad_tape_init()
+      flocaload%v=flocal
       call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocaload
      &           ,nmlocal)
+      flocal=flocaload%v
       call flush(6)
       dor%d = 0.0
       bst%d = 0.0
@@ -338,7 +345,7 @@ c
       ast%d = 0.0
       atn%d = 0.0
       als%d = 0.0
-      flocal%d = 1.0
+      flocaload%d = 1.0
       our_rev_mode%plain=.FALSE.
       our_rev_mode%arg_store=.FALSE.
       !our_rev_mode%arg_restore=.TRUE.
@@ -349,9 +356,9 @@ c
       our_rev_mode%adjoint=.TRUE.
       our_rev_mode%topsplit=.FALSE.
       call nmmainad(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocal
+     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree,flocaload
      &           ,nmlocal)
-      write(*,*) "flo%d", flocal%d
+      write(*,*) "flo%d", flocaload%d
       write(*,*) "dor%d", dor%d
       write(*,*) "bst%d", bst%d
       write(*,*) "btn%d", btn%d
