@@ -1,16 +1,18 @@
 # nucleonmatterad
-Algorithmic differentiation of either symmetric nuclean matter (SNM) or putre nucleon matter (PNM). 
+Algorithmic differentiation of either symmetric nuclean matter (SNM) or pure nucleon matter (PNM). 
+
+Description of the files in the original code:
 
 file		subroutines	calls           notes
                 (entries)
 ----		-----------	-----           -----
-nm.f		nm		header          driving code
+src/nm.f	nm		header          driving code
 		nucmat		timer           computes energy for one set of
 		(nminit)	minimi          parameters and optionally 
 		(nmfin)		nmmain          calls minimization package
 				nmout           to search for best values
 
-nmspot.f        nmspot          header          alternate driving code 
+src/nmspot.f    nmspot          header          alternate driving code 
                                 timer		for single-particle potential
                                 nmmain
 
@@ -18,7 +20,7 @@ nm.in                                           sample input deck
 
 nm.out                                          sample output deck
 
-nmmain.f:	nmmain		nmfts           main energy computation
+src/nmmain.f:	nmmain		nmfts           main energy computation
 				nmhot           calls correlation generator
 				nmsps           and fhnc/soc chain solver
                                 nmchain         sums 2-body and separable
@@ -26,18 +28,18 @@ nmmain.f:	nmmain		nmfts           main energy computation
 				nmtbi
 				nmpion
 
-nmchain.f       nmchain		-----           sums chain energies
+src/nmchain.f	nmchain		-----           sums chain energies
 
-nmfts.f		nmfts		setpot          correlation generator
+src/nmfts.f	nmfts		setpot          correlation generator
 				nmhot
 				pot (4x)
 
-nmhnc.f		nmhnc		locate          solves fhnc/soc equations
+src/nmhnc.f	nmhnc		locate          solves fhnc/soc equations
                                 polint
 
-nmtbi.f		nmtbi		-----           Vijk, U, UF integrations
+src/nmtbi.f	nmtbi		-----           Vijk, U, UF integrations
 
-nmsub.f		nmhot		-----           finite temperature setup
+src/nmsub.f	nmhot		-----           finite temperature setup
 		nmsps                           single-particle potential setup
 		nmpion                          excess pion calculation
 		nmout                           output routine
@@ -84,3 +86,65 @@ linpack.f	dgeco		                standard linpack routines
 		dscal
 		dswap
 		idamax
+
+
+
+Obtaining the Nucleonmatter code
+--------------------------------
+The code can be cloned from
+git clone https://github.com/sriharikrishna/nucleonmatterad.git
+
+or checked out of
+svn co https://repocafe.cels.anl.gov/repos/nucleonmatter
+
+Installing OpenAD
+-----------------
+Comprehensive instructions on obtianing and building
+OpenAD are available at
+http://www.mcs.anl.gov/OpenAD/
+
+
+Creating the differentiated code
+-----------------
+1. Every session must start with executing
+source setenv.sh
+OR 
+source setenv.csh 
+within OpenAD source directory. 
+
+2. Change directory to src
+
+3. Based on whether one wants to run pnm or snm versions and
+   forward mode (tangent linear) or reverse mode (adjoint) AD 
+   one can employ the following commands
+
+   a.  Forward mode AD code for snm
+   make -f MakefileOpenADF clean ; make prep CASE=snm ; make -f MakefileOpenADF
+
+   b.  Reverse mode AD code for snm
+   make -f MakefileOpenAD clean ; make prep CASE=snm ; make -f MakefileOpenAD
+
+   c.  Forward mode AD code for pnm
+   make -f MakefileOpenADF clean ; make prep CASE=pnm ; make -f MakefileOpenADF
+
+   d.  Reverse mode AD code for pnm
+   make -f MakefileOpenADclean ; make prep CASE=pnm ; make -f MakefileOpenAD
+
+4. Running the differentiated code
+   -----------------
+   Based on the differenitated code, one should either
+   nmad a < inputfile > outputfile
+   or
+   nmad a < inputfile > outputfile
+
+Running Finite Differences
+----------------- 
+1. Change directory to src
+2. Run either
+   make clean ; make prep CASE=snm ; make CASE=snm
+   or
+   make clean ; make prep CASE=pnm ; make CASE=pnm
+3. Then run
+   snm/snm.x f < inputfile > outputfile
+   or
+   pnm/pnm.x f < inputfile > outputfile
