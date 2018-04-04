@@ -87,7 +87,7 @@ c ----------------------------------------------------------------------
       implicit integer*4 (i-n)
       logical lprt
       real*8 x(n)
-      real*8 tmp, h
+      real*8 h
       !common /minim/ econ,ncon,ntype
 c
       !real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
@@ -118,6 +118,8 @@ c
 #ifndef ALLOW_OPENAD
       real*8 gint(6)
       real*8 dor_d, bst_d, btn_d, bls_d, ast_d, atn_d, als_d
+      real*8 tmp_dor, tmp_bst, tmp_btn, tmp_bls
+      real*8 tmp_ast, tmp_atn, tmp_als
 #endif
       character*20 pname(30),tname(0:5),ptnnam
       character*20 timdat
@@ -177,14 +179,22 @@ c
     5 g2=g2+(gint(l)+1.)**2
       flocal=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
       else if (argval .eq. "f") then
+      write(*,*) "dor%v", dor, "bls%v", bls
       h = 0.0000001
+      tmp_dor=dor    
+      tmp_bst=bst      
+      tmp_btn=btn      
+      tmp_bls=bls      
+      tmp_ast=ast      
+      tmp_atn=atn      
+      tmp_als=als      
       
       call var_transfer_store()
       
 !! dor
       call var_transfer_restore()
-      tmp = dor
-      dor = dor + dor * h
+      dor = dor + dor * h 
+      !dor = dor + h*10000
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
@@ -192,12 +202,18 @@ c
       g2=g2+(gint(l)+1.)**2
       end do
       dor_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      dor=tmp
+      dor=tmp_dor    
+      bst=tmp_bst      
+      btn=tmp_btn      
+      bls=tmp_bls      
+      ast=tmp_ast      
+      atn=tmp_atn      
+      als=tmp_als      
 !!
 !! bst
       call var_transfer_restore()
-      tmp = bst
       bst = bst + bst * h
+      !bst = bst +  h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
@@ -205,12 +221,18 @@ c
       g2=g2+(gint(l)+1.)**2
       end do
       bst_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      bst=tmp
+      dor=tmp_dor    
+      bst=tmp_bst      
+      btn=tmp_btn      
+      bls=tmp_bls      
+      ast=tmp_ast      
+      atn=tmp_atn      
+      als=tmp_als      
 !!
 !! btn
       call var_transfer_restore()
-      tmp = btn
       btn = btn + btn * h
+      !btn = btn + h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
@@ -218,12 +240,21 @@ c
       g2=g2+(gint(l)+1.)**2
       end do
       btn_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      btn=tmp
+      dor=tmp_dor    
+      bst=tmp_bst      
+      btn=tmp_btn      
+      bls=tmp_bls      
+      ast=tmp_ast      
+      atn=tmp_atn      
+      als=tmp_als      
 !!
 !! bls
       call var_transfer_restore()
-      tmp = bls
-      bls = bls + bls * h
+      if(bls.ne.0.0) then
+        bls = bls + bls * h
+      else
+        bls = bls+ h
+      end if 
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
@@ -231,12 +262,18 @@ c
       g2=g2+(gint(l)+1.)**2
       end do
       bls_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      bls=tmp
+      dor=tmp_dor    
+      bst=tmp_bst      
+      btn=tmp_btn      
+      bls=tmp_bls      
+      ast=tmp_ast      
+      atn=tmp_atn      
+      als=tmp_als      
 !!
 !! ast
       call var_transfer_restore()
-      tmp = ast
       ast = ast + ast * h
+      !ast = ast + h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
@@ -244,13 +281,19 @@ c
       g2=g2+(gint(l)+1.)**2
       end do
       ast_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      ast=tmp
+      dor=tmp_dor    
+      bst=tmp_bst      
+      btn=tmp_btn      
+      bls=tmp_bls      
+      ast=tmp_ast      
+      atn=tmp_atn      
+      als=tmp_als      
 
 !!
 !! atn
       call var_transfer_restore()
-      tmp = atn
       atn = atn + atn * h
+      !atn = atn + h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
@@ -258,13 +301,19 @@ c
       g2=g2+(gint(l)+1.)**2
       end do
       atn_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      atn=tmp
+      dor=tmp_dor    
+      bst=tmp_bst      
+      btn=tmp_btn      
+      bls=tmp_bls      
+      ast=tmp_ast      
+      atn=tmp_atn      
+      als=tmp_als      
 
 !!
 !! als
       call var_transfer_restore()
-      tmp = als
       als = als + als * h
+      !als = als + h
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
@@ -272,7 +321,12 @@ c
       g2=g2+(gint(l)+1.)**2
       end do
       als_d=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      als = tmp
+      bst=tmp_bst      
+      btn=tmp_btn      
+      bls=tmp_bls      
+      ast=tmp_ast      
+      atn=tmp_atn      
+      als=tmp_als      
 !!
       call var_transfer_restore()
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
@@ -282,13 +336,17 @@ c
       g2=g2+(gint(l)+1.)**2
       end do
       flocal=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      dor_d=(dor_d-flocal)/(h)      
-      bst_d=(bst_d-flocal)/(h)      
-      btn_d=(btn_d-flocal)/(h)      
-      bls_d=(bls_d-flocal)/(h)      
-      ast_d=(ast_d-flocal)/(h)      
-      atn_d=(atn_d-flocal)/(h)      
-      als_d=(als_d-flocal)/(h)      
+      dor_d=(dor_d-flocal)/(tmp_dor*h)      
+      bst_d=(bst_d-flocal)/(tmp_bst*h)      
+      btn_d=(btn_d-flocal)/(tmp_btn*h)     
+      if(tmp_bls.ne.0.0) then  
+        bls_d=(bls_d-flocal)/(tmp_bls*h)      
+      else
+        bls_d=(bls_d-flocal)/(h)      
+      end if
+      ast_d=(ast_d-flocal)/(tmp_ast*h)      
+      atn_d=(atn_d-flocal)/(tmp_atn*h)      
+      als_d=(als_d-flocal)/(tmp_als*h)      
 !!
       write(*,*) "dor%d", dor_d
       write(*,*) "bst%d", bst_d
