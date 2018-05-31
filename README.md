@@ -1,5 +1,5 @@
 # nucleonmatterad
-Algorithmic differentiation of either symmetric nuclean matter (SNM) or pure nucleon matter (PNM). 
+Algorithmic differentiation of either symmetric nuclear matter (SNM) or pure neutron matter (PNM). 
 
 Description of the files in the original code:
 
