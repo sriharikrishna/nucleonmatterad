@@ -11,14 +11,9 @@ c ----------------------------------------------------------------------
 
       parameter (nlog=0,nin=5,nout=6)
       common /minim/ econ,ncon,ntype
-c
+      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
      &       h2m,h2mcs,pi,s
-      common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /pionic/ eav,fsof,plm,qmin,qmax
-      common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
       real*8 :: dor,bst,btn,bls,endiff,efree,gint(6),flocal
       integer*4 :: np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
       integer*4 :: npi,npf,l1,l2, nmlocal
