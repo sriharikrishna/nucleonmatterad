@@ -81,16 +81,6 @@ c ----------------------------------------------------------------------
       logical lpotls,lpotll
       common /logpot/ lpotls,lpotll
       logical llpotls(30),llpotll(30)
-      data llpotls/.false.,.true.,.true.,.true.,.true.,.true.,.true.
-     &            ,.true.,.true.,.true.,.false.,.false.,.false.,.false.
-     &            ,.false.,.true.,.true.,.true.,.true.,.true.,.true.
-     &            ,.true.,.true.,.true.,.true.,.true.,.true.,.true.
-     $            ,.true.,.true./
-      data llpotll/.false.,.false.,.true.,.false.,.true.,.true.,.true.
-     &            ,.true.,.true.,.false.,.false.,.false.,.false.,.false.
-     &            ,.false.,.true.,.true.,.true.,.true.,.true.,.true.
-     &            ,.false.,.true.,.false.,.true.,.true.,.true.,.true.
-     $            ,.false.,.true./
       dimension vv(22),vp(12),vw(10)
       real*8 mpi0,mpic,mpi,mpis,mpiq,mp,mn,mu0,muc,mu,mus,muq
       real*8 krho,komg,lam,lamp,lamw,mrho,momg,murho,muomg
@@ -99,9 +89,10 @@ c ----------------------------------------------------------------------
      &,pgvb01(12),pgvb11(12),pgvb00(12),pgvb10(12)
      &,pgvls1(12),pgvt1(12),pgvso21(12)
      &,pgvls0(12),pgvt0(12),pgvso20(12)
-      save lpot,ftpec,pimass1,pimass2,pimass3,wsrange,tnr
-      save mp,mn
-      data small/1e-4/,vsmall/1e-10/
+      common /mypot/ lpot,ftpec,pimass1,pimass2,pimass3,
+     & wsrange,tnr,mp,mn
+c      save lpot,ftpec,pimass1,pimass2,pimass3,wsrange,tnr
+c      save mp,mn
 c -------------------
 c statement functions
 c -------------------
@@ -113,6 +104,70 @@ c -------------------
       pt(t)=(1+3/t+3/t**2)
       pls(t)=(1+1/t)/t
       pso2(t)=(1+3/t+3/t**2)/t**2
+
+      llpotls(1) =.false.
+      llpotls(2) =.true.
+      llpotls(3) =.true.
+      llpotls(4) =.true.
+      llpotls(5) =.true.
+      llpotls(6) =.true.
+      llpotls(7) =.true.
+      llpotls(8) =.true.
+      llpotls(9) =.true.
+      llpotls(10) =.true.
+      llpotls(11) =.false.
+      llpotls(12) =.false.
+      llpotls(13) =.false.
+      llpotls(14) =.false.
+      llpotls(15) =.false.
+      llpotls(16) =.true.
+      llpotls(17) =.true.
+      llpotls(18) =.true.
+      llpotls(19) =.true.
+      llpotls(20) =.true.
+      llpotls(21) =.false.
+      llpotls(22) =.false.
+      llpotls(23) =.false.
+      llpotls(24) =.false.
+      llpotls(25) =.false.
+      llpotls(26) =.true.
+      llpotls(27) =.true.
+      llpotls(28) =.true.
+      llpotls(29) =.true.
+      llpotls(30) =.true.
+
+      llpotll(1) =.false.
+      llpotll(2) =.false.
+      llpotll(3) =.true.
+      llpotll(4) =.false.
+      llpotll(5) =.true.
+      llpotll(6) =.true.
+      llpotll(7) =.true.
+      llpotll(8) =.true.
+      llpotll(9) =.true.
+      llpotll(10) =.false.
+      llpotll(11) =.false.
+      llpotll(12) =.false.
+      llpotll(13) =.false.
+      llpotll(14) =.false.
+      llpotll(15) =.false.
+      llpotll(16) =.true.
+      llpotll(17) =.true.
+      llpotll(18) =.true.
+      llpotll(19) =.true.
+      llpotll(20) =.true.
+      llpotll(21) =.true.
+      llpotll(22) =.false.
+      llpotll(23) =.true.
+      llpotll(24) =.false.
+      llpotll(25) =.true.
+      llpotll(26) =.true.
+      llpotll(27) =.true.
+      llpotll(28) =.true.
+      llpotll(29) =.false.
+      llpotll(30) =.true.
+      small=1e-4
+      vsmall=1e-10
 c -------------
 c set hbar**2/m
 c -------------
@@ -150,50 +205,212 @@ c ------------------------------
 c --------------------
 c paris initialization
 c --------------------
-      data pm1/.684026,1.6,2.3,3.0,3.7,4.4,5.1,5.8,6.5,8.2,9.9,11.3/
-      data pm0/.699536,1.6,2.3,3.0,3.7,4.4,5.1,5.8,6.5,8.2,9.9,11.3/
-      data pgva01/-10.077427,-120.49564,-212.36460,-8717.4198
-     &           , 54383.377,-213421.47, 494583.57,-667153.34
-     &           , 529575.98,-137034.12,-346971.94,         0/
-      data pgva11/ 3.3591422,-86.479568,-465.93111, 1867.3085
-     &           , 3850.9213,-19674.338, 123231.40,-314493.61
-     &           , 242424.40, 166904.04,-485343.64,         0/
-      data pgvb01/ .0026851393,.051092455,-.84264258,14.736312
-     &           ,-145.21993, 841.58389,-2786.1170, 5056.4510
-     &           ,-3367.4205,-1784.5529, 5354.8266,         0/
-      data pgvb11/-.00089504644,.037488481,-.89373089,14.123475
-     &           ,-146.60152, 841.91462,-2839.4273, 5265.3427
-     &           ,-3500.0430,-2487.9479, 7306.8121,         0/
-      data pgvls1/         0,-426.00359, 26279.517,-575570.33
-     &           , 6003393.4,-34519443.,113554590.,-207292090.
-     &           ,171315480.,-86418222.,         0,         0/
-      data pgvt1 / 3.3591422,-.85945824,-104.76340, 1262.9465
-     &           ,-18881.061, 106132.46,-332119.10, 555857.62
-     &           ,-349166.64,-119450.13,         0,         0/
-      data pgvso21/        0,-.52218640, 186.44558,-3709.1115
-     &           , 55913.117,-369985.60, 1453754.3,-3135247.1
-     &           , 2433908.1,         0,         0,         0/
-      data pgva00/ 32.290874,-82.465631, 1232.9384,-16859.879
-     &           , 172926.83,-768352.77, 2189047.5,-3844728.7
-     &           , 2799055.9, 502518.28,-2600612.4,         0/
-      data pgva10/-10.763625,-42.973669,-718.56844, 4246.9120
-     &           ,-34574.024, 126711.69,-274168.41, 529607.24
-     &           ,-366067.13,-223036.73, 406838.33,         0/
-      data pgvb00/-.0085980096,.026814385,-1.3280693,10.324289
-     &           ,-115.27067, 694.56175,-2387.9335, 4238.8011
-     &           ,-2452.1604,-1951.2821, 4180.1160,         0/
-      data pgvb10/ .0028660032,-.00081798046,-.53314560,.83162030
-     &           ,-31.192395, 300.41384,-1241.5067, 2476.2241
-     &           ,-1304.3030,-2149.6577, 4099.6917,         0/
-      data pgvls0/         0,-66.176421, 2890.3688,-62592.400
-     &           , 691461.41,-4096914.6, 14032093.,-26827468.
-     &           , 23511442.,-14688461.,         0,         0/
-      data pgvt0 /-10.763625,-.46818029, 60.147739, 352.56941
-     &           , 514.32170, 11637.302,-44595.415, 69211.738
-     &           ,-48127.668, 7051.4008,         0,         0/
-      data pgvso20/        0,-.62851020,-76.290197,-788.27581
-     &           ,-6490.4798, 5473.4378,-32941.912, 249491.32
-     &           ,-16012.956,         0,         0,         0/
+      pm1(1)=.684026
+      pm1(2)=1.6
+      pm1(3)=2.3
+      pm1(4)=3.0
+      pm1(5)=3.7
+      pm1(6)=4.4
+      pm1(7)=5.1
+      pm1(8)=5.8
+      pm1(9)=6.5
+      pm1(10)=8.2
+      pm1(11)=9.9
+      pm1(12)=11.3
+
+      pm0(1)=.699536
+      pm0(2)=1.6
+      pm0(3)=2.3
+      pm0(4)=3.0
+      pm0(5)=3.7
+      pm0(6)=4.4
+      pm0(7)=5.1
+      pm0(8)=5.8
+      pm0(9)=6.5
+      pm0(10)=8.2
+      pm0(11)=9.9
+      pm0(12)=11.3
+      pgva01(1)=-10.077427
+      pgva01(2)=-120.49564
+      pgva01(3)=-212.36460
+      pgva01(4)=-8717.4198
+      pgva01(5)= 54383.377
+      pgva01(6)=-213421.47
+      pgva01(7)= 494583.57
+      pgva01(8)=-667153.34
+      pgva01(9)= 529575.98
+      pgva01(10)=-137034.12
+      pgva01(11)=-346971.94
+      pgva01(12)=         0
+
+      pgva11(1)= 3.3591422
+      pgva11(2)=-86.479568
+      pgva11(3)=-465.93111
+      pgva11(4)= 1867.3085
+      pgva11(5)= 3850.9213
+      pgva11(6)=-19674.338
+      pgva11(7)= 123231.40
+      pgva11(8)=-314493.61
+      pgva11(9)= 242424.40
+      pgva11(10)= 166904.04
+      pgva11(11)=-485343.64
+      pgva11(12)=         0
+
+      pgvb01(1)= .0026851393
+      pgvb01(2)=.051092455
+      pgvb01(3)=-.84264258
+      pgvb01(4)=14.736312
+      pgvb01(5)=-145.21993
+      pgvb01(6)= 841.58389
+      pgvb01(7)=-2786.1170
+      pgvb01(8)= 5056.4510
+      pgvb01(9)=-3367.4205
+      pgvb01(10)=-1784.5529
+      pgvb01(11)= 5354.8266
+      pgvb01(12)=         0
+
+      pgvb11(1)=-.00089504644
+      pgvb11(2)=.037488481
+      pgvb11(3)=-.89373089
+      pgvb11(4)=14.123475
+      pgvb11(5)=-146.60152
+      pgvb11(6)= 841.91462
+      pgvb11(7)=-2839.4273
+      pgvb11(8)= 5265.3427
+      pgvb11(9)=-3500.0430
+      pgvb11(10)=-2487.9479
+      pgvb11(11)= 7306.8121
+      pgvb11(12)=         0
+
+      pgvls1(1)=         0
+      pgvls1(2)=-426.00359
+      pgvls1(3)= 26279.517
+      pgvls1(4)=-575570.33
+      pgvls1(5)= 6003393.4
+      pgvls1(6)=-34519443.
+      pgvls1(7)=113554590.
+      pgvls1(8)=-207292090.
+      pgvls1(9)=171315480.
+      pgvls1(10)=-86418222.
+      pgvls1(11)=         0
+      pgvls1(12)=         0
+
+      pgvt1(1)= 3.3591422
+      pgvt1(2)=-.85945824
+      pgvt1(3)=-104.76340
+      pgvt1(4)= 1262.9465
+      pgvt1(5)=-18881.061
+      pgvt1(6)= 106132.46
+      pgvt1(7)=-332119.10
+      pgvt1(8)= 555857.62
+      pgvt1(9)=-349166.64
+      pgvt1(10)=-119450.13
+      pgvt1(11)=         0
+      pgvt1(12)=         0
+
+      pgvso21(1)=        0
+      pgvso21(2)=-.52218640
+      pgvso21(3)= 186.44558
+      pgvso21(4)=-3709.1115
+      pgvso21(5)= 55913.117
+      pgvso21(6)=-369985.60
+      pgvso21(7)= 1453754.3
+      pgvso21(8)=-3135247.1
+      pgvso21(9)= 2433908.1
+      pgvso21(10)=         0
+      pgvso21(11)=         0
+      pgvso21(12)=         0
+
+      pgva00(1)= 32.290874
+      pgva00(2)=-82.465631
+      pgva00(3)= 1232.9384
+      pgva00(4)=-16859.879
+      pgva00(5)= 172926.83
+      pgva00(6)=-768352.77
+      pgva00(7)= 2189047.5
+      pgva00(8)=-3844728.7
+      pgva00(9)= 2799055.9
+      pgva00(10)= 502518.28
+      pgva00(11)=-2600612.4
+      pgva00(12)=         0
+
+      pgva10(1)=-10.763625
+      pgva10(2)=-42.973669
+      pgva10(3)=-718.56844
+      pgva10(4)= 4246.9120
+      pgva10(5)=-34574.024
+      pgva10(6)= 126711.69
+      pgva10(7)=-274168.41
+      pgva10(8)= 529607.24
+      pgva10(9)=-366067.13
+      pgva10(10)=-223036.73
+      pgva10(11)= 406838.33
+      pgva10(12)=         0
+
+      pgvb00(1)=-.0085980096
+      pgvb00(2)=.026814385
+      pgvb00(3)=-1.3280693
+      pgvb00(4)=10.324289
+      pgvb00(5)=-115.27067
+      pgvb00(6)= 694.56175
+      pgvb00(7)=-2387.9335
+      pgvb00(8)= 4238.8011
+      pgvb00(9)=-2452.1604
+      pgvb00(10)=-1951.2821
+      pgvb00(11)= 4180.1160
+      pgvb00(12)=         0
+
+      pgvb10(1)= .0028660032
+      pgvb10(2)=-.00081798046
+      pgvb10(3)=-.53314560
+      pgvb10(4)=.83162030
+      pgvb10(5)=-31.192395
+      pgvb10(6)= 300.41384
+      pgvb10(7)=-1241.5067
+      pgvb10(8)= 2476.2241
+      pgvb10(9)=-1304.3030
+      pgvb10(10)=-2149.6577
+      pgvb10(11)= 4099.6917
+      pgvb10(12)=         0
+
+      pgvls0(1)=         0
+      pgvls0(2)=-66.176421
+      pgvls0(3)= 2890.3688
+      pgvls0(4)=-62592.400
+      pgvls0(5)= 691461.41
+      pgvls0(6)=-4096914.6
+      pgvls0(7)= 14032093.
+      pgvls0(8)=-26827468.
+      pgvls0(9)= 23511442.
+      pgvls0(10)=-14688461.
+      pgvls0(11)=         0
+      pgvls0(12)=         0
+
+      pgvt0(1)=-10.763625
+      pgvt0(2)=-.46818029
+      pgvt0(3)= 60.147739
+      pgvt0(4)= 352.56941
+      pgvt0(5)= 514.32170
+      pgvt0(6)= 11637.302
+      pgvt0(7)=-44595.415
+      pgvt0(8)= 69211.738
+      pgvt0(9)=-48127.668
+      pgvt0(10)= 7051.4008
+      pgvt0(11)=         0
+      pgvt0(12)=         0
+
+      pgvso20(1)=        0
+      pgvso20(2)=-.62851020
+      pgvso20(3)=-76.290197
+      pgvso20(4)=-788.27581
+      pgvso20(5)=-6490.4798
+      pgvso20(6)= 5473.4378
+      pgvso20(7)=-32941.912
+      pgvso20(8)= 249491.32
+      pgvso20(9)=-16012.956
+      pgvso20(10)=         0
+      pgvso20(11)=         0
+      pgvso20(12)=         0
       if (lpot.eq.30) then
       suma01=0
       suma11=0
@@ -289,8 +506,312 @@ c --------------------
      &           /((pm0(11)**2-pm0(12)**2)*(pm0(10)**2-pm0(12)**2))
       end if
       return
+      end subroutine
 c **********************************************************************
-      entry pot(lr,rr,vv,vp,vw)
+c      entry pot(lr,rr,vv,vp,vw)
+c      subroutine setpot(lpotin,xmn,gam,rho,chi,omg,ftp,h2m,h2mcsb)
+      subroutine pot(lr,rr,vv,vp,vw)
+      implicit real*8 (a-h,o-z)
+      implicit integer (i-n)
+c      logical lpotls,lpotll
+      common /logpot/ lpotls,lpotll
+      logical llpotls(30),llpotll(30)
+      dimension vv(22),vp(12),vw(10)
+      real*8 mpi0,mpic,mpi,mpis,mpiq,mp,mn,mu0,muc,mu,mus,muq
+      real*8 krho,komg,lam,lamp,lamw,mrho,momg,murho,muomg
+      dimension pm0(12),pm1(12)
+     &,pgva01(12),pgva11(12),pgva00(12),pgva10(12)
+     &,pgvb01(12),pgvb11(12),pgvb00(12),pgvb10(12)
+     &,pgvls1(12),pgvt1(12),pgvso21(12)
+     &,pgvls0(12),pgvt0(12),pgvso20(12)
+      common /mypot/ lpot,ftpec,pimass1,pimass2,pimass3,
+     & wsrange,tnr,mp,mn
+c      save lpot,ftpec,pimass1,pimass2,pimass3,wsrange,tnr
+c      save mp,mn
+c -------------------
+c statement functions
+c -------------------
+      yc(t)=exp(-t)/x
+      yt(t)=(1+3/t+3/t**2)*exp(-t)/x
+      yls(t)=-(1+t)*exp(-t)/x**3
+      yl2(t)=(1+2/t)*exp(-t)/x**3
+      pc(t)=exp(-t)/t
+      pt(t)=(1+3/t+3/t**2)
+      pls(t)=(1+1/t)/t
+      pso2(t)=(1+3/t+3/t**2)/t**2
+c --------------------
+c paris initialization
+c --------------------
+      llpotls(1) =.false.
+      llpotls(2) =.true.
+      llpotls(3) =.true.
+      llpotls(4) =.true.
+      llpotls(5) =.true.
+      llpotls(6) =.true.
+      llpotls(7) =.true.
+      llpotls(8) =.true.
+      llpotls(9) =.true.
+      llpotls(10) =.true.
+      llpotls(11) =.false.
+      llpotls(12) =.false.
+      llpotls(13) =.false.
+      llpotls(14) =.false.
+      llpotls(15) =.false.
+      llpotls(16) =.true.
+      llpotls(17) =.true.
+      llpotls(18) =.true.
+      llpotls(19) =.true.
+      llpotls(20) =.true.
+      llpotls(21) =.false.
+      llpotls(22) =.false.
+      llpotls(23) =.false.
+      llpotls(24) =.false.
+      llpotls(25) =.false.
+      llpotls(26) =.true.
+      llpotls(27) =.true.
+      llpotls(28) =.true.
+      llpotls(29) =.true.
+      llpotls(30) =.true.
+
+      llpotll(1) =.false.
+      llpotll(2) =.false.
+      llpotll(3) =.true.
+      llpotll(4) =.false.
+      llpotll(5) =.true.
+      llpotll(6) =.true.
+      llpotll(7) =.true.
+      llpotll(8) =.true.
+      llpotll(9) =.true.
+      llpotll(10) =.false.
+      llpotll(11) =.false.
+      llpotll(12) =.false.
+      llpotll(13) =.false.
+      llpotll(14) =.false.
+      llpotll(15) =.false.
+      llpotll(16) =.true.
+      llpotll(17) =.true.
+      llpotll(18) =.true.
+      llpotll(19) =.true.
+      llpotll(20) =.true.
+      llpotll(21) =.true.
+      llpotll(22) =.false.
+      llpotll(23) =.true.
+      llpotll(24) =.false.
+      llpotll(25) =.true.
+      llpotll(26) =.true.
+      llpotll(27) =.true.
+      llpotll(28) =.true.
+      llpotll(29) =.false.
+      llpotll(30) =.true.
+      small=1e-4
+      vsmall=1e-10
+
+      pm1(1)=.684026
+      pm1(2)=1.6
+      pm1(3)=2.3
+      pm1(4)=3.0
+      pm1(5)=3.7
+      pm1(6)=4.4
+      pm1(7)=5.1
+      pm1(8)=5.8
+      pm1(9)=6.5
+      pm1(10)=8.2
+      pm1(11)=9.9
+      pm1(12)=11.3
+
+      pm0(1)=.699536
+      pm0(2)=1.6
+      pm0(3)=2.3
+      pm0(4)=3.0
+      pm0(5)=3.7
+      pm0(6)=4.4
+      pm0(7)=5.1
+      pm0(8)=5.8
+      pm0(9)=6.5
+      pm0(10)=8.2
+      pm0(11)=9.9
+      pm0(12)=11.3
+      pgva01(1)=-10.077427
+      pgva01(2)=-120.49564
+      pgva01(3)=-212.36460
+      pgva01(4)=-8717.4198
+      pgva01(5)= 54383.377
+      pgva01(6)=-213421.47
+      pgva01(7)= 494583.57
+      pgva01(8)=-667153.34
+      pgva01(9)= 529575.98
+      pgva01(10)=-137034.12
+      pgva01(11)=-346971.94
+      pgva01(12)=         0
+
+      pgva11(1)= 3.3591422
+      pgva11(2)=-86.479568
+      pgva11(3)=-465.93111
+      pgva11(4)= 1867.3085
+      pgva11(5)= 3850.9213
+      pgva11(6)=-19674.338
+      pgva11(7)= 123231.40
+      pgva11(8)=-314493.61
+      pgva11(9)= 242424.40
+      pgva11(10)= 166904.04
+      pgva11(11)=-485343.64
+      pgva11(12)=         0
+
+      pgvb01(1)= .0026851393
+      pgvb01(2)=.051092455
+      pgvb01(3)=-.84264258
+      pgvb01(4)=14.736312
+      pgvb01(5)=-145.21993
+      pgvb01(6)= 841.58389
+      pgvb01(7)=-2786.1170
+      pgvb01(8)= 5056.4510
+      pgvb01(9)=-3367.4205
+      pgvb01(10)=-1784.5529
+      pgvb01(11)= 5354.8266
+      pgvb01(12)=         0
+
+      pgvb11(1)=-.00089504644
+      pgvb11(2)=.037488481
+      pgvb11(3)=-.89373089
+      pgvb11(4)=14.123475
+      pgvb11(5)=-146.60152
+      pgvb11(6)= 841.91462
+      pgvb11(7)=-2839.4273
+      pgvb11(8)= 5265.3427
+      pgvb11(9)=-3500.0430
+      pgvb11(10)=-2487.9479
+      pgvb11(11)= 7306.8121
+      pgvb11(12)=         0
+
+      pgvls1(1)=         0
+      pgvls1(2)=-426.00359
+      pgvls1(3)= 26279.517
+      pgvls1(4)=-575570.33
+      pgvls1(5)= 6003393.4
+      pgvls1(6)=-34519443.
+      pgvls1(7)=113554590.
+      pgvls1(8)=-207292090.
+      pgvls1(9)=171315480.
+      pgvls1(10)=-86418222.
+      pgvls1(11)=         0
+      pgvls1(12)=         0
+
+      pgvt1(1)= 3.3591422
+      pgvt1(2)=-.85945824
+      pgvt1(3)=-104.76340
+      pgvt1(4)= 1262.9465
+      pgvt1(5)=-18881.061
+      pgvt1(6)= 106132.46
+      pgvt1(7)=-332119.10
+      pgvt1(8)= 555857.62
+      pgvt1(9)=-349166.64
+      pgvt1(10)=-119450.13
+      pgvt1(11)=         0
+      pgvt1(12)=         0
+
+      pgvso21(1)=        0
+      pgvso21(2)=-.52218640
+      pgvso21(3)= 186.44558
+      pgvso21(4)=-3709.1115
+      pgvso21(5)= 55913.117
+      pgvso21(6)=-369985.60
+      pgvso21(7)= 1453754.3
+      pgvso21(8)=-3135247.1
+      pgvso21(9)= 2433908.1
+      pgvso21(10)=         0
+      pgvso21(11)=         0
+      pgvso21(12)=         0
+
+      pgva00(1)= 32.290874
+      pgva00(2)=-82.465631
+      pgva00(3)= 1232.9384
+      pgva00(4)=-16859.879
+      pgva00(5)= 172926.83
+      pgva00(6)=-768352.77
+      pgva00(7)= 2189047.5
+      pgva00(8)=-3844728.7
+      pgva00(9)= 2799055.9
+      pgva00(10)= 502518.28
+      pgva00(11)=-2600612.4
+      pgva00(12)=         0
+
+      pgva10(1)=-10.763625
+      pgva10(2)=-42.973669
+      pgva10(3)=-718.56844
+      pgva10(4)= 4246.9120
+      pgva10(5)=-34574.024
+      pgva10(6)= 126711.69
+      pgva10(7)=-274168.41
+      pgva10(8)= 529607.24
+      pgva10(9)=-366067.13
+      pgva10(10)=-223036.73
+      pgva10(11)= 406838.33
+      pgva10(12)=         0
+
+      pgvb00(1)=-.0085980096
+      pgvb00(2)=.026814385
+      pgvb00(3)=-1.3280693
+      pgvb00(4)=10.324289
+      pgvb00(5)=-115.27067
+      pgvb00(6)= 694.56175
+      pgvb00(7)=-2387.9335
+      pgvb00(8)= 4238.8011
+      pgvb00(9)=-2452.1604
+      pgvb00(10)=-1951.2821
+      pgvb00(11)= 4180.1160
+      pgvb00(12)=         0
+
+      pgvb10(1)= .0028660032
+      pgvb10(2)=-.00081798046
+      pgvb10(3)=-.53314560
+      pgvb10(4)=.83162030
+      pgvb10(5)=-31.192395
+      pgvb10(6)= 300.41384
+      pgvb10(7)=-1241.5067
+      pgvb10(8)= 2476.2241
+      pgvb10(9)=-1304.3030
+      pgvb10(10)=-2149.6577
+      pgvb10(11)= 4099.6917
+      pgvb10(12)=         0
+
+      pgvls0(1)=         0
+      pgvls0(2)=-66.176421
+      pgvls0(3)= 2890.3688
+      pgvls0(4)=-62592.400
+      pgvls0(5)= 691461.41
+      pgvls0(6)=-4096914.6
+      pgvls0(7)= 14032093.
+      pgvls0(8)=-26827468.
+      pgvls0(9)= 23511442.
+      pgvls0(10)=-14688461.
+      pgvls0(11)=         0
+      pgvls0(12)=         0
+
+      pgvt0(1)=-10.763625
+      pgvt0(2)=-.46818029
+      pgvt0(3)= 60.147739
+      pgvt0(4)= 352.56941
+      pgvt0(5)= 514.32170
+      pgvt0(6)= 11637.302
+      pgvt0(7)=-44595.415
+      pgvt0(8)= 69211.738
+      pgvt0(9)=-48127.668
+      pgvt0(10)= 7051.4008
+      pgvt0(11)=         0
+      pgvt0(12)=         0
+
+      pgvso20(1)=        0
+      pgvso20(2)=-.62851020
+      pgvso20(3)=-76.290197
+      pgvso20(4)=-788.27581
+      pgvso20(5)=-6490.4798
+      pgvso20(6)= 5473.4378
+      pgvso20(7)=-32941.912
+      pgvso20(8)= 249491.32
+      pgvso20(9)=-16012.956
+      pgvso20(10)=         0
+      pgvso20(11)=         0
+      pgvso20(12)=         0
       rrsave=rr
       if (rr.le.small) rr=small
       vv(:)=0
@@ -298,6 +819,7 @@ c **********************************************************************
       vw(:)=0
       x=4.27*rr
       ff=1-exp(-x)*(1+x*(33+x*(9+x))/48)
+
       vw(1)=1.4399652*ff/rr
       rr=rrsave
       go to (10,20,30,40,40,40,50,50,50,50
@@ -1222,7 +1744,8 @@ c ----------------------------------------------------------------------
       implicit integer (i-n)
       dimension vem(14)
       real*8 kr,me,mp,mn,mr,mun,mup
-      data small/1e-4/,vsmall/1e-10/
+      small=1e-4
+      vsmall=1e-10
       alpha=ems/137.03599
       hc=197.327053
       b=4.27

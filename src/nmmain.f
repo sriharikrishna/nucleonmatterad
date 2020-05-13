@@ -6,7 +6,7 @@ c **********************************************************************
      &                 ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
-      include "params.f"
+      include "nclude/params.f"
       parameter (nu=4/nm)
       parameter (ngrid=(20*lgrid+1))
       parameter (nlog=0,nin=5,nout=6)
