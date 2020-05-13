@@ -4,7 +4,7 @@ c ----------------------------------------------------------------------
       subroutine nmchain(nv,nt,no,lg,l3)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
-      include "params.f"
+      include "nclude/params.f"
       parameter (nu=4/nm)
       parameter (nlog=0,nin=5,nout=6)
       real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s

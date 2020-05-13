@@ -7,7 +7,7 @@ c **********************************************************************
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
 c
-      include "params.f"
+      include "nclude/params.f"
       parameter (ngrid=(20*lgrid+1))
       parameter (nlog=0,nout=6)
       real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
@@ -30,7 +30,11 @@ c
       real*8 rix(ngrid),rsx(ngrid),slsx(ngrid),slpsx(ngrid),
      & chi(ngrid),phir(10,ngrid),pm(8,ngrid),psi(8,ngrid),vx(14,ngrid),
      & rlm(8,ngrid),rlx(2,ngrid),ets(2,2),c(3,8),ca(3,8),blm(8)
-      data ets/4*0./
+c      data ets/4*0./
+      ets(1,1) = 0.
+      ets(1,2) = 0.
+      ets(2,1) = 0.
+      ets(2,2) = 0.
       rt2=sqrt(2.)
       rt5=sqrt(5.)
       lfh=lf/2
@@ -42,7 +46,7 @@ c
           gam=tniu
           del=rho
         end if
-        call setpot(np,xmn,gam,del,chi,omg,ftp,h2m,h2mcs)
+        call setpot(np,xmn,gam,del,chi(1),omg,ftp,h2m,h2mcs)
       else if (np.gt.100 .and. np.le.200) then
         call setpot_chiral(np,h2m,h2mcs)
       end if

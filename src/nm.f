@@ -2,9 +2,10 @@ c **********************************************************************
 c nm
 c program for nuclear/neutron matter
 c **********************************************************************
-      program nm
+      program nmprog
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+      include "nclude/params.f"
       external nucmat
       parameter (nlog=0,nin=5,nout=6)
       parameter (maxdim=15)
@@ -41,10 +42,18 @@ c **********************************************************************
      &          ' expansion ',f7.3,
      &        /5x,'quadratic tolerance is',f7.3,
      &        /5x,'scale factors are',5f7.3)
+#ifndef BFGS
         call minimi(maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,scale,x,
      &              fbest,nucmat,n)
+#else
+        mbfgs=6
+        call sdrive(n,mbfgs,x(1:4),nucmat)
+        stop "done calling sdrive"
+#endif
       end if
+#ifndef BFGS
       call nmfin(x,n)
+#endif
       timeit=timer(timeit)
       write(nlog,999) timeit
       write(nout,999) timeit
@@ -54,9 +63,14 @@ c **********************************************************************
 c *id* nucmat **********************************************************
 c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
+#if defined (BFGS) && defined (ALLOW_TAPENADE)
+      subroutine nucmat(x,n,f,flocald,lprt)
+#else
       subroutine nucmat(x,n,f,lprt)
+#endif
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+      INCLUDE 'DIFFSIZES.inc'
       parameter (nlog=0,nin=5,nout=6)
       logical lprt
       real*8 x(n)
@@ -65,6 +79,26 @@ c
       real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
      &       h2m,h2mcs,pi,s
+#ifdef ALLOW_TAPENADE
+#if defined (DO_ALL)
+      common /consts_dv/ kfd, rhod, acnd, astd, atnd, alsd, cnd, cned,
+     & dtd, drd, evxd, h2md, h2mcsd, pid, sd
+#else
+      common /consts_d/ kfd, rhod, acnd, astd, atnd, alsd, cnd, cned,
+     & dtd, drd, evxd, h2md, h2mcsd, pid, sd
+#endif
+#endif
+#if defined (DO_ALL) && defined (ALLOW_TAPENADE)
+      real*8 kfd(nbdirsmax), rhod(nbdirsmax), acnd(nbdirsmax),
+     & astd(nbdirsmax), atnd(nbdirsmax), alsd(nbdirsmax),
+     & cnd(nbdirsmax), cned(nbdirsmax),
+     & dtd(nbdirsmax), drd(nbdirsmax), evxd(nbdirsmax),
+     & h2md(nbdirsmax), h2mcsd(nbdirsmax), pid(nbdirsmax),
+     & sd(nbdirsmax)
+      real*8 bstd(nbdirsmax), btnd(nbdirsmax),
+     & blsd(nbdirsmax), dord(nbdirsmax)
+#endif
+
       real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
      &       as(6),at(8,8),ax(6,6,6)
       common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
@@ -75,10 +109,16 @@ c
       common /pionic/ eav,fsof,plm,qmin,qmax
       real*8 temp,mstar,chmpot,entrpy,ksav,kqav
       common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
-      save nm,np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk,npi,npf
-     &,bst,btn,bls,nosave,npisav
+      save nmlocal,np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk,
+     &npi,npf,bst,btn,bls,nosave,npisav
 c
       real*8 gint(6)
+#if defined (DO_ALL) && defined (ALLOW_TAPENADE)
+      real*8 gintd(nbdirsmax,6),endiffd(nbdirsmax),
+     &efreed(nbdirsmax), flocald(nbdirsmax)
+#else
+      real*8 gintd
+#endif
       character*20 pname(30),tname(0:5),ptnnam
       character*20 timdat
       character*32 mname(4)
@@ -108,16 +148,96 @@ c
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
-c       bls=bst
+c        bls=bst
         bls=0.
       end if
+      astd=0.0
+      atnd=0.0
+      alsd=0.0
+      bstd=0.0
+      btnd=0.0
+      blsd=0.0
+      dord=0.0
+      gintd =0.0
+      flocald = 0.0
+      gint = 0.0
+#ifdef DO_DOR
+      dord=1.0
+#endif
+#ifdef DO_AST
+      astd=1.0
+#endif
+#ifdef DO_ALS
+      alsd=1.0
+#endif
+#ifdef DO_ATN
+      atnd=1.0
+#endif
+#ifdef DO_BST
+      bstd=1.0
+#endif
+#ifdef DO_BLS
+      blsd=1.0
+#endif
+#ifdef DO_BTN
+      btnd=1.0
+#endif
+#ifdef DO_ALL
+c      astd(1:nbdirsmax)=1.0
+c      atnd(1:nbdirsmax)=1.0
+c      alsd(1:nbdirsmax)=1.0
+c      bstd(1:nbdirsmax)=1.0
+c      btnd(1:nbdirsmax)=1.0
+c      blsd(1:nbdirsmax)=1.0
+c      dord(1:nbdirsmax)=1.0
+      dord(1)=1.0
+      bstd(2)=1.0
+      btnd(3)=1.0
+      blsd(4)=1.0
+      astd(5)=1.0
+      atnd(6)=1.0
+      alsd(7)=1.0
+#endif
+#ifndef ALLOW_TAPENADE
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
-      do 5 l=1,2,nm
-    5 g2=g2+(gint(l)+1.)**2
+      do l=1,2,nmlocal
+        g2=g2+(gint(l)+1.)**2
+      end do
       f=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      no=0
+#else
+c      CALL NMMAIN_D(np,nv,nt, ni, nie, no, ns, lf, lc,
+c     &              ls, lt, ll, lg, le, l3, lk, dor,
+c     &              dord, bst, bstd, btn, btnd, bls, blsd,
+c     &              npi, npf, gint, gintd, endiff, endiffd,
+c     &              efree, efreed)
+c       g2=0.
+c       do l=1,2,nmlocal
+c         g2=g2+(gint(l)+1.)**2
+c       end do
+c       f=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+#ifndef DO_ALL
+      call NMMAINAD_D(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
+     &               , ll, lg, le, l3, lk, dor, dord, bst, bstd,
+     &               btn, btnd, bls, blsd, npi, npf, gint, gintd
+     &               , endiff, endiffd, efree, efreed, flocal,
+     &               flocald, nmlocal)
+#else
+      call NMMAINAD_DV(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
+     &               , ll, lg, le, l3, lk, dor, dord, bst, bstd
+     &               , btn, btnd, bls, blsd, npi, npf, gint,
+     &               gintd, endiff, endiffd, efree, efreed,
+     &               flocal, flocald, nmlocal, nbdirsmax)
+#endif
+      f=flocal
+c      g=flocald
+#endif
+       no=0
+      do i=1,nbdirsmax
+        write(nlog,*) "flocald%d(", flocald(i)
+        write(nout,*) "flocald%d(", flocald(i)
+      end do
       return
 c ************************
 c entry for initialization
@@ -133,15 +253,16 @@ c ************************
 c   ------------------
 c   read in parameters
 c   ------------------
-      read(nin,1001) nm,np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+      read(nin,1001) nmlocal,np,nv,nt,ni,nie,no,ns,lf,
+     & lc,ls,lt,ll,lg,le,l3,lk
  1001 format(5x,i3)
       read(nin,1002) kf,rho,dor,acn,ast,atn,als,bst,btn,bls,cn,cne
  1002 format(5x,f10.4)
       read(nin,1002) temp,mstar,tnia,tnic,tniu,tnix,cut,cut0
       read(nin,1001) npi,npf
       read(nin,1002) eav,fsof,plm,qmin,qmax
-      write(nlog,1010) mname(nm)
-      write(nout,1010) mname(nm)
+      write(nlog,1010) mname(nmlocal)
+      write(nout,1010) mname(nmlocal)
  1010 format(/4x,a32)
       if (temp.gt.0.) then
         write(nlog,1011) temp
@@ -158,7 +279,7 @@ c   ------------------
       write(nlog,1012) ptnnam,tname(nt)
       write(nout,1012) ptnnam,tname(nt)
  1012 format(/4x,2a20)
-      s=float(4/nm)
+      s=float(4/nmlocal)
       x(1)=dor
       if (n.ge.2) x(2)=ast
       if (n.eq.4) then
@@ -194,15 +315,93 @@ c     l3=2*l3
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
-        bls=bst
+c        bls=bst
+        bls=0.
       end if
+      astd=0.0
+      atnd=0.0
+      alsd=0.0
+      bstd=0.0
+      btnd=0.0
+      blsd=0.0
+      dord=0.0
+      gintd =0.0
+      flocald = 0.0
+      gint = 0.0
+#ifdef DO_DOR
+      dord=1.0
+#endif
+#ifdef DO_AST
+      astd=1.0
+#endif
+#ifdef DO_ALS
+      alsd=1.0
+#endif
+#ifdef DO_ATN
+      atnd=1.0
+#endif
+#ifdef DO_BST
+      bstd=1.0
+#endif
+#ifdef DO_BLS
+      blsd=1.0
+#endif
+#ifdef DO_BTN
+      btnd=1.0
+#endif
+#ifdef DO_ALL
+c      astd(1:nbdirsmax)=1.0
+c      atnd(1:nbdirsmax)=1.0
+c      alsd(1:nbdirsmax)=1.0
+c      bstd(1:nbdirsmax)=1.0
+c      btnd(1:nbdirsmax)=1.0
+c      blsd(1:nbdirsmax)=1.0
+c      dord(1:nbdirsmax)=1.0
+      dord(1)=1.0
+      bstd(2)=1.0
+      btnd(3)=1.0
+      blsd(4)=1.0
+      astd(5)=1.0
+      atnd(6)=1.0
+      alsd(7)=1.0
+#endif
+#ifndef ALLOW_TAPENADE
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
-      do 995 l=1,2,nm
+      do 995 l=1,2,nmlocal
   995 g2=g2+(gint(l)+1.)**2
       final=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
       fplus=final+abs(endiff)
+#else
+c      CALL NMMAIN_D(np,nv,nt, ni, nie, no, ns, lf, lc,
+c     &              ls, lt, ll, lg, le, l3, lk, dor,
+c     &              dord, bst, bstd, btn, btnd, bls, blsd,
+c     &              npi, npf, gint, gintd, endiff, endiffd,
+c     &              efree, efreed)
+c      g2=0.
+c      do l=1,2,nmlocal
+c          g2=g2+(gint(l)+1.)**2
+c      end do
+c      final=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+c      fplus=final+abs(endiff)
+#ifndef DO_ALL
+      call NMMAINAD_D(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
+     &               , ll, lg, le, l3, lk, dor, dord, bst, bstd,
+     &               btn, btnd, bls, blsd, npi, npf, gint, gintd
+     &               , endiff, endiffd, efree, efreed, flocal,
+     &               flocald, nmlocal)
+#else
+      call NMMAINAD_DV(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
+     &               , ll, lg, le, l3, lk, dor, dord, bst, bstd
+     &               , btn, btnd, bls, blsd, npi, npf, gint,
+     &               gintd, endiff, endiffd, efree, efreed,
+     &               flocal, flocald, nmlocal, nbdirsmax)
+#endif
+      final = flocal
+      fplus=flocal+abs(endiff)
+#endif
+
       write(nlog,1095) final,fplus
       write(nout,1095) final,fplus
  1095 format(/2x,'final   fplus',/2f8.3)

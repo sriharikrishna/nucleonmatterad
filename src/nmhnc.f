@@ -4,7 +4,7 @@ c **********************************************************************
       subroutine nmhnc(lg,le,l3,ni,nie,no,nt,nv)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
-      include "params.f"
+      include "nclude/params.f"
       parameter (nu=4/nm,n3s=5-nm,n3t=7-nm)
       parameter (legrid=lgrid*(lgrid**2+1)/2)
       parameter (nphi=5,lx=512)
@@ -130,44 +130,44 @@ c -------------
 c zero matrices
 c -------------
       do 30 i=1,lgrid
-        gx(i)=1
-        gy(i)=0
-        gz(i)=0
+        gx(i)=1.0
+        gy(i)=0.0
+        gz(i)=0.0
         gl(i)=sl(i)
    30 continue
       do 35 i=1,legrid
-        sccd(i)=0
-        scce(i)=0
-        sddd(i)=0
-        sdde(i)=0
-        sdee(i)=0
-        seee(i)=0
+        sccd(i)=0.0
+        scce(i)=0.0
+        sddd(i)=0.0
+        sdde(i)=0.0
+        sdee(i)=0.0
+        seee(i)=0.0
    35 continue
       do 40 il=1,lgrid*6
-        gca(il,1)=0
-        gcb(il,1)=0
-        gdd(il,1)=0
-        gde(il,1)=0
-        gee(il,1)=0
-        eca(il,1)=0
-        ecb(il,1)=0
-        edd(il,1)=0
-        ede(il,1)=0
-        eee(il,1)=0
+        gca(il,1)=0.0
+        gcb(il,1)=0.0
+        gdd(il,1)=0.0
+        gde(il,1)=0.0
+        gee(il,1)=0.0
+        eca(il,1)=0.0
+        ecb(il,1)=0.0
+        edd(il,1)=0.0
+        ede(il,1)=0.0
+        eee(il,1)=0.0
    40 continue
-      v3cc(:,:,:)=0
-      v3dd(:,:,:)=0
-      v3de(:,:,:)=0
-      v3ee(:,:,:)=0
+      v3cc(:,:,:)=0.0
+      v3dd(:,:,:)=0.0
+      v3de(:,:,:)=0.0
+      v3ee(:,:,:)=0.0
       do 50 il=1,lgrid*3
-        bcc(il,1)=0
-        bde(il,1)=0
+        bcc(il,1)=0.0
+        bde(il,1)=0.0
    50 continue
       do 55 l=1,6
         afe(l)=acex(l,1,l)
    55 continue
       do 60 ljk=1,6*3*3
-        vc(ljk,1,1)=1
+        vc(ljk,1,1)=1.0
    60 continue
 c -------------------------------------
 c main iteration loop for hnc equations
@@ -218,9 +218,9 @@ c ----------------------------------------
 c ----------------------------
 c construct 3-point superbonds
 c ----------------------------
-!$OMP PARALLEL SHARED(sddd,sdde,sdee,seee,sccd,scce)
-!$OMP& PRIVATE(i,j,k,l,m,np)
-!$OMP DO SCHEDULE(DYNAMIC)
+!$WOMP PARALLEL SHARED(sddd,sdde,sdee,seee,sccd,scce)
+!$WOMP& PRIVATE(i,j,k,l,m,np)
+!$WOMP DO SCHEDULE(DYNAMIC)
       do 160 i=1,le                              ! r12
         do 150 j=1,le                            ! r13
           ka=iabs(i-j)+1
@@ -229,12 +229,12 @@ c ----------------------------
             kji=index(k,j,i)
             c3=xtheta(kji)                       ! cos(theta3)
             s3=stheta(kji)                       ! sin(theta3)
-            yddd=0.
-            ydde=0.
-            ydee=0.
-            yeee=0.
-            yccd=0.
-            ycce=0.
+            yddd=0.0
+            ydde=0.0
+            ydee=0.0
+            yeee=0.0
+            yccd=0.0
+            ycce=0.0
             do 130 l=1,lg                        ! r14
               a=rs(j)+rs(l)
               b=2*r(j)*r(l)
@@ -281,8 +281,8 @@ c ----------------------------
   140     continue
   150   continue
   160 continue
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL
+!$WOMP END DO NOWAIT
+!$WOMP END PARALLEL
 c -----------------------
 c set soc input functions
 c -----------------------
@@ -341,9 +341,9 @@ c --------------------------------
         gca(il,1)=gca(il,1)*co
         gcb(il,1)=gcb(il,1)*co
   240 continue
-!$OMP PARALLEL SHARED(gdd,gde,gee,gca,gcb)
-!$OMP& PRIVATE(i,j,k,l)
-!$OMP DO SCHEDULE(DYNAMIC)
+!$WOMP PARALLEL SHARED(gdd,gde,gee,gca,gcb)
+!$WOMP& PRIVATE(i,j,k,l)
+!$WOMP DO SCHEDULE(DYNAMIC)
       do 290 i=1,lg
         ei=q2cn*ri(i)
         do 280 j=1,lg
@@ -383,8 +383,8 @@ c --------------------------------
   270     continue
   280   continue
   290 continue
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL
+!$WOMP END DO NOWAIT
+!$WOMP END PARALLEL
 c -------------------------------
 c elementary diagram integrations
 c -------------------------------
@@ -395,9 +395,9 @@ c -------------------------------
         eca(il,1)=eca(il,1)*coe
         ecb(il,1)=ecb(il,1)*coe
   340 continue
-!$OMP PARALLEL SHARED(edd,ede,eee,eca,ecb)
-!$OMP& PRIVATE(i,j,k,l)
-!$OMP DO SCHEDULE(DYNAMIC)
+!$WOMP PARALLEL SHARED(edd,ede,eee,eca,ecb)
+!$WOMP& PRIVATE(i,j,k,l)
+!$WOMP DO SCHEDULE(DYNAMIC)
       do 390 i=1,le
         ei=q3cne*ri(i)
         do 380 j=1,le
@@ -620,8 +620,8 @@ c    &             +sccd(kji)* xgcc(j)*     xgdd(k,l+4) )
   370     continue
   380   continue
   390 continue
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL
+!$WOMP END DO NOWAIT
+!$WOMP END PARALLEL
       do 395 i=1,lg
         eca(i,1)=.5*eca(i,1)
         ecb(i,1)=.5*ecb(i,1)
@@ -758,9 +758,9 @@ c -------------
             x1=al(i,j,l)
             x2=ak(i,j,l)*aa(l)
             x3=x2*af(l)
-            x4=0
-            x5=0
-            x6=0
+            x4=0.0
+            x5=0.0
+            x6=0.0
             do 516 n=1,4,nm
               do 514 m=1,6,nm
                 x4=x4+ak(i,n,m)*al(m,j,l)+ak(j,n,m)*al(m,i,l)
@@ -782,12 +782,12 @@ c -------------
               xgee(k,l)=xgee(k,l)
      &                 +x2*2*f(k,1)*f(k,i)*(-af(j)*gl(k)**2/nu)*gx(k)
   518       continue
-            afi(l,i,j)=0
-            afj(l,i,j)=0
-            afk(l,i,j)=0
-            ahi(l,i,j)=0
-            ahj(l,i,j)=0
-            ahk(l,i,j)=0
+            afi(l,i,j)=0.0
+            afj(l,i,j)=0.0
+            afk(l,i,j)=0.0
+            ahi(l,i,j)=0.0
+            ahj(l,i,j)=0.0
+            ahk(l,i,j)=0.0
             do 522 n=1,4,nm
             do 522 np=1,4,nm
             do 522 k=1,6,nm
@@ -886,16 +886,16 @@ c -------------------
 c sor-chain integrals
 c -------------------
       do 555 kl=1,lgrid*6
-        grdc(kl,1)=0
-        grdd(kl,1)=0
-        grde(kl,1)=0
-        gred(kl,1)=0
-        gree(kl,1)=0
-        grfc(kl,1)=0
-        grfd(kl,1)=0
-        grfe(kl,1)=0
-        grmd(kl,1)=0
-        grme(kl,1)=0
+        grdc(kl,1)=0.0
+        grdd(kl,1)=0.0
+        grde(kl,1)=0.0
+        gred(kl,1)=0.0
+        gree(kl,1)=0.0
+        grfc(kl,1)=0.0
+        grfd(kl,1)=0.0
+        grfe(kl,1)=0.0
+        grmd(kl,1)=0.0
+        grme(kl,1)=0.0
   555 continue
       do 590 i=1,lg
         ei=q2*ri(i)
@@ -963,8 +963,8 @@ c -------------
         bj(l,1)=ksav*q1*aa(l)*bj(l,1)/6
   605 continue
       do 615 l=1+nm,4,nm
-        bk(l,2)=0
-        bk(l,3)=0
+        bk(l,2)=0.0
+        bk(l,3)=0.0
         do 610 i=1,lg
           x=q1*rs(i)*gx(i)/6
           y=aa(l)*(2*f(i,1)*f(i,l)+f(i,1)**2*gdd(i,l))
@@ -1033,8 +1033,8 @@ c --------------
 c l**2 integrals
 c --------------
       do 670 i=1,6,nm
-        bq(i,1)=0
-        bq(i,2)=0
+        bq(i,1)=0.0
+        bq(i,2)=0.0
         if (i.eq.1) then
           do 655 j=1,lg
             x=rs(j)*gx(j)

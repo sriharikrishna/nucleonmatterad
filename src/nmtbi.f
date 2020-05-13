@@ -5,7 +5,7 @@ c ----------------------------------------------------------------------
       subroutine nmtbi(lt,lg,le,l3,nie,no,nt)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
-      include "params.f"
+      include "nclude/params.f"
       parameter (nu=4/nm,n3s=5-nm,n3t=7-nm)
       parameter (legrid=lgrid*(lgrid**2+1)/2)
       parameter (nlog=0,nin=5,nout=6)
@@ -702,6 +702,7 @@ c     fac=tnix/tniu
 c     w3v1=-.25*(fac*w3v0+w3vx(2,1)+w3vx(3,1)+w3vx(4,1)
 c    &               +w3vx(2,2)+w3vx(3,2)+w3vx(4,2))
 c -----------------------------------------------------------
+      w3vx=0.0
       w3va=w3va+w3vm(4)+w3vm(5)
       w3vc=w3vm(6)+w3vm(7)+w3vm(8)
 c print ================================================================
