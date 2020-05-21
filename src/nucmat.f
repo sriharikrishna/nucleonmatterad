@@ -1,66 +1,3 @@
-c **********************************************************************
-c nm
-c program for nuclear/neutron matter
-c **********************************************************************
-      program nmprog
-      implicit real*8 (a-h,o-z)
-      implicit integer*4 (i-n)
-      include "nclude/params.f"
-      external nucmat
-      parameter (nlog=0,nin=5,nout=6)
-      parameter (maxdim=15)
-      character*50 sysdat
-      character*20 timdat
-      logical lprt
-      real*8 x(maxdim),scale(maxdim)
-      common /minim/ econ,ncon,ntype
-      character*4 etype(3)
-      data etype/' jf ',' av ',' pb '/
-      timeit=timer(0.)
-      call header(sysdat,timdat)
-      write(nlog,6) sysdat,timdat
-      write(nout,6) sysdat,timdat
-    6 format(/80('*')//1x,a50,8x,a20)
-      read(nin,*) maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,n
-      read(nin,*) (scale(i),i=1,n)
-      read(nin,*) econ,ncon,ntype
-      call nminit(x,n)
-      if (maxcl1.ge.1) then
-        write(nlog,7) etype(ntype+2),n
-        write(nout,7) etype(ntype+2),n
-    7   format(/4x,a4,'energy minimization in',i2,' dimensions')
-        if (econ.ne.0.) then
-          write(nlog,8) econ,ncon
-          write(nout,8) econ,ncon
-    8     format(5x,'with constraint',f6.0,
-     &              '*sqrt(sum((1+gint(k))**2))**',i1)
-        end if
-        write(nlog,9) tol1,alpha,beta,gamma,tol2,(scale(i),i=1,n)
-        write(nout,9) tol1,alpha,beta,gamma,tol2,(scale(i),i=1,n)
-    9   format(5x,'simplex tolerance is',f7.3,' with coefficients of',
-     &        /5x,'reflection ',f7.3,' contraction ',f7.3,
-     &          ' expansion ',f7.3,
-     &        /5x,'quadratic tolerance is',f7.3,
-     &        /5x,'scale factors are',5f7.3)
-#ifndef BFGS
-        call minimi(maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,scale,x,
-     &              fbest,nucmat,n)
-#else
-        mbfgs=6
-        call sdrive(n,mbfgs,x(1:4),nucmat)
-        stop "done calling sdrive"
-#endif
-      end if
-#ifndef BFGS
-      call nmfin(x,n)
-#endif
-      timeit=timer(timeit)
-      write(nlog,999) timeit
-      write(nout,999) timeit
-  999 format(/5x,'job time =',f8.3,' seconds')
-      stop
-      end
-#if 0
 c *id* nucmat **********************************************************
 c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
@@ -82,9 +19,8 @@ c
      &       h2m,h2mcs,pi,s
 #ifdef ALLOW_TAPENADE
 #if defined (DO_ALL)
-c      common /consts_dv/ kfd, rhod, acnd, astd, atnd, alsd, cnd, cned,
-c     & dtd, drd, evxd, h2md, h2mcsd, pid, sd
       COMMON /consts_dv/ astd, atnd, alsd, dtd, drd, evxd
+      real*8 xperturb(30,7)
 #else
       common /consts_d/ kfd, rhod, acnd, astd, atnd, alsd, cnd, cned,
      & dtd, drd, evxd, h2md, h2mcsd, pid, sd
@@ -164,27 +100,6 @@ c        bls=0.
       gintd =0.0
       flocald = 0.0
       gint = 0.0
-#ifdef DO_DOR
-      dord=1.0
-#endif
-#ifdef DO_AST
-      astd=1.0
-#endif
-#ifdef DO_ALS
-      alsd=1.0
-#endif
-#ifdef DO_ATN
-      atnd=1.0
-#endif
-#ifdef DO_BST
-      bstd=1.0
-#endif
-#ifdef DO_BLS
-      blsd=1.0
-#endif
-#ifdef DO_BTN
-      btnd=1.0
-#endif
 #ifdef DO_ALL
       ndirs=1
       dord(ndirs)=1.0
@@ -202,13 +117,6 @@ c        bls=0.
 c        bls=bst
         blsd=bstd
       end if
-c      dord(1)=1.0
-c      bstd(2)=1.0
-c      btnd(3)=1.0
-c      blsd(4)=1.0
-c      astd(5)=1.0
-c      atnd(6)=1.0
-c      alsd(7)=1.0
 #endif
 #endif
 #ifndef ALLOW_TAPENADE
@@ -227,11 +135,6 @@ c      alsd(7)=1.0
      &               , endiff, endiffd, efree, efreed, flocal,
      &               flocald, nmlocal)
 #else
-c      call NMMAINAD_DV(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
-c     &               , ll, lg, le, l3, lk, dor, dord, bst, bstd
-c     &               , btn, btnd, bls, blsd, npi, npf, gint,
-c     &               gintd, endiff, endiffd, efree, efreed,
-c     &               flocal, flocald, nmlocal, nbdirsmax)
       call NMMAINAD_DV(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
      &                  , ll, lg, le, l3, lk, dor, dord, bst, bstd
      &                  , btn, btnd, bls, blsd, npi, npf, gint,
@@ -239,7 +142,6 @@ c     &               flocal, flocald, nmlocal, nbdirsmax)
      &                     nbdirsmax)
 #endif
       f=flocal
-c      g=flocald
 #endif
        no=0
 #if defined (ALLOW_TAPENADE)
@@ -295,6 +197,19 @@ c   ------------------
       write(nout,1012) ptnnam,tname(nt)
  1012 format(/4x,2a20)
       s=float(4/nmlocal)
+      do i=1, 30
+        read(nin,*) (xperturb(i,j),j=1,7)
+      end do
+      read(nin,*) nperturb
+      read(nin,*) delta
+      write(nlog,*) "delta", delta
+      dor=dor*(1+delta*xperturb(nperturb,1))
+      ast=ast*(1+delta*xperturb(nperturb,2))
+      als=als*(1+delta*xperturb(nperturb,3))
+      atn=atn*(1+delta*xperturb(nperturb,4))
+      bst=bst*(1+delta*xperturb(nperturb,5))
+      bls=bls*(1+delta*xperturb(nperturb,6))
+      btn=btn*(1+delta*xperturb(nperturb,7))
       x(1)=dor
       if (n.ge.2) x(2)=ast
       if (n.eq.4) then
@@ -344,27 +259,6 @@ c        bls=0.
       gintd =0.0
       flocald = 0.0
       gint = 0.0
-#ifdef DO_DOR
-      dord=1.0
-#endif
-#ifdef DO_AST
-      astd=1.0
-#endif
-#ifdef DO_ALS
-      alsd=1.0
-#endif
-#ifdef DO_ATN
-      atnd=1.0
-#endif
-#ifdef DO_BST
-      bstd=1.0
-#endif
-#ifdef DO_BLS
-      blsd=1.0
-#endif
-#ifdef DO_BTN
-      btnd=1.0
-#endif
 #ifdef DO_ALL
       ndirs=1
       dord(ndirs)=1.0
@@ -382,13 +276,6 @@ c        bls=0.
 c        bls=bst
         blsd=bstd
       end if
-c      dord(1)=1.0
-c      bstd(2)=1.0
-c      btnd(3)=1.0
-c      blsd(4)=1.0
-c      astd(5)=1.0
-c      atnd(6)=1.0
-c      alsd(7)=1.0
 #endif
 #endif
 #ifndef ALLOW_TAPENADE
@@ -407,11 +294,6 @@ c      alsd(7)=1.0
      &               , endiff, endiffd, efree, efreed, flocal,
      &               flocald, nmlocal)
 #else
-c      call NMMAINAD_DV(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
-c     &               , ll, lg, le, l3, lk, dor, dord, bst, bstd
-c     &               , btn, btnd, bls, blsd, npi, npf, gint,
-c     &               gintd, endiff, endiffd, efree, efreed,
-c     &               flocal, flocald, nmlocal, nbdirsmax)
       call NMMAINAD_DV(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
      &                  , ll, lg, le, l3, lk, dor, dord, bst, bstd
      &                  , btn, btnd, bls, blsd, npi, npf, gint,
@@ -471,4 +353,3 @@ c
       data ax/1.,42*0.,1.,42*0.,1.,13*0.,1.,28*0.,1.,13*0.,1.
      &,16*0.,1.,9*0.,1.,0.,1.,30*0.,1.,9*0.,1.,0.,1./
       end
-#endif

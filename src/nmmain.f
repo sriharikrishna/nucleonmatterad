@@ -124,6 +124,7 @@ c ======================================================================
       if (nv.le.6) go to 20
       do 16 l=7,8,nm
       do 16 ir=1,lt
+c        stop "boo hoo"
         f(ir,l)=bls*f(ir,l)
         fp(ir,l)=bls*fp(ir,l)
         fds(ir,l)=bls*fds(ir,l)
