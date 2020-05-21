@@ -37,8 +37,8 @@ C     We do not wish to provide the diagonal matrices Hk0, and
 C     therefore set DIAGCO to FALSE.
 C
       DIAGCO= .FALSE.
-C      EPS= 1.0D-5
-      EPS= 0.020
+      EPS= 1.0D-5
+C      EPS= 0.020
       XTOL= 1.0D-16
       ICALL=0
       IFLAG=0
@@ -79,8 +79,8 @@ C     We allow at most 2000 evaluations of F and G
       
       GO TO 20
   50  CONTINUE
-      write(nlog,8128) ncll,fLOCAL,(x(i),i=1,ndim)
-      write(nout,8128) ncll,fLOCAL,(x(i),i=1,ndim)
+      write(nlog,8128) icall,fLOCAL,(x(i),i=1,ndim)
+      write(nout,8128) icall,fLOCAL,(x(i),i=1,ndim)
  8128 format ('after ',i3,' function calls final value is',
      & f12.5,' at',(10f12.5) )
       END SUBROUTINE

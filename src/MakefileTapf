@@ -8,8 +8,8 @@ FC = gfortran
 #FFLAGS   = -O0 -g -fdefault-double-8 -fdefault-real-8 -mcmodel=medium -fno-range-check -ffpe-trap=invalid
 #FFLAGS   = -O0 -g -fdefault-double-8 -fdefault-real-8 -fno-range-check  -ffpe-trap=invalid,zero,overflow -fbacktrace
 #FFLAGS   = -O3  -fdefault-double-8 -fdefault-real-8 -fno-range-check  -fbacktrace
-#FFLAGS   = -O3  -fdefault-double-8 -fdefault-real-8 -fno-range-check  
-FFLAGS   = -O30 -g  -fdefault-double-8 -fdefault-real-8 -fno-range-check  
+FFLAGS   = -O3  -fdefault-double-8 -fdefault-real-8 -fno-range-check  
+#FFLAGS   = -O0 -g  -fdefault-double-8 -fdefault-real-8 -fno-range-check  
 F90FLAGS = $(FFLAGS)
 #CFLAGS   = -g
 #CPPFLAGS = -g
@@ -36,15 +36,18 @@ sub/pot.pre.f\
 sub/numrec.pre.f\
 sub/dgamma.pre.f
 
+DIFFSIZES.inc: $(CASE)/DIFFSIZES.inc
+	cp $(CASE)/DIFFSIZES.inc DIFFSIZES.inc
+
 OBJSUB= sub/dtime.o sub/headtime.pre.o sub/linpack.pre.o sub/minimi.pre.o sub/numrec.pre.o \
    sub/pot.pre.o sub/eft_pot_r.pre.o sub/dgamma.pre.o isnan_d.o
 
 OBJLBFGS=lbfgs_um/sdrive.o lbfgs_um/lbfgs.o
 
-nmad: numCore_d.pre.o nm.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
+nmad: numCore_d.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
 	${FC} ${FFLAGS} -o $@ $^
 
-nmadv: numCore_dv.pre.o nm.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
+nmadv: numCore_dv.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS) 
 	${FC} ${FFLAGS} -o $@ $^
 
 numCore.f: $(SRC) $(SRCSUB)
@@ -55,8 +58,10 @@ numCore.f: $(SRC) $(SRCSUB)
 #	${TPN} -forward -head nmmainad  $< 
 #	mv numCore.pre_d.f $@
 
-numCore_dv.pre.f: numCore.pre.f
-	${TPN} -forward -vector -head nmmainad  $< 
+numCore_dv.pre.f: numCore.pre.f DIFFSIZES.inc
+	#${TPN} -forward -vector -head nmmainad  $< 
+	#${TPN} -forward -vector -head "nmmainad(flocal,gint,endiff,efree)/(dor,bls,bst,btn,als,ast,atn)"  $< 
+	${TPN} -forward -vector -head "nmmainad(flocal)/(dor,bls,bst,btn,als,ast,atn)"  $< 
 	mv numCore.pre_dv.f $@
 
 CPPFLAGS= $(DIFF) -DALLOW_TAPENADE -DALLOW_DATA
@@ -94,7 +99,7 @@ CPPCMD = cat $< |  cpp  $(CPPFLAGS)  -I../ -I./ -traditional-cpp -P
 clean:	
 	/bin/rm -f *.pre.f *.o *.cpp *.msg *.mod numCore.* nclude/*.o nclude/*.mod params_d.f nmad nmadv
 	/bin/rm -f sub/*.pre.f sub/*.o sub/*.cpp sub/*.msg sub/*.mod numCore.* nclude/*.o nclude/*.mod
-	/bin/rm -f lbfgs_um/*.o
+	/bin/rm -f lbfgs_um/*.o DIFFSIZES.inc
 
 realclean: clean	
 	/bin/rm -f $(TARGETS)
