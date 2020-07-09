@@ -47,7 +47,7 @@ c **********************************************************************
      &              fbest,nucmat,n)
 #else
         mbfgs=6
-        call sdrive(n,mbfgs,x(1:4),nucmat)
+        call sdrive(n,mbfgs,x(1:n),nucmat)
         stop "done calling sdrive"
 #endif
       end if
