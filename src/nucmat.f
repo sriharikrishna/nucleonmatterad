@@ -86,8 +86,11 @@ c
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
-         bls=bst
-c        bls=0.
+#ifdef CASE_SNM
+        bls=bst
+#else
+        bls=0.
+#endif
       end if
 #ifdef ALLOW_TAPENADE
       astd=0.0
@@ -245,8 +248,11 @@ c     l3=2*l3
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
+#ifdef CASE_SNM
         bls=bst
-c        bls=0.
+#else
+        bls=0.
+#endif
       end if
 #ifdef ALLOW_TAPENADE
       astd=0.0
