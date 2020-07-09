@@ -150,22 +150,10 @@ c
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
-         bls=bst
-c        bls=0.
-      end if
-#ifdef ALLOW_TAPENADE
-      astd=0.0
-      atnd=0.0
-      alsd=0.0
-      bstd=0.0
-      btnd=0.0
-      blsd=0.0
-      dord=0.0
-      gintd =0.0
-      flocald = 0.0
-      gint = 0.0
-#ifdef DO_DOR
-      dord=1.0
+#if CASE==snm
+        bls=bst
+#else
+        bls=0.
 #endif
 #ifdef DO_AST
       astd=1.0
@@ -330,40 +318,10 @@ c     l3=2*l3
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
+#if CASE==snm
         bls=bst
-c        bls=0.
-      end if
-#ifdef ALLOW_TAPENADE
-      astd=0.0
-      atnd=0.0
-      alsd=0.0
-      bstd=0.0
-      btnd=0.0
-      blsd=0.0
-      dord=0.0
-      gintd =0.0
-      flocald = 0.0
-      gint = 0.0
-#ifdef DO_DOR
-      dord=1.0
-#endif
-#ifdef DO_AST
-      astd=1.0
-#endif
-#ifdef DO_ALS
-      alsd=1.0
-#endif
-#ifdef DO_ATN
-      atnd=1.0
-#endif
-#ifdef DO_BST
-      bstd=1.0
-#endif
-#ifdef DO_BLS
-      blsd=1.0
-#endif
-#ifdef DO_BTN
-      btnd=1.0
+#else
+        bls=0.
 #endif
 #ifdef DO_ALL
       ndirs=1
