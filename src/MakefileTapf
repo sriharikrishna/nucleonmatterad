@@ -43,7 +43,7 @@ DIFFSIZES.inc: $(CASE)/DIFFSIZES.inc
 OBJSUB= sub/dtime.o sub/headtime.pre.o sub/linpack.pre.o sub/minimi.pre.o sub/numrec.pre.o \
    sub/pot.pre.o sub/eft_pot_r.pre.o sub/dgamma.pre.o isnan_d.o
 
-OBJLBFGS=lbfgs_um/sdrive.o lbfgs_um/lbfgs.o
+OBJLBFGS=lbfgs_um/sdrive.pre.o lbfgs_um/lbfgs.o
 
 nmad: numCore_d.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
 	${FC} ${FFLAGS} -o $@ $^
