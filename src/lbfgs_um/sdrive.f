@@ -14,9 +14,8 @@ C
       INTEGER NDIM,MSAVE
       parameter (nlog=0,nin=5,nout=6)
 C      PARAMETER(NDIM=2000,MSAVE=7,NWORK=NDIM*(2*MSAVE +1)+2*MSAVE)
-      DOUBLE PRECISION X(NDIM),G(NDIM+3),DIAG(NDIM+3)
-      DOUBLE PRECISION XLOCAL(NDIM+3)
-      DOUBLE PRECISION W((NDIM+3)*(2*MSAVE +1)+2*MSAVE)
+      DOUBLE PRECISION X(NDIM),G(NDIM),DIAG(NDIM)
+      DOUBLE PRECISION W((NDIM)*(2*MSAVE +1)+2*MSAVE)
       DOUBLE PRECISION F,EPS,XTOL,GTOL,T1,T2,STPMIN,STPMAX
       INTEGER IPRINT(2),IFLAG,ICALL,N,M,MP,LP,J
       LOGICAL DIAGCO
@@ -37,28 +36,20 @@ C     We do not wish to provide the diagonal matrices Hk0, and
 C     therefore set DIAGCO to FALSE.
 C
       DIAGCO= .FALSE.
-      EPS= 1.0D-5
+      EPS= 1.0D-2
 C      EPS= 0.020
       XTOL= 1.0D-16
       ICALL=0
       IFLAG=0
 C
-      xlocal(1:7) = 0.0
-      xlocal(1)=X(1)
-      if (NDIM.eq.4) then
-        xlocal(2)=X(3)
-        xlocal(3)=X(4)
-c        xlocal(4)=X(3)
-        xlocal(4)=0.0
-      end if
-      if (NDIM.ge.2) then
-        xlocal(5)=X(2)
-        xlocal(6)=X(2)
-        xlocal(7)=X(2)
-      end if
  20   CONTINUE
-      call funk(x,NDIM,fLOCAL,G,lprt)
-      CALL LBFGS(NDIM+3,M,XLOCAL,F,G,DIAGCO,DIAG,IPRINT,
+      call funk(x,NDIM,F,G,lprt)
+      
+      if (isnan(F)) then
+        stop "Stop NaN"
+      end if
+
+      CALL LBFGS(NDIM,M,X,F,G,DIAGCO,DIAG,IPRINT,
      &            EPS,XTOL,W,IFLAG)
       WRITE(*,*) "IFLAG", IFLAG
       write(nlog,*) "IFLAG", IFLAG
@@ -67,20 +58,14 @@ c        xlocal(4)=X(3)
       ICALL=ICALL + 1
 C     We allow at most 2000 evaluations of F and G
       IF(ICALL.GT.2000) GO TO 50
-      write(nlog,9997) ICALL,fLOCAL,(x(i),i=1,ndim)
-      write(nout,9997) ICALL,fLOCAL,(x(i),i=1,ndim)
- 9997 format (' call # ',i3,' gives',f12.5,' at',(10f12.5))
-      x(1)=xlocal(1)
-      x(2)=xlocal(5)
-      if (NDIM.eq.4) then
-        x(3)=xlocal(2)
-        x(4)=xlocal(3)
-      end if
+      write(nlog,9997) ICALL,F,(x(i),i=1,ndim)
+      write(nout,9997) ICALL,F,(x(i),i=1,ndim)
+ 9997 format (' call # ',i3,' gives',f24.17,' at',(10f24.17))
       
       GO TO 20
   50  CONTINUE
-      write(nlog,8128) icall,fLOCAL,(x(i),i=1,ndim)
-      write(nout,8128) icall,fLOCAL,(x(i),i=1,ndim)
+      write(nlog,8128) icall,F,(x(i),i=1,ndim)
+      write(nout,8128) icall,F,(x(i),i=1,ndim)
  8128 format ('after ',i3,' function calls final value is',
      & f12.5,' at',(10f12.5) )
       END SUBROUTINE
