@@ -17,6 +17,7 @@ F90FLAGS = $(FFLAGS)
 #TARGETS =  nmad nmadv 
 TARGETS =  nmadv 
 #numCore_d.pre.f nmadv numCore_dv.pre.f
+
 ifdef BFGS
 CPPFLAGS+=-DBFGS
 endif
@@ -64,13 +65,19 @@ numCore_dv.pre.f: numCore.pre.f DIFFSIZES.inc
 	${TPN} -forward -vector -head "nmmainad(flocal)/(dor,bls,bst,btn,als,ast,atn)"  $< 
 	mv numCore.pre_dv.f $@
 
-CPPFLAGS= $(DIFF) -DALLOW_TAPENADE -DALLOW_DATA
+CPPFLAGS= $(DIFF) -DALLOW_TAPENADE -DALLOW_DATA 
 ifdef BFGS
 CPPFLAGS+=-DBFGS
 endif
 ifdef ALL
 CPPFLAGS+=-DDO_ALL
 endif
+ifeq ($(CASE), snm)
+  CPPFLAGS+=-DCASE_SNM
+else
+  CPPFLAGS+=-DCASE_PNM
+endif
+
 CPPCMD = cat $< |  cpp  $(CPPFLAGS)  -I../ -I./ -traditional-cpp -P 
 
 %.pre.c: %.c
