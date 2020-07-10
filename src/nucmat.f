@@ -11,7 +11,11 @@ c ----------------------------------------------------------------------
       INCLUDE 'DIFFSIZES.inc'
       parameter (nlog=0,nin=5,nout=6)
       logical lprt
+#ifndef DO_FULLX
       real*8 x(n)
+#else
+      real*8 x(nbdirsmax)
+#endif
       common /minim/ econ,ncon,ntype
 c
       real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
@@ -77,6 +81,20 @@ c
      &          ,' + Tucson Vijk  ',' + Brazil Vijk  '
      &          ,' + DD TNR       ',' + DD TNR & TNA '/
 c
+c      x(1) = 2.42307414430651180
+c      x(2) = 1.25010006582965350
+c      x(3) = 1.72667122074387769
+c      x(4) = 3.80534694106413118
+#ifndef DO_FULLX
+      write(nlog,9997) n, (x(i),i=1,n)
+      write(nout,9997) n, (x(i),i=1,n)
+#else
+      write(nlog,9997) nbdirsmax,(x(i),i=1,nbdirsmax)
+      write(nout,9997) nbdirsmax,(x(i),i=1,nbdirsmax)
+#endif
+
+ 9997 format (' nucmat input ',i3,' at',(10f24.17))
+#ifndef DO_FULLX
       dor=x(1)
       if (n.ge.2) then
         ast=x(2)
@@ -86,12 +104,20 @@ c
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
-#ifdef CASE_SNM
         bls=bst
-#else
-        bls=0.
-#endif
+c        bls=0.
       end if
+#else
+      dor=x(1)
+      ast=x(2)
+      atn=x(3)
+      als=x(4)
+      bst=x(5)
+      btn=x(6)
+      bls=x(7)
+#endif
+
+
 #ifdef ALLOW_TAPENADE
       astd=0.0
       atnd=0.0
@@ -104,6 +130,8 @@ c
       flocald = 0.0
       gint = 0.0
 #ifdef DO_ALL
+#ifndef DO_FULLX
+#if 0
       ndirs=1
       dord(ndirs)=1.0
       if (n.ge.2) then
@@ -117,9 +145,25 @@ c
         bstd(ndirs)=1.0
         ndirs=ndirs+1
         btnd(ndirs)=1.0
-c        bls=bst
         blsd=bstd
       end if
+#endif
+      dord(1)=1.0
+      astd(2)=1.0
+      atnd(3)=1.0
+      alsd(4)=1.0
+      bstd(5)=1.0
+      btnd(6)=1.0
+      blsd(7)=1.0
+#else
+      dord(1)=1.0
+      astd(2)=1.0
+      atnd(3)=1.0
+      alsd(4)=1.0
+      bstd(5)=1.0
+      btnd(6)=1.0
+      blsd(7)=1.0
+#endif
 #endif
 #endif
 #ifndef ALLOW_TAPENADE
@@ -205,7 +249,6 @@ c   ------------------
       end do
       read(nin,*) nperturb
       read(nin,*) delta
-      write(nlog,*) "delta", delta
       dor=dor*(1+delta*xperturb(nperturb,1))
       ast=ast*(1+delta*xperturb(nperturb,2))
       als=als*(1+delta*xperturb(nperturb,3))
@@ -213,12 +256,22 @@ c   ------------------
       bst=bst*(1+delta*xperturb(nperturb,5))
       bls=bls*(1+delta*xperturb(nperturb,6))
       btn=btn*(1+delta*xperturb(nperturb,7))
+#ifndef DO_FULLX
       x(1)=dor
       if (n.ge.2) x(2)=ast
       if (n.eq.4) then
         x(3)=bst
         x(4)=btn
       end if
+#else
+      x(1)=dor
+      x(2)=ast
+      x(3)=atn
+      x(4)=als
+      x(5)=bst
+      x(6)=btn
+      x(7)=bls
+#endif
       nosave=no
       npisav=npi
       no=1
@@ -239,6 +292,7 @@ c     ll=2*ll
 c     lg=2*lg
 c     le=2*le
 c     l3=2*l3
+#ifndef DO_FULLX
       dor=x(1)
       if (n.ge.2) then
         ast=x(2)
@@ -248,12 +302,18 @@ c     l3=2*l3
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
-#ifdef CASE_SNM
-        bls=bst
-#else
-        bls=0.
-#endif
+         bls=bst
+c        bls=0.
       end if
+#else
+      dor=x(1)
+      ast=x(2)
+      atn=x(3)
+      als=x(4)
+      bst=x(5)
+      btn=x(6)
+      bls=x(7)
+#endif
 #ifdef ALLOW_TAPENADE
       astd=0.0
       atnd=0.0
@@ -266,6 +326,7 @@ c     l3=2*l3
       flocald = 0.0
       gint = 0.0
 #ifdef DO_ALL
+#ifndef DO_FULLX
       ndirs=1
       dord(ndirs)=1.0
       if (n.ge.2) then
@@ -279,9 +340,17 @@ c     l3=2*l3
         bstd(ndirs)=1.0
         ndirs=ndirs+1
         btnd(ndirs)=1.0
-c        bls=bst
-        blsd=bstd
+c        blsd=bstd
       end if
+#else
+      dord(1)=1.0
+      astd(2)=1.0
+      atnd(3)=1.0
+      alsd(4)=1.0
+      bstd(5)=1.0
+      btnd(6)=1.0
+      blsd(7)=1.0
+#endif
 #endif
 #endif
 #ifndef ALLOW_TAPENADE
@@ -306,7 +375,7 @@ c        bls=bst
      &                   endiff, efree, flocal, flocald, nmlocal,
      &                     nbdirsmax)
 #endif
-      final = flocal
+      f = flocal
       fplus=flocal+abs(endiff)
 #endif
 

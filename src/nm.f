@@ -5,6 +5,9 @@ c **********************************************************************
       program nmprog
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+#ifdef DO_FULLX
+      include "DIFFSIZES.inc"
+#endif
       include "nclude/params.f"
       external nucmat
       parameter (nlog=0,nin=5,nout=6)
@@ -47,7 +50,11 @@ c **********************************************************************
      &              fbest,nucmat,n)
 #else
         mbfgs=6
+#ifndef DO_FULLX
         call sdrive(n,mbfgs,x(1:n),nucmat)
+#else
+        call sdrive(nbdirsmax,n,mbfgs,x(1:nbdirsmax),nucmat)
+#endif
         stop "done calling sdrive"
 #endif
       end if

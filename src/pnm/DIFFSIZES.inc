@@ -1,1 +1,1 @@
-      integer, parameter :: nbdirsmax=4
+      integer, parameter :: nbdirsmax=7
