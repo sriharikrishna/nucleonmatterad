@@ -72,6 +72,9 @@ endif
 ifdef ALL
 CPPFLAGS+=-DDO_ALL
 endif
+ifdef FULLX
+CPPFLAGS+=-DDO_FULLX
+endif
 ifeq ($(CASE), snm)
   CPPFLAGS+=-DCASE_SNM
 else
