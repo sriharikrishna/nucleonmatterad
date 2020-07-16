@@ -47,8 +47,12 @@ c         Mathematical Software,
 c
 c     **************
 
-      program driver
- 
+#ifndef DO_FULLX
+      SUBROUTINE SDRIVE(NDIM,MSAVE,X,funk)
+#else
+      SUBROUTINE SDRIVE(NDIM,NCASE,MSAVE,X,funk)
+#endif
+      implicit none
 c     This driver shows how to replace the default stopping test
 c       by other termination criteria. It also illustrates how to
 c       print the values of several parameters during the course of
@@ -56,8 +60,16 @@ c       the iteration. The sample problem used here is the same as in
 c       DRIVER1 (the extended Rosenbrock function with bounds on the 
 c       variables).
  
-      integer          nmax, mmax
-      parameter        (nmax=1024, mmax=17)
+      INTEGER NDIM,MSAVE,NCASE
+      logical lprt
+c      integer          nmax, mmax
+c      parameter        (nmax=1024, mmax=17)
+      integer          mmax
+      parameter        (mmax=17)
+      integer nlog,nin,nout
+      parameter (nlog=0,nin=5,nout=6)
+
+
 c        nmax is the dimension of the largest problem to be solved.
 c        mmax is the maximum number of limited memory corrections.
  
@@ -67,11 +79,11 @@ c       driver1.
  
       character*60     task, csave
       logical          lsave(4)
-      integer          n, m, iprint, 
-     +                 nbd(nmax), iwa(3*nmax), isave(44)
+      integer          m, iprint,
+     &                 nbd(NDIM), iwa(3*NDIM), isave(44)
       double precision f, factr, pgtol, 
-     +                 x(nmax), l(nmax), u(nmax), g(nmax), dsave(29), 
-     +                 wa(2*mmax*nmax+5*nmax+11*mmax*mmax+8*mmax)
+     &                 x(NDIM), l(NDIM), u(NDIM), g(NDIM), dsave(29),
+     &                 wa(2*mmax*NDIM+5*NDIM+11*mmax*mmax+8*mmax)
 
 c     Declare a few additional variables for the sample problem.
 
@@ -87,81 +99,80 @@ c        user is providing his own stopping criteria.
 
       factr=0.0d0
       pgtol=0.0d0
+      factr=1.0d+7
+c      pgtol=1.0d-5
+      factr=1.d+12
 
 c     We specify the dimension n of the sample problem and the number
 c        m of limited memory corrections stored.  (n and m should not
 c        exceed the limits nmax and mmax respectively.)
  
-      n=25
+c      n=25
       m=5
  
 c     We now specify nbd which defines the bounds on the variables:
 c                    l   specifies the lower bounds,
 c                    u   specifies the upper bounds. 
  
-c     First set bounds on the odd numbered variables.
-
-      do 10 i=1,n,2
-         nbd(i)=2
-         l(i)=1.0d0
-         u(i)=1.0d2
-  10  continue
-
-c     Next set bounds on the even numbered variables.
-
-      do 12 i=2,n,2
-         nbd(i)=2
-         l(i)=-1.0d2
-         u(i)=1.0d2
-  12   continue
+      do i=1,NDIM
+        nbd(i)=2
+      end do
+      do i=1,NDIM
+        read(nin,*) l(i), u(i)
+      end do
+   
 
 c     We now define the starting point.
 
-      do 14 i=1,n
-         x(i)=3.0d0
-  14  continue
+c      do 14 i=1,n
+c         x(i)=3.0d0
+c  14  continue
  
 c     We now write the heading of the output.
 
       write (6,16)
   16  format(/,5x, 'Solving sample problem.',
-     +       /,5x, ' (f = 0.0 at the optimal solution.)',/) 
+     &       /,5x, ' (f = 0.0 at the optimal solution.)',/)
 
 c     We start the iteration by initializing task.
 c 
       task = 'START'
-
+      write(nlog,*) "task ", task
+      write(nout,*) "task ", task
 c        ------- the beginning of the loop ----------
  
  111  continue
       
 c     This is the call to the L-BFGS-B code.
  
-      call setulb(n,m,x,l,u,nbd,f,g,factr,pgtol,wa,iwa,task,iprint,
-     +            csave,lsave,isave,dsave)
- 
+      call setulb(NDIM,m,x,l,u,nbd,f,g,factr,pgtol,wa,iwa,task,iprint,
+     &            csave,lsave,isave,dsave)
+      write(nlog,*) "task ", task
+      write(nout,*) "task ", task
       if (task(1:2) .eq. 'FG') then
 c        the minimization routine has returned to request the
 c        function f and gradient g values at the current x.
 
 c        Compute function value f for the sample problem.
-
-         f=.25d0*(x(1)-1.d0)**2
-         do 20 i=2,n
-            f=f+(x(i)-x(i-1)**2)**2
-  20     continue
-         f=4.d0*f
-
 c        Compute gradient g for the sample problem.
 
-         t1=x(2)-x(1)**2
-         g(1)=2.d0*(x(1)-1.d0)-1.6d1*x(1)*t1
-         do 22 i=2,n-1
-            t2=t1
-            t1=x(i+1)-x(i)**2
-            g(i)=8.d0*t2-1.6d1*x(i)*t1
-  22     continue
-         g(n)=8.d0*t1
+#ifndef DO_FULLX
+      do i=1,ndim
+        write(nlog,*) "x before flocald%d", x(i)
+        write(nout,*) "x before flocald%d", x(i)
+      end do
+      G(1:ndim) =0.0
+      F=0.0
+      call funk(x,NDIM,F,G,lprt)
+#else
+      call funk(x,NCASE,F,G,lprt)
+#endif
+      if (isnan(F)) then
+        stop "Stop NaN"
+      else
+        write(nlog,*) "f", F
+        write(nout,*) "f", F
+      end if
 
 c          go back to the minimization routine.
          goto 111
@@ -184,13 +195,13 @@ c        1) Terminate if the total number of f and g evaluations
 c             exceeds 99.
 
          if (isave(34) .ge. 99)
-     +      task='STOP: TOTAL NO. of f AND g EVALUATIONS EXCEEDS LIMIT'
+     &      task='STOP: TOTAL NO. of f AND g EVALUATIONS EXCEEDS LIMIT'
 
 c        2) Terminate if  |proj g|/(1+|f|) < 1.0d-10, where 
 c           "proj g" denoted the projected gradient
 
          if (dsave(13) .le. 1.d-10*(1.0d0 + abs(f)))
-     +      task='STOP: THE PROJECTED GRADIENT IS SUFFICIENTLY SMALL'
+     &      task='STOP: THE PROJECTED GRADIENT IS SUFFICIENTLY SMALL'
 
 c        We now wish to print the following information at each
 c        iteration:
@@ -204,7 +215,7 @@ c        See the comments at the end of driver1 for a description
 c        of the variables isave and dsave.
          
          write (6,'(2(a,i5,4x),a,1p,d12.5,4x,a,1p,d12.5)') 'Iterate'
-     +      ,isave(30),'nfg =',isave(34),'f =',f,'|proj g| =',dsave(13)
+     &      ,isave(30),'nfg =',isave(34),'f =',f,'|proj g| =',dsave(13)
 
 c        If the run is to be terminated, we print also the information
 c        contained in task as well as the final value of x.
@@ -212,7 +223,7 @@ c        contained in task as well as the final value of x.
          if (task(1:4) .eq. 'STOP') then
             write (6,*) task  
             write (6,*) 'Final X='
-            write (6,'((1x,1p, 6(1x,d11.4)))') (x(i),i = 1,n)
+            write (6,'((1x,1p, 6(1x,d11.4)))') (x(i),i = 1,NDIM)
          endif
 
 c          go back to the minimization routine.
