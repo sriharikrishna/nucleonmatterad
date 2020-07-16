@@ -4,7 +4,7 @@ c  or “3-clause license”)
 c  Please read attached file License.txt                                               
 c                                        
 
-      double precision function dnrm2(n,x,incx)
+      double precision function lbfgsb_dnrm2(n,x,incx)
       integer n,incx
       double precision x(n)
 c     **********
@@ -61,7 +61,7 @@ c     **********
       
 c====================== The end of dnrm2 ===============================
 
-      subroutine daxpy(n,da,dx,incx,dy,incy)
+      subroutine lbfgsb_daxpy(n,da,dx,incx,dy,incy)
 c
 c     constant times a vector plus a vector.
 c     uses unrolled loops for increments equal to one.
@@ -111,7 +111,7 @@ c
       
 c====================== The end of daxpy ===============================
 
-      subroutine dcopy(n,dx,incx,dy,incy)
+      subroutine lbfgsb_dcopy(n,dx,incx,dy,incy)
 c
 c     copies a vector, x, to a vector, y.
 c     uses unrolled loops for increments equal to one.
@@ -163,7 +163,7 @@ c
       
 c====================== The end of dcopy ===============================
 
-      double precision function ddot(n,dx,incx,dy,incy)
+      double precision function lbfgsb_ddot(n,dx,incx,dy,incy)
 c
 c     forms the dot product of two vectors.
 c     uses unrolled loops for increments equal to one.
@@ -214,7 +214,7 @@ c
       
 c====================== The end of ddot ================================
 
-      subroutine  dscal(n,da,dx,incx)
+      subroutine  lbfgsb_dscal(n,da,dx,incx)
 c
 c     scales a vector by a constant.
 c     uses unrolled loops for increment equal to one.

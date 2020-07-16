@@ -624,8 +624,8 @@ c        is to resume.
          if (task(1:4) .eq. 'STOP') then
             if (task(7:9) .eq. 'CPU') then
 c                                          restore the previous iterate.
-               call dcopy(n,t,1,x,1)
-               call dcopy(n,r,1,g,1)
+               call lbfgsb_dcopy(n,t,1,x,1)
+               call lbfgsb_dcopy(n,r,1,g,1)
                f = fold
             endif
             goto 999
@@ -662,7 +662,7 @@ c ----------------- the beginning of the loop --------------------------
 c
       if (.not. cnstnd .and. col .gt. 0) then 
 c                                            skip the search for GCP.
-         call dcopy(n,x,1,z,1)
+         call lbfgsb_dcopy(n,x,1,z,1)
          wrk = updatd
          nseg = 0
          goto 333
@@ -789,8 +789,8 @@ c     Generate the search direction d:=z-x.
      +            boxed,cnstnd,csave,isave(22),dsave(17))
       if (info .ne. 0 .or. iback .ge. 20) then
 c          restore the previous iterate.
-         call dcopy(n,t,1,x,1)
-         call dcopy(n,r,1,g,1)
+         call lbfgsb_dcopy(n,t,1,x,1)
+         call lbfgsb_dcopy(n,r,1,g,1)
          f = fold
          if (col .eq. 0) then
 c             abnormal termination.
@@ -855,6 +855,9 @@ c                                        terminate the algorithm.
          if (iback .ge. 10) info = -5
 c           i.e., to issue a warning if iback>10 in the line search.
          goto 999
+      else
+        write(0,*) "(fold - f)", (fold - f), "tol*ddum", tol*ddum
+        write(6,*) "(fold - f)", (fold - f), "tol*ddum", tol*ddum
       endif 
 
 c     Compute d=newx-oldx, r=newg-oldg, rr=y'y and dr=y's.
@@ -1422,7 +1425,7 @@ c       the derivative f1 and the vector p = W'd (for theta = 1).
  
       if (sbgnrm .le. zero) then
          if (iprint .ge. 0) write (6,*) 'Subgnorm = 0.  GCP = X.'
-         call dcopy(n,x,1,xcp,1)
+         call lbfgsb_dcopy(n,x,1,xcp,1)
          return
       endif 
       bnded = .true.
@@ -1518,7 +1521,7 @@ c                   complete the initialization of p for theta not= one.
  
 c     Initialize GCP xcp = x.
 
-      call dcopy(n,x,1,xcp,1)
+      call lbfgsb_dcopy(n,x,1,xcp,1)
 
       if (nbreak .eq. 0 .and. nfree .eq. n + 1) then
 c                  is a zero vector, return with the initial xcp as GCP.
@@ -1995,9 +1998,9 @@ c              R_z is the upper triangular part of S'ZZ'Y.
 c                                 shift old part of WN1.
             do 10 jy = 1, m - 1
                js = m + jy
-               call dcopy(m-jy,wn1(jy+1,jy+1),1,wn1(jy,jy),1)
-               call dcopy(m-jy,wn1(js+1,js+1),1,wn1(js,js),1)
-               call dcopy(m-1,wn1(m+2,jy+1),1,wn1(m+1,jy),1)
+               call lbfgsb_dcopy(m-jy,wn1(jy+1,jy+1),1,wn1(jy,jy),1)
+               call lbfgsb_dcopy(m-jy,wn1(js+1,js+1),1,wn1(js,js),1)
+               call lbfgsb_dcopy(m-1,wn1(m+2,jy+1),1,wn1(m+1,jy),1)
   10        continue
          endif
  
@@ -2537,8 +2540,8 @@ c     Determine the maximum step length.
          stp = one
       endif 
 
-      call dcopy(n,x,1,t,1)
-      call dcopy(n,g,1,r,1)
+      call lbfgsb_dcopy(n,x,1,t,1)
+      call lbfgsb_dcopy(n,g,1,r,1)
       fold = f
       ifun = 0
       iback = 0
@@ -2565,7 +2568,7 @@ c                               Line search is impossible.
          nfgv = nfgv + 1
          iback = ifun - 1 
          if (stp .eq. one) then
-            call dcopy(n,z,1,x,1)
+            call lbfgsb_dcopy(n,z,1,x,1)
          else
             do 41 i = 1, n
                x(i) = stp*d(i) + t(i)
@@ -2629,8 +2632,8 @@ c     Set pointers for matrices WS and WY.
  
 c     Update matrices WS and WY.
 
-      call dcopy(n,d,1,ws(1,itail),1)
-      call dcopy(n,r,1,wy(1,itail),1)
+      call lbfgsb_dcopy(n,d,1,ws(1,itail),1)
+      call lbfgsb_dcopy(n,r,1,wy(1,itail),1)
  
 c     Set theta=yy/ys.
  
@@ -2643,8 +2646,8 @@ c                                         and the lower triangle of SY:
       if (iupdat .gt. m) then
 c                              move old information
          do 50 j = 1, col - 1
-            call dcopy(j,ss(2,j+1),1,ss(1,j),1)
-            call dcopy(col-j,sy(j+1,j+1),1,sy(j,j),1)
+            call lbfgsb_dcopy(j,ss(2,j+1),1,ss(1,j),1)
+            call lbfgsb_dcopy(col-j,sy(j+1,j+1),1,sy(j,j),1)
   50     continue
       endif
 c        add new information: the last row of SY
@@ -3236,7 +3239,7 @@ c     Let us try the projection, d is the Newton direction
 
       iword = 0
 
-      call dcopy ( n, x, 1, xp, 1 )
+      call lbfgsb_dcopy ( n, x, 1, xp, 1 )
 c
       do 50 i=1, nsub
          k  = ind(i)
@@ -3278,7 +3281,7 @@ c
          dd_p  = dd_p + (x(i) - xx(i))*gg(i)
  55   continue
       if ( dd_p .gt.zero ) then
-         call dcopy( n, xp, 1, x, 1 )
+         call lbfgsb_dcopy( n, xp, 1, x, 1 )
          write(6,*) ' Positive dir derivative in projection '
          write(6,*) ' Using the backtracking step '
       else
