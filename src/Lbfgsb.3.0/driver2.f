@@ -100,7 +100,7 @@ c        user is providing his own stopping criteria.
       factr=0.0d0
       pgtol=0.0d0
       factr=1.0d+7
-c      pgtol=1.0d-5
+      pgtol=1.0d-4
       factr=1.d+12
 
 c     We specify the dimension n of the sample problem and the number
