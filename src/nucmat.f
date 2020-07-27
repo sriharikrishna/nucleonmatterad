@@ -278,7 +278,20 @@ c   ------------------
       npisav=npi
       no=1
       npi=0
-      write(fname,"(A5,I1,A1,I2.2,A1,I1,A4)")"bfgs_",n,"_",nperturb,"_",
+      write(fname,"(A8,I2.2,A1,I1,A4)")
+#if defined (BFGS) && defined (CASE_SNM)
+     &"bfg_snm_",
+#endif
+#if !defined (BFGS) && defined (CASE_SNM)
+     &"dfo_snm_",
+#endif
+#if defined (BFGS) && !defined (CASE_SNM)
+     &"bfg_pnm_",
+#endif
+#if !defined (BFGS) && !defined (CASE_SNM)
+     &"dfo_pnm_",
+#endif
+     &nperturb,"_",
      &int(delta*10),".txt"
       open(unit=nres,file=fname,action="WRITE")
       write(nres,*) nperturb,",",delta
