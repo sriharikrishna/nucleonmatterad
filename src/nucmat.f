@@ -2,14 +2,14 @@ c *id* nucmat **********************************************************
 c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
 #if defined (BFGS) && defined (ALLOW_TAPENADE)
-      subroutine nucmat(x,n,f,flocald,lprt)
+      subroutine nucmat(x,n,f,flocald,ncall)
 #else
       subroutine nucmat(x,n,f,lprt)
 #endif
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
       INCLUDE 'DIFFSIZES.inc'
-      parameter (nlog=0,nin=5,nout=6)
+      parameter (nlog=0,nin=5,nout=6,nres=7)
       logical lprt
 #ifndef DO_FULLX
       real*8 x(n)
@@ -65,6 +65,7 @@ c
       character*20 timdat
       character*32 mname(4)
       character*50 sysdat
+      character*16 fname
       data mname/'Nuclear matter','Neutron matter'
      &          ,'Not implemented at this time'
      &          ,'Spin-polarized neutron matter'/
@@ -193,6 +194,7 @@ c        bls=0.
        no=0
 #if defined (ALLOW_TAPENADE)
 #ifdef DO_ALL
+      write(nres,*) ncall,",",flocal,(",",flocald(i),i=1,nbdirsmax)
       do i=1,nbdirsmax
         write(nlog,*) "flocald%d", flocald(i)
         write(nout,*) "flocald%d", flocald(i)
@@ -276,6 +278,10 @@ c   ------------------
       npisav=npi
       no=1
       npi=0
+      write(fname,"(A5,I1,A1,I2.2,A1,I1,A4)")"bfgs_",n,"_",nperturb,"_",
+     &int(delta*10),".txt"
+      open(unit=nres,file=fname,action="WRITE")
+      write(nres,*) nperturb,",",delta
       return
 c *******************
 c entry for final run

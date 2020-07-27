@@ -163,9 +163,9 @@ c        Compute gradient g for the sample problem.
       end do
       G(1:ndim) =0.0
       F=0.0
-      call funk(x,NDIM,F,G,lprt)
+      call funk(x,NDIM,F,G,isave(34))
 #else
-      call funk(x,NCASE,F,G,lprt)
+      call funk(x,NCASE,F,G,isave(34))
 #endif
       if (isnan(F)) then
         stop "Stop NaN"
