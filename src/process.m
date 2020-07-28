@@ -99,10 +99,6 @@ function someval = read_plot(n,filename,yscale)
   some_val = 0; % could be scalar, vector, matrix etc.
 end
 read_plot(2,'bfg_snm','linear')
-
-read_plot(2,'bfg_snm','linear')
-read_plot(2,'dfo_snm','linear')
+read_plot(4,'dfo_snm','linear')
 read_plot(2,'bfg_pnm','linear')
-read_plot(2,'dfo_pnm','linear')
-
-
+read_plot(4,'dfo_pnm','linear')
