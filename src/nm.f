@@ -55,10 +55,9 @@ c **********************************************************************
 #else
         call sdrive(nbdirsmax,n,mbfgs,x(1:nbdirsmax),nucmat)
 #endif
-        stop "done calling sdrive"
 #endif
       end if
-#ifndef BFGS
+#ifndef ALLOW_TAPENADE
       call nmfin(x,n)
 #endif
       timeit=timer(timeit)
