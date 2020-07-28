@@ -50,14 +50,12 @@ ifdef BFGSCONST
 endif
 
 info:
-	@echo "-----------------------------------------"
-	@echo "Differeniating with the following options"\
+	@echo "--- Differeniating with the following options"\
        "CASE="${CASE}\
        "BFGS="${BFGS}\
        "BFGSCONST="${BFGSCONST}\
        "ALL="${ALL}\
        "FULLX="${FULLX}
-	@echo "-----------------------------------------"
 
 
 nmad: numCore_d.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
@@ -75,11 +73,9 @@ numCore.f: $(SRC) $(SRCSUB)
 #	mv numCore.pre_d.f $@
 
 numCore_dv.pre.f: numCore.pre.f DIFFSIZES.inc
-	@echo "-----------------------------------------"
-	@echo "Generating Tapenade Output: nmmainad(flocal,gint,endiff,efree)/(dor,bls,bst,btn,als,ast,atn)"
+	@echo "--- Generating Tapenade Output: nmmainad(flocal,gint,endiff,efree)/(dor,bls,bst,btn,als,ast,atn)"
 	@${TPN} -forward -vector -head "nmmainad(flocal)/(dor,bls,bst,btn,als,ast,atn)"  $< 
 	@mv numCore.pre_dv.f $@
-	@echo "-----------------------------------------"
 
 CPPFLAGS= $(DIFF) $(WFLAGS) -DALLOW_TAPENADE -DALLOW_DATA 
 ifdef BFGS
@@ -97,7 +93,7 @@ else
   CPPFLAGS+=-DCASE_PNM
 endif
 
-CPPCMD = @echo "Preprocessing" $<; cat $< |  cpp  $(CPPFLAGS)  -I../ -I./ -traditional-cpp -P 
+CPPCMD = @cat $< |  cpp  $(CPPFLAGS)  -I../ -I./ -traditional-cpp -P 
 
 %.pre.c: %.c
 	$(CPPCMD) > $@
@@ -112,10 +108,11 @@ CPPCMD = @echo "Preprocessing" $<; cat $< |  cpp  $(CPPFLAGS)  -I../ -I./ -tradi
 	${FC} ${F90FLAGS} -cpp -o $@ -c $< 
 
 %.o : %.f
-	@echo "Compiling" $<
+	@echo "--- Compiling" $<
 	${FC} ${F90FLAGS} -cpp -o $@ -c $< 
 
 %.o : %.c
+	@echo "--- Compiling" $<
 	${CC} -cpp -o $@ -c $< 
 
 #
