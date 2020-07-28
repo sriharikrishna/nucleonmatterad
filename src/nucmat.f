@@ -194,7 +194,9 @@ c        bls=0.
        no=0
 #if defined (ALLOW_TAPENADE)
 #ifdef DO_ALL
-      write(nres,*) ncall,",",flocal,(",",flocald(i),i=1,nbdirsmax)
+      write(nres,*) ncall,",",flocal
+     & ,(",",x(i),i=1,n)
+     & ,(",",flocald(i),i=1,nbdirsmax)
       do i=1,nbdirsmax
         write(nlog,*) "flocald%d", flocald(i)
         write(nout,*) "flocald%d", flocald(i)
@@ -294,7 +296,7 @@ c   ------------------
      &nperturb,"_",
      &int(delta*10),".txt"
       open(unit=nres,file=fname,action="WRITE")
-      write(nres,"(I2.2,A1,I1)") nperturb,",",delta
+      write(nres,"(I2.2,A1,F3.1)") nperturb,",",delta
       return
 c *******************
 c entry for final run
