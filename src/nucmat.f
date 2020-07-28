@@ -294,7 +294,7 @@ c   ------------------
      &nperturb,"_",
      &int(delta*10),".txt"
       open(unit=nres,file=fname,action="WRITE")
-      write(nres,*) nperturb,",",delta
+      write(nres,"(I2.2,A1,I1)") nperturb,",",delta
       return
 c *******************
 c entry for final run
