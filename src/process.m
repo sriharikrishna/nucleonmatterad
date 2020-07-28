@@ -23,7 +23,7 @@ function someval = read_plot(n,filename,yscale)
     
           if length(b)==2
             j=j+1;
-            probstore(j,:)=cellfun(@str2num,b(1:end))';
+            probstore(j,:)=cellfun(@str2num,b(1:end));
             k=0;
           else
             k=k+1;
@@ -98,7 +98,7 @@ function someval = read_plot(n,filename,yscale)
   end
   some_val = 0; % could be scalar, vector, matrix etc.
 end
+read_plot(2,'dfo_snm','linear')
 read_plot(2,'bfg_snm','linear')
-read_plot(4,'dfo_snm','linear')
-read_plot(2,'bfg_pnm','linear')
 read_plot(4,'dfo_pnm','linear')
+read_plot(4,'bfg_pnm','linear')
