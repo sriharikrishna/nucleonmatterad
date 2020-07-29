@@ -35,8 +35,8 @@ sub/pot.pre.f\
 sub/numrec.pre.f\
 sub/dgamma.pre.f
 
-DIFFSIZES.inc: $(CASE)/DIFFSIZES.inc
-	@cp $(CASE)/DIFFSIZES.inc DIFFSIZES.inc
+DIFFSIZES.inc: $(CASE)/DIFFSIZES${FULLX}.inc
+	cp $(CASE)/DIFFSIZES${FULLX}.inc DIFFSIZES.inc
 
 OBJSUB= sub/dtime.o sub/headtime.pre.o sub/linpack.pre.o sub/minimi.pre.o sub/numrec.pre.o \
    sub/pot.pre.o sub/eft_pot_r.pre.o sub/dgamma.pre.o isnan_d.o
