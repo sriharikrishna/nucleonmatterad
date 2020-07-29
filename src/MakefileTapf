@@ -55,7 +55,8 @@ info:
        "BFGS="${BFGS}\
        "BFGSCONST="${BFGSCONST}\
        "ALL="${ALL}\
-       "FULLX="${FULLX}
+       "FULLX="${FULLX}\
+       "NUCMAT="${NUCMAT}
 
 
 nmad: numCore_d.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
@@ -86,6 +87,9 @@ CPPFLAGS+=-DDO_ALL
 endif
 ifdef FULLX
 CPPFLAGS+=-DDO_FULLX
+endif
+ifdef NUCMAT
+CPPFLAGS+=-DONLY_NUCMAT
 endif
 ifeq ($(CASE), snm)
   CPPFLAGS+=-DCASE_SNM
