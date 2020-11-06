@@ -8,7 +8,7 @@
 #SBATCH --output=bfgs_pnm_2.out
 #SBATCH --error=bfgs_pnm_2.error
 #SBATCH --mail-user=snarayan@.anl.gov
-#SBATCH --time=20:00:00
+#SBATCH --time=4:00:00
 
 #
 module load intel-parallel-studio/cluster.2017.4-wyg4gfu intel/17.0.4-74uvhji
