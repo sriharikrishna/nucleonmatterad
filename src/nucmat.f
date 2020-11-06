@@ -194,8 +194,16 @@ c        bls=0.
        no=0
 #if defined (ALLOW_TAPENADE)
 #ifdef DO_ALL
+#ifndef ONLY_NUCMAT
       write(nres,*) ncall,",",flocal
-     & ,(",",x(i),i=1,n)
+#else
+      write(nres,*) flocal
+#endif
+#ifndef DO_FULLX
+     & ,(x(i),i=1,n)
+#else
+     &, (x(i),i=1,nbdirsmax)
+#endif
      & ,(",",flocald(i),i=1,nbdirsmax)
       do i=1,nbdirsmax
         write(nlog,*) "flocald%d", flocald(i)
@@ -296,8 +304,8 @@ c   ------------------
 #endif
      &nperturb,"_",
      &int(delta*10),".txt"
-     open(unit=nres,file=fname,action="WRITE")
-     write(nres,"(I2.2,A1,F3.1)") nperturb,",",delta
+      open(unit=nres,file=fname,action="WRITE")
+      write(nres,"(I2.2,A1,F3.1)") nperturb,",",delta
 #else 
 #ifndef DO_FULLX
       read(nin,*) (x(i),i=1,n)
@@ -310,7 +318,6 @@ c   ------------------
       write(fname,"(A11)") "out_pnm.txt"
 #endif
       open(unit=nres,file=fname,action="WRITE")
-      write(nres,"(I2.2,A1,F3.1)") nperturb,",",delta
 #endif
       return
 c *******************
