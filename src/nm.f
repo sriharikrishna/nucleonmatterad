@@ -45,6 +45,7 @@ c **********************************************************************
      &          ' expansion ',f7.3,
      &        /5x,'quadratic tolerance is',f7.3,
      &        /5x,'scale factors are',5f7.3)
+#ifndef ONLY_NUCMAT
 #ifndef BFGS
         call minimi(maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,scale,x,
      &              fbest,nucmat,n)
@@ -55,10 +56,16 @@ c **********************************************************************
 #else
         call sdrive(nbdirsmax,n,mbfgs,x(1:nbdirsmax),nucmat)
 #endif
-        stop "done calling sdrive"
+#endif
+#else
+#ifndef DO_FULLX
+      call nucmat(x(1:n),n)
+#else
+      call nucmat(x(1:nbdirsmax),nbdirsmax)
+#endif
 #endif
       end if
-#ifndef BFGS
+#ifndef ALLOW_TAPENADE
       call nmfin(x,n)
 #endif
       timeit=timer(timeit)

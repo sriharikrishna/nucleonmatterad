@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+#Data
+*.1
+*.2
+*.dat
+
+#Intermediate files
+*.pre.*
+src/nclude/params.f
+src/params_dv.f
+src/params_d.f
+*~

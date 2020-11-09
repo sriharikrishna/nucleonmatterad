@@ -1,15 +1,19 @@
 c *id* nucmat **********************************************************
 c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
+#ifndef ONLY_NUCMAT
 #if defined (BFGS) && defined (ALLOW_TAPENADE)
-      subroutine nucmat(x,n,f,flocald,lprt)
+      subroutine nucmat(x,n,f,flocald,ncall)
 #else
       subroutine nucmat(x,n,f,lprt)
+#endif
+#else
+      subroutine nucmat(x,n)
 #endif
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
       INCLUDE 'DIFFSIZES.inc'
-      parameter (nlog=0,nin=5,nout=6)
+      parameter (nlog=0,nin=5,nout=6,nres=7)
       logical lprt
 #ifndef DO_FULLX
       real*8 x(n)
@@ -65,6 +69,7 @@ c
       character*20 timdat
       character*32 mname(4)
       character*50 sysdat
+      character*16 fname
       data mname/'Nuclear matter','Neutron matter'
      &          ,'Not implemented at this time'
      &          ,'Spin-polarized neutron matter'/
@@ -81,10 +86,6 @@ c
      &          ,' + Tucson Vijk  ',' + Brazil Vijk  '
      &          ,' + DD TNR       ',' + DD TNR & TNA '/
 c
-c      x(1) = 2.42307414430651180
-c      x(2) = 1.25010006582965350
-c      x(3) = 1.72667122074387769
-c      x(4) = 3.80534694106413118
 #ifndef DO_FULLX
       write(nlog,9997) n, (x(i),i=1,n)
       write(nout,9997) n, (x(i),i=1,n)
@@ -193,6 +194,17 @@ c        bls=0.
        no=0
 #if defined (ALLOW_TAPENADE)
 #ifdef DO_ALL
+#ifndef ONLY_NUCMAT
+      write(nres,*) ncall,",",flocal
+#else
+      write(nres,*) flocal
+#endif
+#ifndef DO_FULLX
+     & ,(x(i),i=1,n)
+#else
+     &, (x(i),i=1,nbdirsmax)
+#endif
+     & ,(",",flocald(i),i=1,nbdirsmax)
       do i=1,nbdirsmax
         write(nlog,*) "flocald%d", flocald(i)
         write(nout,*) "flocald%d", flocald(i)
@@ -244,6 +256,11 @@ c   ------------------
       write(nout,1012) ptnnam,tname(nt)
  1012 format(/4x,2a20)
       s=float(4/nmlocal)
+      nosave=no
+      npisav=npi
+      no=1
+      npi=0
+#ifndef ONLY_NUCMAT
       do i=1, 30
         read(nin,*) (xperturb(i,j),j=1,7)
       end do
@@ -272,10 +289,36 @@ c   ------------------
       x(6)=btn
       x(7)=bls
 #endif
-      nosave=no
-      npisav=npi
-      no=1
-      npi=0
+      write(fname,"(A8,I2.2,A1,I1,A4)")
+#if defined (BFGS) && defined (CASE_SNM)
+     &"bfg_snm_",
+#endif
+#if !defined (BFGS) && defined (CASE_SNM)
+     &"dfo_snm_",
+#endif
+#if defined (BFGS) && !defined (CASE_SNM)
+     &"bfg_pnm_",
+#endif
+#if !defined (BFGS) && !defined (CASE_SNM)
+     &"dfo_pnm_",
+#endif
+     &nperturb,"_",
+     &int(delta*10),".txt"
+      open(unit=nres,file=fname,action="WRITE")
+      write(nres,"(I2.2,A1,F3.1)") nperturb,",",delta
+#else 
+#ifndef DO_FULLX
+      read(nin,*) (x(i),i=1,n)
+#else
+      read(nin,*) (x(i),i=1,nbdirsmax)
+#endif
+#if defined (CASE_SNM)
+      write(fname,"(A11)") "out_snm.txt"
+#else
+      write(fname,"(A11)") "out_pnm.txt"
+#endif
+      open(unit=nres,file=fname,action="WRITE")
+#endif
       return
 c *******************
 c entry for final run

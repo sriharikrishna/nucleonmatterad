@@ -56,9 +56,9 @@ C
         write(nout,*) "x before flocald%d", G(i)
       end do
       G(1:ndim) =0.0
-      call funk(x,NDIM,F,G,lprt)
+      call funk(x,NDIM,F,G,ICALL+1)
 #else
-      call funk(x,NCASE,F,G,lprt)
+      call funk(x,NCASE,F,G,ICALL+1)
 #endif
       write(nlog,*) "NDIM", NDIM, "IFLAG", IFLAG
       write(nout,*) "NDIM", NDIM, "IFLAG", IFLAG
