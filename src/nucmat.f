@@ -132,7 +132,6 @@ c        bls=0.
       gint = 0.0
 #ifdef DO_ALL
 #ifndef DO_FULLX
-#if 0
       ndirs=1
       dord(ndirs)=1.0
       if (n.ge.2) then
@@ -148,14 +147,6 @@ c        bls=0.
         btnd(ndirs)=1.0
         blsd=bstd
       end if
-#endif
-      dord(1)=1.0
-      astd(2)=1.0
-      atnd(3)=1.0
-      alsd(4)=1.0
-      bstd(5)=1.0
-      btnd(6)=1.0
-      blsd(7)=1.0
 #else
       dord(1)=1.0
       astd(2)=1.0
