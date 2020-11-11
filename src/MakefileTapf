@@ -1,4 +1,4 @@
-TAPENADE_HOME = /Users/snarayan/soft/tapenade_3.15/
+TAPENADE_HOME = /Users/mattmenickelly/tapenade_src/tapenade_3.15/
 TPN  = ${TAPENADE_HOME}/bin/tapenade
 
 CC = @gcc
