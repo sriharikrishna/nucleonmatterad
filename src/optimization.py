@@ -118,11 +118,6 @@ def snm_2d_objective(x):
     # write f
     f = np.float(line[0])
 
-    # write g
-    g = np.zeros(2)
-    g[0] = np.float(line[3])
-    g[1] = np.float(line[4])
-
     return f
 
 def snm_2d_objective_der(x):
@@ -141,14 +136,62 @@ def snm_2d_objective_der(x):
     file.close()
     line = line.split()
 
-    # write f
-    f = np.float(line[0])
-
     # write g
     g = np.zeros(2)
     g[0] = np.float(line[3])
     g[1] = np.float(line[4])
 
+    return g
+
+def snm_7d_objective(x):
+    # convert x into strings
+    xstr = ["%.16f" % elem for elem in x]
+
+    # write call string
+    callstr = "".join(["./script_nm_snm_fullx.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]," ",xstr[4]," ",xstr[5]," ",xstr[6]])
+
+    # call the call string
+    os.system(callstr)
+
+    # the output was written to out_snm.txt
+    # we read in f and g from the .xt:
+    file = open("out_snm.txt")
+    line = file.read().replace(","," ")
+    file.close()
+    line = line.split()
+
+    # write f
+    f = np.float(line[0])
+
+    return f
+
+def snm_7d_objective_der(x):
+    xstr = ["%.16f" % elem for elem in x]
+
+    # write call string
+    callstr = "".join(
+        ["./script_nm_snm_fullx.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", xstr[4], " ", xstr[5],
+         " ", xstr[6]])
+
+    # call the call string
+    os.system(callstr)
+
+    # the output was written to out_snm.txt
+    # we read in f and g from the .xt:
+    file = open("out_snm.txt")
+    line = file.read().replace(",", " ")
+    file.close()
+    line = line.split()
+
+    # write g
+    g = np.zeros(7)
+    g[0] = np.float(line[8])
+    g[1] = np.float(line[9])
+    g[2] = np.float(line[10])
+    g[3] = np.float(line[11])
+    g[4] = np.float(line[12])
+    g[5] = np.float(line[13])
+    g[6] = np.float(line[14])
     return g
 
 def main():
@@ -164,14 +207,20 @@ def main():
     problem = args[3]
 
     # make clean and make!
-    os.system("rm out* temp*")
     if problem == "snm2":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
+    elif problem == "snm7":
+        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=snm")
+    else:
+        raise Exception('invalid problem name {} supplied'.format(problem))
 
     # initial point
     if problem == "snm2":
         x0 = np.array([3.997, 0.796])
         dim = 2
+    if problem == "snm7":
+        x0 = np.array([3.997, 0.796, 0.796, 0.796, 1.000, 1.000, 0.000])
+        dim = 7
 
     # tolerance (definition changes with solver)
     tolerance = 1e-8
@@ -200,6 +249,11 @@ def main():
         # instantiate the Funcgradmon object
         if problem == "snm2":
             fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, verbose=1)
+        elif problem == "snm7":
+            fg = Funcgradmon(snm_7d_objective, snm_7d_objective_der, verbose=1)
+
+        # remove old output and temp dat files
+        os.system("rm out* temp*")
 
         # call LBFGS
         res = minimize(fg, xi, method='L-BFGS-B', jac = True, tol = tolerance, options=options)
