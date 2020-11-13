@@ -1,4 +1,5 @@
 import os
+import os.path
 import numpy as np
 from scipy.optimize import minimize
 
@@ -100,7 +101,8 @@ def _copy( x ):
 
 def snm_2d_objective(x):
     # convert x into strings
-    xstr = ["%.16f" % elem for elem in x]
+    xstr = ["%.17f" % elem for elem in x]
+    absxstr = ["%.17f" % elem for elem in np.abs(x)]
 
     # write call string
     callstr = "".join(["./script_nm_snm.sh ",xstr[0]," ",xstr[1]])
@@ -108,9 +110,17 @@ def snm_2d_objective(x):
     # call the call string
     os.system(callstr)
 
-    # the output was written to out_snm.txt
-    # we read in f and g from the .xt:
-    file = open("out_snm.txt")
+    # the output was written to out_snm_abs(x(i))....txt
+    output_file = "out_snm"
+    for j in range(len(xstr)):
+        #output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+        print(output_file)
+    output_file = output_file + ".txt" #output_file.join([".txt"])
+
+    # we read in f and g from the .txt:
+
+    file = open(output_file)
     line = file.read().replace(","," ")
     file.close()
     line = line.split()
@@ -121,18 +131,27 @@ def snm_2d_objective(x):
     return f
 
 def snm_2d_objective_der(x):
-    xstr = ["%.16f" % elem for elem in x]
+    xstr = ["%.17f" % elem for elem in x]
+    absxstr = ["%.17f" % elem for elem in np.abs(x)]
 
     # write call string
     callstr = "".join(["./script_nm_snm.sh ", xstr[0], " ", xstr[1]])
 
-    # call the call string
-    os.system(callstr)
+    ## the output was written to out_snm_abs(x(i))....txt
+    output_file = "out_snm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+        print(output_file)
+    output_file = output_file + ".txt"  # output_file.join([".txt"])
 
-    # the output was written to out_snm.txt
+    if not os.path.exists(output_file):
+        # call the call string
+        os.system(callstr)
+
     # we read in f and g from the .xt:
-    file = open("out_snm.txt")
-    line = file.read().replace(",", " ")
+    file = open(output_file)
+    line = file.read().replace(","," ")
     file.close()
     line = line.split()
 
@@ -141,11 +160,15 @@ def snm_2d_objective_der(x):
     g[0] = np.float(line[3])
     g[1] = np.float(line[4])
 
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
     return g
 
 def snm_7d_objective(x):
     # convert x into strings
-    xstr = ["%.16f" % elem for elem in x]
+    xstr = ["%.17f" % elem for elem in x]
+    absxstr = ["%.17f" % elem for elem in np.abs(x)]
 
     # write call string
     callstr = "".join(["./script_nm_snm_fullx.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]," ",xstr[4]," ",xstr[5]," ",xstr[6]])
@@ -153,10 +176,18 @@ def snm_7d_objective(x):
     # call the call string
     os.system(callstr)
 
-    # the output was written to out_snm.txt
+    ## the output was written to out_snm_abs(x(i))....txt
+    output_file = "out_snm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+        print(output_file)
+    output_file = output_file + ".txt"  # output_file.join([".txt"])
+
     # we read in f and g from the .xt:
-    file = open("out_snm.txt")
-    line = file.read().replace(","," ")
+
+    file = open(output_file)
+    line = file.read().replace(",", " ")
     file.close()
     line = line.split()
 
@@ -166,19 +197,28 @@ def snm_7d_objective(x):
     return f
 
 def snm_7d_objective_der(x):
-    xstr = ["%.16f" % elem for elem in x]
+    xstr = ["%.17f" % elem for elem in x]
+    absxstr = ["%.17f" % elem for elem in np.abs(x)]
 
     # write call string
     callstr = "".join(
         ["./script_nm_snm_fullx.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", xstr[4], " ", xstr[5],
          " ", xstr[6]])
 
-    # call the call string
-    os.system(callstr)
+    ## the output was written to out_snm_abs(x(i))....txt
+    output_file = "out_snm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+        print(output_file)
+    output_file = output_file + ".txt"  # output_file.join([".txt"])
 
-    # the output was written to out_snm.txt
     # we read in f and g from the .xt:
-    file = open("out_snm.txt")
+    if not os.path.exists(output_file):
+        # call the call string
+        os.system(callstr)
+
+    file = open(output_file)
     line = file.read().replace(",", " ")
     file.close()
     line = line.split()
@@ -192,6 +232,11 @@ def snm_7d_objective_der(x):
     g[4] = np.float(line[12])
     g[5] = np.float(line[13])
     g[6] = np.float(line[14])
+
+    remove_string = "rm "
+    remove_string = remove_string.join([output_file])
+    os.system(remove_string)
+
     return g
 
 def main():
