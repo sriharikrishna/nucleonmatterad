@@ -277,7 +277,7 @@ def pnm_4d_objective(x):
 
     # SAFETY
     if np.isnan(f) or np.isinf(f):
-        f = 1e2
+        f = 1e3
 
     return f
 
@@ -351,7 +351,7 @@ def pnm_7d_objective(x):
     f = np.float(line[0])
 
     if np.isnan(f) or np.isinf(f):
-        f = 1e2
+        f = 1e3
 
     return f
 
@@ -478,7 +478,12 @@ def main():
         #os.system("rm out* temp*")
 
         # call LBFGS
-        res = minimize(fg, xi, method='L-BFGS-B', jac = True, tol = tolerance, options=options)
+        # bounds: these are arbitrary, but seem more than reasonable:
+        lb = -9.9999*np.ones(dim)
+        ub = 9.9999*np.ones(dim)
+        bounds = np.vstack((lb,ub))
+        bounds = bounds.T
+        res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
 
         # write the output file
         filename = problem + "_run_starting_at_x" + str(i) + ".npz"
