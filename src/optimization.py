@@ -115,7 +115,6 @@ def snm_2d_objective(x):
     for j in range(len(xstr)):
         #output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-        print(output_file)
     output_file = output_file + ".txt" #output_file.join([".txt"])
 
     # we read in f and g from the .txt:
@@ -127,6 +126,10 @@ def snm_2d_objective(x):
 
     # write f
     f = np.float(line[0])
+
+    # SAFETY
+    if np.isnan(f) or np.isinf(f):
+        f = 1e2
 
     return f
 
@@ -142,7 +145,6 @@ def snm_2d_objective_der(x):
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-        print(output_file)
     output_file = output_file + ".txt"  # output_file.join([".txt"])
 
     if not os.path.exists(output_file):
@@ -181,7 +183,6 @@ def snm_7d_objective(x):
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-        print(output_file)
     output_file = output_file + ".txt"  # output_file.join([".txt"])
 
     # we read in f and g from the .xt:
@@ -193,6 +194,10 @@ def snm_7d_objective(x):
 
     # write f
     f = np.float(line[0])
+
+    # SAFETY
+    if np.isnan(f) or np.isinf(f):
+        f = 1e2
 
     return f
 
@@ -210,7 +215,6 @@ def snm_7d_objective_der(x):
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-        print(output_file)
     output_file = output_file + ".txt"  # output_file.join([".txt"])
 
     # we read in f and g from the .xt:
@@ -232,6 +236,165 @@ def snm_7d_objective_der(x):
     g[4] = np.float(line[12])
     g[5] = np.float(line[13])
     g[6] = np.float(line[14])
+
+    # SAFETY:
+    if np.isnan(f) or np.isinf(f):
+        g = np.zeros(4)
+
+    remove_string = "rm "
+    remove_string = remove_string.join([output_file])
+    os.system(remove_string)
+
+    return g
+
+def pnm_4d_objective(x):
+    # convert x into strings
+    xstr = ["%.17f" % elem for elem in x]
+    absxstr = ["%.17f" % elem for elem in np.abs(x)]
+
+    # write call string
+    callstr = "".join(["./script_nm_pnm.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]])
+
+    # call the call string
+    os.system(callstr)
+
+    # the output was written to out_snm_abs(x(i))....txt
+    output_file = "out_pnm"
+    for j in range(len(xstr)):
+        #output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".txt" #output_file.join([".txt"])
+
+    # we read in f and g from the .txt:
+
+    file = open(output_file)
+    line = file.read().replace(","," ")
+    file.close()
+    line = line.split()
+
+    # write f
+    f = np.float(line[0])
+
+    # SAFETY
+    if np.isnan(f) or np.isinf(f):
+        f = 1e2
+
+    return f
+
+def pnm_4d_objective_der(x):
+    xstr = ["%.17f" % elem for elem in x]
+    absxstr = ["%.17f" % elem for elem in np.abs(x)]
+
+    # write call string
+    callstr = "".join(["./script_nm_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3]])
+
+    ## the output was written to out_snm_abs(x(i))....txt
+    output_file = "out_pnm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".txt"  # output_file.join([".txt"])
+
+    if not os.path.exists(output_file):
+        # call the call string
+        os.system(callstr)
+
+    # we read in f and g from the .xt:
+    file = open(output_file)
+    line = file.read().replace(","," ")
+    file.close()
+    line = line.split()
+
+    # write g
+    f = np.float(line[0])
+    g = np.zeros(4)
+    g[0] = np.float(line[5])
+    g[1] = np.float(line[6])
+    g[2] = np.float(line[7])
+    g[3] = np.float(line[8])
+
+    # SAFETY:
+    if np.isnan(f) or np.isinf(f):
+        g = np.zeros(4)
+
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
+    return g
+
+def pnm_7d_objective(x):
+    # convert x into strings
+    xstr = ["%.17f" % elem for elem in x]
+    absxstr = ["%.17f" % elem for elem in np.abs(x)]
+
+    # write call string
+    callstr = "".join(["./script_nm_pnm_fullx.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]," ",xstr[4]," ",xstr[5]," ",xstr[6]])
+
+    # call the call string
+    os.system(callstr)
+
+    ## the output was written to out_snm_abs(x(i))....txt
+    output_file = "out_pnm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".txt"  # output_file.join([".txt"])
+
+    # we read in f and g from the .xt:
+
+    file = open(output_file)
+    line = file.read().replace(",", " ")
+    file.close()
+    line = line.split()
+
+    # write f
+    f = np.float(line[0])
+
+    if np.isnan(f) or np.isinf(f):
+        f = 1e2
+
+    return f
+
+def pnm_7d_objective_der(x):
+    xstr = ["%.17f" % elem for elem in x]
+    absxstr = ["%.17f" % elem for elem in np.abs(x)]
+
+    # write call string
+    callstr = "".join(
+        ["./script_nm_pnm_fullx.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", xstr[4], " ", xstr[5],
+         " ", xstr[6]])
+
+    ## the output was written to out_snm_abs(x(i))....txt
+    output_file = "out_pnm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".txt"  # output_file.join([".txt"])
+
+    # we read in f and g from the .xt:
+    if not os.path.exists(output_file):
+        # call the call string
+        os.system(callstr)
+
+    file = open(output_file)
+    line = file.read().replace(",", " ")
+    file.close()
+    line = line.split()
+
+    # write g
+    f = np.float(line[0])
+    g = np.zeros(7)
+    g[0] = np.float(line[8])
+    g[1] = np.float(line[9])
+    g[2] = np.float(line[10])
+    g[3] = np.float(line[11])
+    g[4] = np.float(line[12])
+    g[5] = np.float(line[13])
+    g[6] = np.float(line[14])
+
+    # SAFETY:
+    if np.isnan(f) or np.isinf(f):
+        g = np.zeros(7)
 
     remove_string = "rm "
     remove_string = remove_string.join([output_file])
@@ -256,6 +419,11 @@ def main():
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
     elif problem == "snm7":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=snm")
+    elif problem == "pnm4":
+        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
+        #print("ok")
+    elif problem == "pnm7":
+        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=pnm")
     else:
         raise Exception('invalid problem name {} supplied'.format(problem))
 
@@ -266,7 +434,12 @@ def main():
     if problem == "snm7":
         x0 = np.array([3.997, 0.796, 0.796, 0.796, 1.000, 1.000, 0.000])
         dim = 7
-
+    if problem == "pnm4":
+        x0 = np.array([1.750, 0.531, 1.564, 3.747])
+        dim = 4
+    if problem == "pnm7":
+        x0 = np.array([1.750, 0.531, 0.531, 0.531, 1.564, 3.747, 1.564])
+        dim = 7
     # tolerance (definition changes with solver)
     tolerance = 1e-8
 
@@ -296,9 +469,13 @@ def main():
             fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, verbose=1)
         elif problem == "snm7":
             fg = Funcgradmon(snm_7d_objective, snm_7d_objective_der, verbose=1)
+        elif problem == "pnm4":
+            fg = Funcgradmon(pnm_4d_objective, pnm_4d_objective_der, verbose=1)
+        elif problem == "pnm7":
+            fg = Funcgradmon(pnm_7d_objective, pnm_7d_objective_der, verbose=1)
 
         # remove old output and temp dat files
-        os.system("rm out* temp*")
+        #os.system("rm out* temp*")
 
         # call LBFGS
         res = minimize(fg, xi, method='L-BFGS-B', jac = True, tol = tolerance, options=options)
