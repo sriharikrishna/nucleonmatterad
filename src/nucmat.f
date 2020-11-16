@@ -304,7 +304,7 @@ c   ------------------
       write(fname,"(A7,2(A1,F19.17),A4)")
      &"out_snm", ("_",abs(x(i)),i=1,n),".txt"
 #else
-      write(fname,"(A7,2(A1,F19.17),A4)")
+      write(fname,"(A7,4(A1,F19.17),A4)")
      &"out_pnm", ("_",abs(x(i)),i=1,n),".txt"
 #endif
 #else
