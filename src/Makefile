@@ -103,7 +103,19 @@ sub/pot.o: sub/pot.f
 sub/eft_pot_r.o: sub/eft_pot_r.f sub/params_new_pot.f
 	$(FC) -c sub/eft_pot_r.f -o sub/eft_pot_r.o
 
-CPPCMD = cat $< |  cpp -DALLOW_DATA -I../ -I./ -traditional-cpp -P 
+CPPFLAGS= -DALLOW_DATA 
+ifdef CUSTOM_INPUTS
+CPPFLAGS+=-DCUSTOM_INPUTS
+endif
+ifdef NUCMAT
+CPPFLAGS+=-DONLY_NUCMAT
+endif
+ifeq ($(CASE), snm)
+  CPPFLAGS+=-DCASE_SNM
+else
+  CPPFLAGS+=-DCASE_PNM
+endif
+CPPCMD = cat $< |  cpp $(CPPFLAGS) -I../ -I./ -traditional-cpp -P 
 
 %.pre.f: %.f
 	$(CPPCMD) > $@
