@@ -58,23 +58,14 @@ c **********************************************************************
 #endif
 #endif
 #else
-#ifdef ALLOW_TAPENADE
 #ifndef DO_FULLX
       call nucmat(x(1:n),n)
 #else
       call nucmat(x(1:nbdirsmax),nbdirsmax)
 #endif
-#else
-      f=0.0
-#ifndef DO_FULLX
-      call nucmat(x(1:n),n,f,.TRUE.)
-#else
-      call nucmat(x(1:nbdirsmax),nbdirsmax,0.0,.TRUE.)
-#endif
-#endif
 #endif
       end if
-#if !defined (ALLOW_TAPENADE) && !defined (ONLY_NUCMAT)
+#ifndef ALLOW_TAPENADE
       call nmfin(x,n)
 #endif
       timeit=timer(timeit)
@@ -90,7 +81,7 @@ c ----------------------------------------------------------------------
       subroutine nucmat(x,n,f,lprt)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
-      parameter (nlog=0,nin=5,nout=6,nres=7)
+      parameter (nlog=0,nin=5,nout=6)
       logical lprt
       real*8 x(n)
       common /minim/ econ,ncon,ntype
@@ -117,7 +108,6 @@ c
       character*20 timdat
       character*32 mname(4)
       character*50 sysdat
-      character*160 fname
       data mname/'Nuclear matter','Neutron matter'
      &          ,'Not implemented at this time'
      &          ,'Spin-polarized neutron matter'/
@@ -157,14 +147,6 @@ c
       end do
       f=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
        no=0
-#if defined CUSTOM_INPUTS && defined ONLY_NUCMAT
-      write(nres,*) f
-#ifndef DO_FULLX
-     & ,(x(i),i=1,n)
-#else
-     &, (x(i),i=1,nbdirsmax)
-#endif
-#endif
       return
 c ************************
 c entry for initialization
@@ -217,30 +199,6 @@ c   ------------------
       npisav=npi
       no=1
       npi=0
-#ifdef CUSTOM_INPUTS
-      write(*,*) "N is", n
-#ifndef DO_FULLX
-      read(nin,*) (x(i),i=1,n)
-#if defined (CASE_SNM)
-      write(fname,"(A7,2(A1,F19.17),A4)")
-     &"out_snm", ("_",abs(x(i)),i=1,n),".txt"
-#else
-      write(fname,"(A7,4(A1,F19.17),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,n),".txt"
-#endif
-#else
-      nbdirsmax=7
-      read(nin,*) (x(i),i=1,nbdirsmax)
-#if defined (CASE_SNM)
-      write(fname,"(A7,7(A1,F19.17),A4)")
-     &"out_snm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
-#else
-      write(fname,"(A7,7(A1,F19.17),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
-#endif
-#endif
-      open(unit=nres,file=fname,action="WRITE")
-#endif
       return
 c *******************
 c entry for final run
