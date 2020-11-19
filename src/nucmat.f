@@ -181,9 +181,9 @@ c        bls=0.
       write(nres,*) flocal
 #endif
 #ifndef DO_FULLX
-     & ,(x(i),i=1,n)
+     & ,(",",x(i),i=1,n)
 #else
-     &, (x(i),i=1,nbdirsmax)
+     &, (",",x(i),i=1,nbdirsmax)
 #endif
      & ,(",",flocald(i),i=1,nbdirsmax)
       do i=1,nbdirsmax
