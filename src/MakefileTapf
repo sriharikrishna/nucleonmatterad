@@ -56,8 +56,8 @@ info:
        "BFGSCONST="${BFGSCONST}\
        "ALL="${ALL}\
        "FULLX="${FULLX}\
-       "NUCMAT="${NUCMAT}
-
+       "NUCMAT="${NUCMAT}\
+       "CUSTOM_INPUTS="${CUSTOM_INPUTS}
 
 nmad: numCore_d.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
 	${FC} ${FFLAGS} -o $@ $^
@@ -90,6 +90,9 @@ CPPFLAGS+=-DDO_FULLX
 endif
 ifdef NUCMAT
 CPPFLAGS+=-DONLY_NUCMAT
+endif
+ifdef CUSTOM_INPUTS
+CPPFLAGS+=-DCUSTOM_INPUTS
 endif
 ifeq ($(CASE), snm)
   CPPFLAGS+=-DCASE_SNM

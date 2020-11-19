@@ -241,7 +241,7 @@ c   ------------------
       npisav=npi
       no=1
       npi=0
-#ifndef ONLY_NUCMAT
+#if !defined(ONLY_NUCMAT) && !defined(CUSTOM_INPUTS)
       do i=1, 30
         read(nin,*) (xperturb(i,j),j=1,7)
       end do
