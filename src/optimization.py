@@ -413,6 +413,7 @@ def main():
     start_index = int(args[1])
     end_index = int(args[2])
     problem = args[3]
+    solver = args[4]
 
     # make clean and make!
     if problem == "snm2":
@@ -483,10 +484,17 @@ def main():
         ub = 9.9999*np.ones(dim)
         bounds = np.vstack((lb,ub))
         bounds = bounds.T
-        res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
+
+        if solver == "lbfgs":
+            res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
+        elif solver == "neldermead":
+            res = minimize(fg, xi, method='Nelder-Mead', jac=True, bounds=bounds, tol=tolerance, options=options)
 
         # write the output file
-        filename = problem + "_run_starting_at_x" + str(i) + ".npz"
+        if solver == "lbfgs":
+            filename = problem + "_run_starting_at_x" + str(i) + ".npz"
+        elif solver == "neldermead":
+            filename = problem + "_run_starting_at_x" + str(i) + "neldermead.npz"
         fg.savez(filename, paramstr="...")
 
 if __name__ == '__main__':
