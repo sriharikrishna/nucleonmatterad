@@ -87,15 +87,6 @@ c
      &          ,' + DD TNR       ',' + DD TNR & TNA '/
 c
 #ifndef DO_FULLX
-      write(nlog,9997) n, (x(i),i=1,n)
-      write(nout,9997) n, (x(i),i=1,n)
-#else
-      write(nlog,9997) nbdirsmax,(x(i),i=1,nbdirsmax)
-      write(nout,9997) nbdirsmax,(x(i),i=1,nbdirsmax)
-#endif
-
- 9997 format (' nucmat input ',i3,' at',(10f24.17))
-#ifndef DO_FULLX
       dor=x(1)
       if (n.ge.2) then
         ast=x(2)
