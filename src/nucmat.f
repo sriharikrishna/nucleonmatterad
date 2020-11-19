@@ -5,7 +5,7 @@ c ----------------------------------------------------------------------
 #if defined (BFGS) && defined (ALLOW_TAPENADE)
       subroutine nucmat(x,n,f,flocald,ncall)
 #else
-      subroutine nucmat(x,n,f,lprt)
+      subroutine nucmat(x,n,f,ncall)
 #endif
 #else
       subroutine nucmat(x,n)
@@ -14,7 +14,6 @@ c ----------------------------------------------------------------------
       implicit integer*4 (i-n)
       INCLUDE 'DIFFSIZES.inc'
       parameter (nlog=0,nin=5,nout=6,nres=7)
-      logical lprt
 #ifndef DO_FULLX
       real*8 x(n)
 #else

@@ -135,7 +135,11 @@ c ----------------------------------------------------------------------
         xtemp(i)=simp(i)/scale(i)
   241 continue
       lprt=.false.
+#ifndef ALLOW_TAPENADE
       call funk(xtemp,n,fv,lprt)
+#else
+      call funk(xtemp,n,fv,ncall)
+#endif
       fsaved(ncall)=fv
       return
       end
