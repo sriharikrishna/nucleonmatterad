@@ -416,14 +416,14 @@ def main():
     solver = args[4]
 
     # make clean and make!
-    if problem == "snm2" and solver == "lbfgs":
+    if problem == "snm2" and (solver == "lbfgs" or solver == "scipy_neldermead"):
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
     elif problem == "snm2" and solver == "neldermead":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 CASE=snm CUSTOM_INPUTS=1")
         #print("ok")
     elif problem == "snm7":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=snm")
-    elif problem == "pnm4" and solver == "lbfgs":
+    elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead"):
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
         #print("ok")
     elif problem == "pnm4" and solver == "neldermead":
@@ -493,6 +493,8 @@ def main():
 
         if solver == "lbfgs":
             res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
+        elif solver == "scipy_neldermead":
+            res = minimize(fg, xi, method='Nelder-Mead', bounds=bounds, tol=tolerance)
         elif solver == "neldermead":
             xstr = ["%.17f" % elem for elem in xi]
             absxstr = ["%.17f" % elem for elem in np.abs(xi)]
@@ -506,7 +508,10 @@ def main():
 
         # write the output file
         if solver == "lbfgs":
-            filename = problem + "_run_starting_at_x" + str(i) + ".npz"
+            filename = problem + "_run_starting_at_x" + str(i) + "scipy_neldermead.npz"
+            fg.savez(filename, paramstr="...")
+        elif solver == "scipy_neldermead":
+            filename = problem + "_run_starting_at_x" + str(i) + "scipy_neldermead.npz"
             fg.savez(filename, paramstr="...")
         elif solver == "neldermead":
             for j in range(len(xstr)):
