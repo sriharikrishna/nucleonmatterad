@@ -299,7 +299,7 @@ def pnm_4d_objective_der(x):
         # call the call string
         os.system(callstr)
 
-    # we read in f and g from the .xt:
+    # we read in f and g from the .txt:
     file = open(output_file)
     line = file.read().replace(","," ")
     file.close()
@@ -416,13 +416,19 @@ def main():
     solver = args[4]
 
     # make clean and make!
-    if problem == "snm2":
+    if problem == "snm2" and solver == "lbfgs":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
+    elif problem == "snm2" and solver == "neldermead":
+        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm CUSTOM_INPUTS=1")
+        print("ok")
     elif problem == "snm7":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=snm")
-    elif problem == "pnm4":
+    elif problem == "pnm4" and solver == "lbfgs":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
         #print("ok")
+    elif problem == "pnm4" and solver == "neldermead":
+        os.system(
+            "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm CUSTOM_INPUTS=1")
     elif problem == "pnm7":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=pnm")
     else:
@@ -488,14 +494,63 @@ def main():
         if solver == "lbfgs":
             res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
         elif solver == "neldermead":
-            res = minimize(fg, xi, method='Nelder-Mead', jac=True, bounds=bounds, tol=tolerance, options=options)
+            xstr = ["%.17f" % elem for elem in xi]
+            absxstr = ["%.17f" % elem for elem in np.abs(xi)]
+            if problem == "snm2":
+                callstr = "".join(["./script_dfo_snm.sh ", xstr[0], " ", xstr[1]])
+                output_file = "out_snm"
+            elif problem == "pnm4":
+                callstr = "".join(["./script_dfo_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3]])
+                output_file = "out_pnm"
+            os.system(callstr)
 
         # write the output file
         if solver == "lbfgs":
             filename = problem + "_run_starting_at_x" + str(i) + ".npz"
+            fg.savez(filename, paramstr="...")
         elif solver == "neldermead":
+            for j in range(len(xstr)):
+                output_file = output_file + "_" + absxstr[j]
+            output_file = output_file + ".txt"
+
+            # open the output file, and split the data
+            file = open(output_file)
+            line = file.read().replace(",", " ")
+            file.close()
+            line = line.split()
+
+            num_entries = len(line)
+
+            # parse line to get arrays
+            if problem == "snm2":
+                num_evals = np.int(num_entries/6)
+                f = np.zeros(num_evals)
+                x = np.zeros((num_evals, 2))
+                g = np.zeros((num_evals,2))
+                for ctr in range(num_evals):
+                    f[ctr] = np.float(line[6*ctr+1])
+                    x[ctr,0] = np.float(line[6*ctr+2])
+                    x[ctr,1] = np.float(line[6*ctr+3])
+                    g[ctr,0] = np.float(line[6*ctr+4])
+                    g[ctr,1] = np.float(line[6*ctr+5])
+            elif problem == "pnm4":
+                num_evals = np.int(num_entries/10)
+                f = np.zeros(num_evals)
+                x = np.zeros((num_evals, 4))
+                g = np.zeros((num_evals,4))
+                for ctr in range(num_evals):
+                    f[ctr] = np.float(line[10*ctr+1])
+                    x[ctr,0] = np.float(line[10*ctr+2])
+                    x[ctr,1] = np.float(line[10*ctr+3])
+                    x[ctr,2] = np.float(line[10*ctr+4])
+                    x[ctr,3] = np.float(line[10*ctr+5])
+                    g[ctr, 0] = np.float(line[10 * ctr + 6])
+                    g[ctr, 1] = np.float(line[10 * ctr + 7])
+                    g[ctr, 2] = np.float(line[10 * ctr + 8])
+                    g[ctr, 3] = np.float(line[10 * ctr + 9])
             filename = problem + "_run_starting_at_x" + str(i) + "neldermead.npz"
-        fg.savez(filename, paramstr="...")
+            np.savez(filename, f=f, x=x, g=g)
+
 
 if __name__ == '__main__':
     main()
