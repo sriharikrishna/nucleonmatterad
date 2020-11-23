@@ -424,8 +424,8 @@ def main():
     elif problem == "snm7":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=snm")
     elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead"):
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
-        #print("ok")
+        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
+        print("ok")
     elif problem == "pnm4" and solver == "neldermead":
         os.system(
             "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")
@@ -494,7 +494,7 @@ def main():
         if solver == "lbfgs":
             res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
         elif solver == "scipy_neldermead":
-            res = minimize(fg, xi, method='Nelder-Mead', bounds=bounds, tol=tolerance)
+            res = minimize(fg, xi, method='Nelder-Mead', jac = True, bounds=bounds, tol=tolerance)
         elif solver == "neldermead":
             xstr = ["%.17f" % elem for elem in xi]
             absxstr = ["%.17f" % elem for elem in np.abs(xi)]
