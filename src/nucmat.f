@@ -102,10 +102,10 @@ c        bls=0.
       dor=x(1)
       ast=x(2)
       atn=x(3)
-      als=x(4)
-      bst=x(5)
-      btn=x(6)
-      bls=x(7)
+      als=ast
+      bst=x(4)
+      btn=x(5)
+      bls=bst
 #endif
 
 
@@ -141,10 +141,10 @@ c        bls=0.
       dord(1)=1.0
       astd(2)=1.0
       atnd(3)=1.0
-      alsd(4)=1.0
-      bstd(5)=1.0
-      btnd(6)=1.0
-      blsd(7)=1.0
+      alsd(2)=1.0
+      bstd(4)=1.0
+      btnd(5)=1.0
+      blsd(4)=1.0
 #endif
 #endif
 #endif
@@ -265,10 +265,8 @@ c   ------------------
       x(1)=dor
       x(2)=ast
       x(3)=atn
-      x(4)=als
-      x(5)=bst
-      x(6)=btn
-      x(7)=bls
+      x(4)=bst
+      x(5)=btn
 #endif
       write(fname,"(A8,I2.2,A1,I1,A4)")
 #if defined (BFGS) && defined (CASE_SNM)
@@ -300,10 +298,10 @@ c   ------------------
 #else
       read(nin,*) (x(i),i=1,nbdirsmax)
 #if defined (CASE_SNM)
-      write(fname,"(A7,7(A1,F19.17),A4)")
+      write(fname,"(A7,5(A1,F19.17),A4)")
      &"out_snm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
 #else
-      write(fname,"(A7,7(A1,F19.17),A4)")
+      write(fname,"(A7,5(A1,F19.17),A4)")
      &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
 #endif
 #endif
@@ -342,10 +340,10 @@ c        bls=0.
       dor=x(1)
       ast=x(2)
       atn=x(3)
-      als=x(4)
-      bst=x(5)
-      btn=x(6)
-      bls=x(7)
+      als=ast
+      bst=x(4)
+      btn=x(5)
+      bls=bst
 #endif
 #ifdef ALLOW_TAPENADE
       astd=0.0
@@ -379,10 +377,10 @@ c        blsd=bstd
       dord(1)=1.0
       astd(2)=1.0
       atnd(3)=1.0
-      alsd(4)=1.0
-      bstd(5)=1.0
-      btnd(6)=1.0
-      blsd(7)=1.0
+      alsd(2)=1.0
+      bstd(4)=1.0
+      btnd(5)=1.0
+      blsd(4)=1.0
 #endif
 #endif
 #endif
