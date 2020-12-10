@@ -26,6 +26,11 @@ c **********************************************************************
     6 format(/80('*')//1x,a50,8x,a20)
       read(nin,*) maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,n
       read(nin,*) (scale(i),i=1,n)
+#if !defined(ONLY_NUCMAT) && !defined(BFGS) && defined(DO_FULLX)
+      do i=n+1, nbdirsmax
+        scale(i) = scale(2)
+      end do
+#endif
       read(nin,*) econ,ncon,ntype
       call nminit(x,n)
       if (maxcl1.ge.1) then
@@ -47,8 +52,13 @@ c **********************************************************************
      &        /5x,'scale factors are',5f7.3)
 #ifndef ONLY_NUCMAT
 #ifndef BFGS
+#ifndef DO_FULLX
         call minimi(maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,scale,x,
      &              fbest,nucmat,n)
+#else
+        call minimi(maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,scale,x,
+     &              fbest,nucmat,nbdirsmax)
+#endif
 #else
         mbfgs=6
 #ifndef DO_FULLX
