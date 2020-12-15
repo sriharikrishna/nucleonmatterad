@@ -165,6 +165,21 @@ def snm_2d_objective_der(x):
     remove_string = "rm " + output_file
     os.system(remove_string)
 
+    output_file = "out_tap_all_nucmat_snm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
+    output_file = "temp"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".dat"  # output_file.join([".txt"])
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
     return g
 
 def snm_5d_objective(x):
@@ -242,6 +257,21 @@ def snm_5d_objective_der(x):
     remove_string = "rm " + output_file
     os.system(remove_string)
 
+    output_file = "out_tap_all_nucmat_snm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
+    output_file = "temp"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".dat"  # output_file.join([".txt"])
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
     return g
 
 def pnm_4d_objective(x):
@@ -314,6 +344,21 @@ def pnm_4d_objective_der(x):
     if np.isnan(f) or np.isinf(f):
         g = np.zeros(4)
 
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
+    output_file = "out_tap_all_nucmat_pnm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
+    output_file = "temp"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".dat"  # output_file.join([".txt"])
     remove_string = "rm " + output_file
     os.system(remove_string)
 
@@ -393,6 +438,23 @@ def pnm_5d_objective_der(x):
     remove_string = "rm " + output_file
     os.system(remove_string)
 
+    output_file = "out_tap_all_nucmat_pnm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
+    output_file = "temp"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".dat"  # output_file.join([".txt"])
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
+
+
     return g
 
 def main():
@@ -444,7 +506,7 @@ def main():
     tolerance = 1e-8
 
     # some options to play with
-    options = {'disp': True, 'maxcor': 10, 'ftol': 1e-16, 'gtol': 1e-8, 'eps': 1e-08, 'maxfun': 1000,
+    options = {'disp': True, 'maxcor': dim, 'ftol': 1e-16, 'gtol': 1e-8, 'eps': 1e-08, 'maxfun': 1000,
                'maxiter': 1000, 'iprint': 101, 'maxls': 20}
 
     # read in the perturbations
