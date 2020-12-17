@@ -179,7 +179,7 @@ c   ---------------------------
         kp=9-k
         kq=k+8
         blm(k)=0.
-        small=1.e-10
+        small=1.e-12
         lcx=lf*lc
         if (k.eq.2) lcx=lf*ls
         do 140 loop=1,20
