@@ -2,6 +2,7 @@ import os
 import os.path
 import numpy as np
 from scipy.optimize import minimize
+import nlopt
 
 # this class wraps functions and gradient functions to write all evaluations to a file
 class Funcgradmon(object):
@@ -32,7 +33,7 @@ class Funcgradmon(object):
         self.x, self.f, self.g = [], [], []  # growing lists
         self.t = 0
 
-    def __call__( self, x ):
+    def __call__( self, x, grad ):
         """ f, g = func(x), gradfunc(x); save them; return f, g """
         x = np.asarray_chkfinite( x )  # always
         f = self.func(x)
@@ -50,7 +51,8 @@ class Funcgradmon(object):
                 # better df dx dg
         # callback: plot
         self.t += 1
-        return f, g
+        grad[:] = g
+        return f #, g
 
     def restart( self, n ):
         """ x0 = fg.restart( n )  returns x[n] to minimize( fg, x0 )
@@ -547,7 +549,19 @@ def main():
         bounds = bounds.T
 
         if solver == "lbfgs":
-            res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
+            opt = nlopt.opt(nlopt.LD_LBFGS, dim)
+            opt.set_min_objective(fg)
+            opt.set_lower_bounds(lb)
+            opt.set_upper_bounds(ub)
+            opt.set_ftol_rel(1e-16)
+            opt.set_ftol_abs(1e-16)
+            opt.set_xtol_rel(1e-16)
+            opt.set_xtol_abs(1e-16)
+            opt.set_maxeval(100)
+            opt.set_vector_storage(dim)
+            res = opt.optimize(xi)
+
+            #res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
         elif solver == "scipy_neldermead":
             res = minimize(fg, xi, method='Nelder-Mead', jac = True, bounds=bounds, tol=tolerance)
         elif solver == "neldermead":
