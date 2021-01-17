@@ -1,6 +1,14 @@
 c *id* nucmat **********************************************************
 c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
+      module globals
+      USE ISO_C_BINDING
+      INTERFACE
+      type(C_PTR), bind(C, name="enzyme_dup") :: ENZYME_DUP
+      type(C_PTR), bind(C, name="enzyme_const") :: ENZYME_CONST
+      END INTERFACE
+      end module globals
+
 #ifndef ONLY_NUCMAT
 #if defined (BFGS) && defined (ALLOW_TAPENADE)
       subroutine nucmat(x,n,f,flocald,ncall)
@@ -164,11 +172,97 @@ c        bls=0.
      &               , endiff, endiffd, efree, efreed, flocal,
      &               flocald, nmlocal)
 #else
-      call NMMAINAD_DV(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
-     &                  , ll, lg, le, l3, lk, dor, dord, bst, bstd
-     &                  , btn, btnd, bls, blsd, npi, npf, gint,
-     &                   endiff, efree, flocal, flocald, nmlocal,
-     &                     nbdirsmax)
+      CALL ENZYME_AUTODIFF(nmmainad,
+&                                ENZYME_CONST,  np,
+&                                ENZYME_CONST,  nv,
+&                                ENZYME_CONST,  nt,
+&                                ENZYME_CONST,  ni,
+&                                ENZYME_CONST,  nie,
+&                                ENZYME_CONST,  no,
+&                                ENZYME_CONST,  ns,
+&                                ENZYME_CONST,  lf,
+&                                ENZYME_CONST,  lc,
+&                                ENZYME_CONST, ls,
+&                                ENZYME_CONST, lt,
+&                                ENZYME_CONST, ll,
+&                                ENZYME_CONST, lg,
+&                                ENZYME_CONST, le,
+&                                ENZYME_CONST, l3,
+&                                ENZYME_CONST, lk,
+&                                ENZYME_DUP, dor, dord,
+&                                ENZYME_DUP, bst, bstd,
+&                                ENZYME_DUP, btn, btnd,
+&                                ENZYME_DUP, bls, blsd,
+&                                ENZYME_CONST, npi,
+&                                ENZYME_CONST, npf,
+&                                ENZYME_CONST, gint,
+&                                ENZYME_CONST, endiff,
+&                                ENZYME_CONST, efree,
+&                                ENZYME_DUP, flocal, flocald,
+&                                ENZYME_CONST, nmlocal)
+         !dir$ noinline
+!          CALL nmmainad(
+! &                                  np,
+! &                                  nv,
+! &                                  nt,
+! &                                  ni,
+! &                                  nie,
+! &                                  no,
+! &                                  ns,
+! &                                  lf,
+! &                                  lc,
+! &                                 ls,
+! &                                 lt,
+! &                                 ll,
+! &                                 lg,
+! &                                 le,
+! &                                 l3,
+! &                                 lk,
+! &                                 dor,
+! &                                 bst,
+! &                                 btn,
+! &                                 bls,
+! &                                 npi,
+! &                                 npf,
+! &                                 gint,
+! &                                 endiff,
+! &                                 efree,
+! &                                 flocal,
+! &                                 nmlocal)
+
+!        CALL ENZYME_AUTODIFF(nmmainad,
+! &                                ENZYME_CONST,  np,
+! &                                ENZYME_CONST,  nv,
+! &                                ENZYME_CONST,  nt,
+! &                                ENZYME_CONST,  ni,
+! &                                ENZYME_CONST,  nie,
+! &                                ENZYME_CONST,  no,
+! &                                ENZYME_CONST,  ns,
+! &                                ENZYME_CONST,  lf,
+! &                                ENZYME_CONST,  lc,
+! &                                ENZYME_CONST, ls,
+! &                                ENZYME_CONST, lt,
+! &                                ENZYME_CONST, ll,
+! &                                ENZYME_CONST, lg,
+! &                                ENZYME_CONST, le,
+! &                                ENZYME_CONST, l3,
+! &                                ENZYME_CONST, lk,
+! &                                ENZYME_CONST, dor,
+! &                                ENZYME_CONST, bst,
+! &                                ENZYME_CONST, btn,
+! &                                ENZYME_CONST, bls,
+! &                                ENZYME_CONST, npi,
+! &                                ENZYME_CONST, npf,
+! &                                ENZYME_CONST, gint,
+! &                                ENZYME_CONST, endiff,
+! &                                ENZYME_CONST, efree,
+! &                                ENZYME_CONST, flocal,
+! &                                ENZYME_CONST, nmlocal)
+!      call NMMAINAD_DV(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
+!     &                  , ll, lg, le, l3, lk, dor, dord, bst, bstd
+!     &                  , btn, btnd, bls, blsd, npi, npf, gint,
+!     &                   endiff, efree, flocal, flocald, nmlocal,
+!     &                     nbdirsmax)
 #endif
       f=flocal
 #endif

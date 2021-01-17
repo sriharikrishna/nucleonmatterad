@@ -49,59 +49,61 @@ prep:
 
 
 $(CASE)/$(CASE).x: $(CASE)/nm.pre.o $(OBJFIL) $(OBJSUB)
-	$(FC) $(OMP) $(CASE)/nm.pre.o $(OBJFIL) $(OBJSUB) $(MLIB) -o $(CASE)/$(CASE).x
+	$(FC) $(OMP) /pwd/$(CASE)/nm.pre.o $(addprefix /pwd/,$(OBJFIL)) $(addprefix /pwd/,$(OBJSUB)) $(MLIB) -o /pwd/$(CASE)/$(CASE).x
 
 $(CASE)/nm.pre.o: nm.pre.f 
-	$(FC)  -c nm.pre.f -o $(CASE)/nm.pre.o
+	$(FC)  -c /pwd/nm.pre.f -o /pwd/$(CASE)/nm.pre.o
 
 # case specific subroutines
 
 $(OBJ)/nmchain.o: nmchain.f 
-	$(FC) -c nmchain.f -o $(OBJ)/nmchain.o
+	$(FC) -c /pwd/nmchain.f -o /pwd/$(OBJ)/nmchain.o
 
 $(OBJ)/nmfts.o: nmfts.f 
-	$(FC) -c nmfts.f -o $(OBJ)/nmfts.o
+	$(FC) -c /pwd/nmfts.f -o /pwd/$(OBJ)/nmfts.o
 
 $(OBJ)/nmhnc.o: nmhnc.f 
-	$(FC) $(OMP) -c nmhnc.f -o $(OBJ)/nmhnc.o
+	$(FC) $(OMP) -c /pwd/nmhnc.f -o /pwd/$(OBJ)/nmhnc.o
 
 $(OBJ)/nmmain.o: nmmain.f $(OBJ)/nmhnc.o $(OBJ)/nmtbi.o 
-	$(FC) -c nmmain.f -o $(OBJ)/nmmain.o
+	$(FC) -c /pwd/nmmain.f -o /pwd/$(OBJ)/nmmain.o
 
 $(OBJ)/nmsub.o: nmsub.f 
-	$(FC) -c nmsub.f -o $(OBJ)/nmsub.o
+	$(FC) -c /pwd/nmsub.f -o /pwd/$(OBJ)/nmsub.o
 
 $(OBJ)/nmtbi.o: nmtbi.f 
-	$(FC) -c nmtbi.f -o $(OBJ)/nmtbi.o
+	$(FC) -c /pwd/nmtbi.f -o /pwd/$(OBJ)/nmtbi.o
 
 $(OBJ)/nmvar.o: nmvar.f 
-	$(FC) -c nmvar.f -o $(OBJ)/nmvar.o
+	$(FC) -c /pwd/nmvar.f -o /pwd/$(OBJ)/nmvar.o
 
 $(OBJ)/isnan_d.o: isnan_d.f 
-	$(FC) -c isnan_d.f -o $(OBJ)/isnan_d.o
+	$(FC) -c /pwd/isnan_d.f -o /pwd/$(OBJ)/isnan_d.o
 
 # common subroutines
 
 sub/dtime.o: sub/dtime.c
-	gcc -c sub/dtime.c -o sub/dtime.o
+	echo "hello"
+	echo docker run -v `pwd`:/pwd wsmoses/flang clang -flto -fuse-ld=lld-7 -c /pwd/sub/dtime.c -o /pwd/sub/dtime.o
+	docker run -v `pwd`:/pwd wsmoses/flang clang -flto -fuse-ld=lld-7 -c /pwd/sub/dtime.c -o /pwd/sub/dtime.o
 
 sub/headtime.o: sub/headtime.f
-	$(FC) -c sub/headtime.f -o sub/headtime.o
+	$(FC) -c /pwd/sub/headtime.f -o /pwd/sub/headtime.o
 
 sub/linpack.o: sub/linpack.f
-	$(FC) -c sub/linpack.f -o sub/linpack.o
+	$(FC) -c /pwd/sub/linpack.f -o /pwd/sub/linpack.o
 
 sub/minimi.o: sub/minimi.f
-	$(FC) -c sub/minimi.f -o sub/minimi.o
+	$(FC) -c /pwd/sub/minimi.f -o /pwd/sub/minimi.o
 
 sub/numrec.o: sub/numrec.f
-	$(FC) -c sub/numrec.f -o sub/numrec.o
+	$(FC) -c /pwd/sub/numrec.f -o /pwd/sub/numrec.o
 
 sub/pot.o: sub/pot.f
-	$(FC) -c sub/pot.f -o sub/pot.o
+	$(FC) -c /pwd/sub/pot.f -o /pwd/sub/pot.o
 
-sub/eft_pot_r.o: sub/eft_pot_r.f sub/params_new_pot.f
-	$(FC) -c sub/eft_pot_r.f -o sub/eft_pot_r.o
+sub/eft_pot_r.o: sub/eft_pot_r.f /pwd/sub/params_new_pot.f
+	$(FC) -c /pwd/sub/eft_pot_r.f -o /pwd/sub/eft_pot_r.o
 
 CPPFLAGS= -DALLOW_DATA 
 ifdef CUSTOM_INPUTS
@@ -122,7 +124,7 @@ CPPCMD = cat $< |  cpp $(CPPFLAGS) -I../ -I./ -traditional-cpp -P
 
 
 sub/dgamma.o: sub/dgamma.f
-	$(FC) -c sub/dgamma.f -o sub/dgamma.o
+	$(FC) -c /pwd/sub/dgamma.f -o /pwd/sub/dgamma.o
 
 clean:
 	rm -Rf $(OBJFIL) $(OBJSUB) sub/*.o pnm/*.o snm/*.o *.x *.o snm/*.x pnm/*.x *~ snm/*~ pnm/*~ *.mod snm/obj/*.mod snm/obj/*.o pnm/obj/*.mod pnm/obj/*.o

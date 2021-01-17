@@ -3,15 +3,15 @@
 #OPTFLAGS=   -cpp -O3  -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero  -Include
 OPTFLAGS=   -g -O0  -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero  -Include
 #OPTFLAGS= -cpp -g -O0 -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero  -Include
-FC= gfortran $(OPTFLAGS)
+FC=docker run -v `pwd`:/pwd wsmoses/flang flang -flto -fuse-ld=lld-7 $(OPTFLAGS)
 # variable avoids magnetic moment bug in Intel Fortran compilation
 #OPTFLAGSX=  -cpp -g3  -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero -fbacktrace -Include
 OPTFLAGSX=  -cpp -O3  -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero -Include
-FCX=gfortran $(OPTFLAGSX)
+FCX=docker run -v `pwd`:/pwd wsmoses/flang flang -flto -fuse-ld=lld-7 $(OPTFLAGSX)
 # variable for debug options
 #OPTFLAGSD=  -cpp -g3  -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero -fbacktrace -Include
 OPTFLAGSD=  -cpp -O3  -Wall -fdefault-double-8 -fdefault-real-8 -finit-real=zero  -Include
-FCD=gfortran $(OPTFLAGSD)
+FCD=docker run -v `pwd`:/pwd wsmoses/flang flang -flto -fuse-ld=lld-7 $(OPTFLAGSD)
 
 # flag for linking
 LDFLAGS = 

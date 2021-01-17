@@ -231,6 +231,7 @@ c
       data psilab/'k-space ','r-space '/
       aj0(z)=sin(z)/z
       aj2(z)=sin(z)*(3./z**3-1./z)-3.*cos(z)/z**2
+      CALL ENZYME_INTEGER(psilab(1))
       lt=3-nm
       lst=lt+2
       ltnt=lst+2

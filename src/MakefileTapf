@@ -1,15 +1,17 @@
-TAPENADE_HOME = /Users/mattmenickelly/tapenade_src/tapenade_3.15/
+TAPENADE_HOME = /home/wmoses/git/Enzyme/enzyme/build12/nucleonmatterad/src/tap/tapenade_3.16
 TPN  = ${TAPENADE_HOME}/bin/tapenade
 
 CC = @gcc
+CC = docker run -v `pwd`:/pwd wsmoses/flang clang-7 -flto -fuse-ld=lld-7
 FC = @gfortran
+FC = docker run -v `pwd`:/pwd wsmoses/flang flang -flto -fuse-ld=lld-7
 
 WFLAGS    = -w
 #FFLAGS   = -O0 -g -fdefault-double-8 -fdefault-real-8  -fno-range-check -ffpe-trap=invalid
 #FFLAGS   = -O0 -g -fdefault-double-8 -fdefault-real-8 -mcmodel=medium -fno-range-check -ffpe-trap=invalid
 #FFLAGS   = -O0 -g -fdefault-double-8 -fdefault-real-8 -fno-range-check  -ffpe-trap=invalid,zero,overflow -fbacktrace
 #FFLAGS   = -O3  -fdefault-double-8 -fdefault-real-8 -fno-range-check  -fbacktrace
-FFLAGS   = -O3  -fdefault-double-8 -fdefault-real-8 -fno-range-check ${WFLAGS}
+FFLAGS   = -O3  -fdefault-double-8 -fdefault-real-8 -fno-range-check ${WFLAGS} -fno-vectorize -fno-unroll-loops
 #FFLAGS   = -O0 -g  -fdefault-double-8 -fdefault-real-8 -fno-range-check  
 F90FLAGS = $(FFLAGS)
 #CFLAGS   = -g
@@ -60,23 +62,32 @@ info:
        "CUSTOM_INPUTS="${CUSTOM_INPUTS}
 
 nmad: numCore_d.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
-	${FC} ${FFLAGS} -o $@ $^
+	${FC} ${FFLAGS} -o /pwd/$@ $(addprefix /pwd/,$^)
 
-nmadv: numCore_dv.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS) 
-	${FC} ${FFLAGS} -o $@ $^
+nmadv: numCore_dv.pre.o nm.pre.o $(OBJLBFGS)  sub/dtime.o sub/headtime.pre.o sub/linpack.pre.o sub/minimi.pre.o 
+# nmadv: numCore.pre.o numCore_dv.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS) 
+	docker run -v `pwd`:/pwd wsmoses/flang llvm-link-7 $(addprefix /pwd/,$^) -o /pwd/linked
+	docker run -v `pwd`:/pwd wsmoses/flang bash -c "opt-7 /pwd/linked -S | sed 's/call.*enzyme_autodiff_.*)([^,]*/call void (...) @enzyme_autodiff_(i8* bitcast (void (i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*)* @nmmainad_ to i8*)/g' > /pwd/linked2"
+	docker run -v `pwd`:/pwd wsmoses/flang bash -c "sed 's/enzyme_integer_/__enzyme_integer/g' /pwd/linked2 -i"
+	# docker run -v `pwd`:/pwd wsmoses/flang bash -c "sed 's/__fd_sincos_1/sincos/g' -i /pwd/linked2"
+	docker run -v `pwd`:/pwd wsmoses/flang opt-7 /pwd/linked2 -load=/Enzyme/enzyme/build/Enzyme/LLVMEnzyme-7.so -O1 -enzyme -enzyme-inline -enzyme-loose-types -enzyme-lower-globals -enzyme-globals-default-inactive -o /pwd/enzymed 
+	# ${FC} ${FFLAGS} -o /pwd/$@ /pwd/enzymed
+	${FC} -O3 -o /pwd/$@ /pwd/enzymed
 
 numCore.f: $(SRC) $(SRCSUB)
 	@cat $^ > $@ 
-
 
 #numCore_d.pre.f: numCore.pre.f
 #	${TPN} -forward -head nmmainad  $< 
 #	mv numCore.pre_d.f $@
 
-numCore_dv.pre.f: numCore.pre.f DIFFSIZES.inc
+numCore_dv.pre.f: numCore.pre.f DIFFSIZES.inc nucmat.pre.f
 	@echo "--- Generating Tapenade Output: nmmainad(flocal,gint,endiff,efree)/(dor,bls,bst,btn,als,ast,atn)"
-	@${TPN} -forward -vector -head "nmmainad(flocal)/(dor,bls,bst,btn,als,ast,atn)"  $< 
+	# head -n 6496 $<
+	${TPN} -forward -vector -head "nmmainad(flocal)/(dor,bls,bst,btn,als,ast,atn)"  $< 
 	@mv numCore.pre_dv.f $@
+	cat numCore.pre.f >> $@ 
+	cat nucmat.pre.f >> $@ 
 
 CPPFLAGS= $(DIFF) $(WFLAGS) -DALLOW_TAPENADE -DALLOW_DATA 
 ifdef BFGS
@@ -109,18 +120,19 @@ CPPCMD = @cat $< |  cpp  $(CPPFLAGS)  -I../ -I./ -traditional-cpp -P
 	$(CPPCMD) > $@
 
 %.o : %.F
-	${FC} ${FFLAGS} -cpp  -o $@ -c $<
+	${FC} ${FFLAGS} -cpp  -o /pwd/$@ -c /pwd/$<
 
 %.o : %.f90
-	${FC} ${F90FLAGS} -cpp -o $@ -c $< 
+	${FC} ${F90FLAGS} -cpp -o /pwd/$@ -c /pwd/$< 
 
 %.o : %.f
 	@echo "--- Compiling" $<
-	${FC} ${F90FLAGS} -cpp -o $@ -c $< 
+	# head -n 28 $<
+	${FC} ${F90FLAGS} -cpp -o /pwd/$@ -c /pwd/$< 
 
 %.o : %.c
 	@echo "--- Compiling" $<
-	${CC} -cpp -o $@ -c $< 
+	${CC} -cpp -o /pwd/$@ -c /pwd/$< 
 
 #
 # transformation rules
