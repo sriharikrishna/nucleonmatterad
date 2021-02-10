@@ -2,6 +2,7 @@ make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm pr
 cat snm/av18uix.in >temp_$1_$2.dat
 echo $1 $2 >> temp_$1_$2.dat 
 
+ulimit -S -s unlimited
 export LD_LIBRARY_PATH=`pwd`/libflang
 start=`date +%s`
 time ./nmadv < ./temp_$1_$2.dat > ./out_tap_all_dfo_snm_$1_$2

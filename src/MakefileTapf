@@ -69,10 +69,13 @@ nmadv: numCore_dv.pre.o nm.pre.o $(OBJLBFGS)  sub/dtime.o sub/headtime.pre.o sub
 	docker run -v `pwd`:/pwd wsmoses/flang llvm-link-7 $(addprefix /pwd/,$^) -o /pwd/linked
 	docker run -v `pwd`:/pwd wsmoses/flang bash -c "opt-7 /pwd/linked -S | sed 's/call.*enzyme_autodiff_.*)([^,]*/call void (...) @enzyme_autodiff_(i8* bitcast (void (i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*, i64*)* @nmmainad_ to i8*)/g' > /pwd/linked2"
 	docker run -v `pwd`:/pwd wsmoses/flang bash -c "sed 's/enzyme_integer_/__enzyme_integer/g' /pwd/linked2 -i"
+	docker run -v `pwd`:/pwd wsmoses/flang bash -c "sed 's/enzyme_float_/__enzyme_float/g' /pwd/linked2 -i"
+	docker run -v `pwd`:/pwd wsmoses/flang bash -c "sed 's/enzyme_double_/__enzyme_double/g' /pwd/linked2 -i"
+	docker run -v `pwd`:/pwd wsmoses/flang bash -c "sed 's/enzyme_pointer_/__enzyme_pointer/g' /pwd/linked2 -i"
 	# docker run -v `pwd`:/pwd wsmoses/flang bash -c "sed 's/__fd_sincos_1/sincos/g' -i /pwd/linked2"
-	docker run -v `pwd`:/pwd wsmoses/flang opt-7 /pwd/linked2 -load=/Enzyme/enzyme/build/Enzyme/LLVMEnzyme-7.so -O1 -enzyme -enzyme-inline -enzyme-loose-types -enzyme-lower-globals -enzyme-globals-default-inactive -o /pwd/enzymed 
-	# ${FC} ${FFLAGS} -o /pwd/$@ /pwd/enzymed
-	${FC} -O3 -o /pwd/$@ /pwd/enzymed
+	docker run -v `pwd`:/pwd wsmoses/flang opt-7 /pwd/linked2 -load=/Enzyme/enzyme/build/Enzyme/LLVMEnzyme-7.so -O1 -enzyme -enzyme-inline -enzyme-loose-types -enzyme-lower-globals -enzyme-globals-default-inactive -enzyme-print -enzyme-print-perf -enzyme-noalias=0 -o /pwd/enzymed 
+	docker run -v `pwd`:/pwd wsmoses/flang opt-7 -O2 /pwd/enzymed -o /pwd/enzymed2
+	${FC} ${FFLAGS} -o /pwd/$@ /pwd/enzymed
 
 numCore.f: $(SRC) $(SRCSUB)
 	@cat $^ > $@ 

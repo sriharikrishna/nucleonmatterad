@@ -172,6 +172,11 @@ c        bls=0.
      &               , endiff, endiffd, efree, efreed, flocal,
      &               flocald, nmlocal)
 #else
+      dord = 0
+      bstd = 0
+      btnd = 0
+      blsd = 0
+      flocald = 1
       CALL ENZYME_AUTODIFF(nmmainad,
 &                                ENZYME_CONST,  np,
 &                                ENZYME_CONST,  nv,
@@ -195,42 +200,12 @@ c        bls=0.
 &                                ENZYME_DUP, bls, blsd,
 &                                ENZYME_CONST, npi,
 &                                ENZYME_CONST, npf,
-&                                ENZYME_CONST, gint,
-&                                ENZYME_CONST, endiff,
-&                                ENZYME_CONST, efree,
+&                                ENZYME_DUP, gint, gintd,
+&                                ENZYME_DUP, endiff, endiffd,
+&                                ENZYME_DUP, efree, efreed,
 &                                ENZYME_DUP, flocal, flocald,
 &                                ENZYME_CONST, nmlocal)
-         !dir$ noinline
-!          CALL nmmainad(
-! &                                  np,
-! &                                  nv,
-! &                                  nt,
-! &                                  ni,
-! &                                  nie,
-! &                                  no,
-! &                                  ns,
-! &                                  lf,
-! &                                  lc,
-! &                                 ls,
-! &                                 lt,
-! &                                 ll,
-! &                                 lg,
-! &                                 le,
-! &                                 l3,
-! &                                 lk,
-! &                                 dor,
-! &                                 bst,
-! &                                 btn,
-! &                                 bls,
-! &                                 npi,
-! &                                 npf,
-! &                                 gint,
-! &                                 endiff,
-! &                                 efree,
-! &                                 flocal,
-! &                                 nmlocal)
-
-!        CALL ENZYME_AUTODIFF(nmmainad,
+! CALL ENZYME_AUTODIFF(nmmainad,
 ! &                                ENZYME_CONST,  np,
 ! &                                ENZYME_CONST,  nv,
 ! &                                ENZYME_CONST,  nt,
@@ -247,17 +222,22 @@ c        bls=0.
 ! &                                ENZYME_CONST, le,
 ! &                                ENZYME_CONST, l3,
 ! &                                ENZYME_CONST, lk,
-! &                                ENZYME_CONST, dor,
-! &                                ENZYME_CONST, bst,
-! &                                ENZYME_CONST, btn,
-! &                                ENZYME_CONST, bls,
+! &                                ENZYME_DUP, dor, dord,
+! &                                ENZYME_DUP, bst, bstd,
+! &                                ENZYME_DUP, btn, btnd,
+! &                                ENZYME_DUP, bls, blsd,
 ! &                                ENZYME_CONST, npi,
 ! &                                ENZYME_CONST, npf,
 ! &                                ENZYME_CONST, gint,
 ! &                                ENZYME_CONST, endiff,
 ! &                                ENZYME_CONST, efree,
-! &                                ENZYME_CONST, flocal,
+! &                                ENZYME_DUP, flocal, flocald,
 ! &                                ENZYME_CONST, nmlocal)
+      write(nlog, *) "dord", dord
+      write(nlog, *) "bstd", bstd
+      write(nlog, *) "btnd", btnd
+      write(nlog, *) "blsd", blsd
+      write(nlog, *) "flocald", flocald
 !      call NMMAINAD_DV(np, nv, nt, ni, nie, no, ns, lf, lc, ls, lt
 !     &                  , ll, lg, le, l3, lk, dor, dord, bst, bstd
 !     &                  , btn, btnd, bls, blsd, npi, npf, gint,

@@ -41,6 +41,8 @@ c
      x          cb2bvxnn(0:1,0:1),cc0ctxnn(0:1,0:1),cc2ctxnn(0:1,0:1),
      x                            ct2ttxnn(0:1,0:1),cb2btxnn(0:1,0:1)
       dimension vv(22),vp(12)
+      CALL ENZYME_DOUBLE(cc2ctxnn)
+      CALL ENZYME_DOUBLE(cc2ctx)
 #if 0
 
       data idlt / 1 /
@@ -69,6 +71,7 @@ c
       if (lpot .eq. 111) ilb=11
       if (lpot .eq. 112) ilb=12
       if (lpot .eq. 113) ilb=13
+      CALL ENZYME_INTEGER(ilb)
 c
       call gauss_pot( nz , 0.d0 , 1.d0 , gx , wgx )
       call gauss_pot( nx , 0.d0 , 1.d0 , gg , wgg )
@@ -270,6 +273,11 @@ c
 c
 c ATTENTION: define here the p2 potential
 c
+
+      CALL ENZYME_DOUBLE(fp4)
+      CALL ENZYME_DOUBLE(fp4d)
+      CALL ENZYME_DOUBLE(ftp4)
+      CALL ENZYME_DOUBLE(ftp4d)
       if( ilb .le. 3 ) then
          vpsr0=cp4px(0,1)*fp4
          vpsr1=cp4px(1,1)*fp4
