@@ -481,8 +481,8 @@ def main():
     elif problem == "snm5":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=snm")
     elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead"):
-        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
-        print("ok")
+        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
+        #print("ok")
     elif problem == "pnm4" and solver == "neldermead":
         os.system(
             "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")
