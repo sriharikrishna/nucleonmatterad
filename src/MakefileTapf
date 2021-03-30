@@ -2,18 +2,9 @@ TAPENADE_HOME = /Users/mattmenickelly/tapenade_src/tapenade_3.15/
 TPN  = ${TAPENADE_HOME}/bin/tapenade
 
 CC = @gcc
-FC = @gfortran
-
-WFLAGS    = -w
-#FFLAGS   = -O0 -g -fdefault-double-8 -fdefault-real-8  -fno-range-check -ffpe-trap=invalid
-#FFLAGS   = -O0 -g -fdefault-double-8 -fdefault-real-8 -mcmodel=medium -fno-range-check -ffpe-trap=invalid
-#FFLAGS   = -O0 -g -fdefault-double-8 -fdefault-real-8 -fno-range-check  -ffpe-trap=invalid,zero,overflow -fbacktrace
-#FFLAGS   = -O3  -fdefault-double-8 -fdefault-real-8 -fno-range-check  -fbacktrace
-FFLAGS   = -O3  -fdefault-double-8 -fdefault-real-8 -fno-range-check ${WFLAGS}
-#FFLAGS   = -O0 -g  -fdefault-double-8 -fdefault-real-8 -fno-range-check  
+FC = @ifort
+FFLAGS   = -O3 -r8
 F90FLAGS = $(FFLAGS)
-#CFLAGS   = -g
-#CPPFLAGS = -g
 
 #TARGETS =  nmad nmadv 
 TARGETS =  nmadv 
