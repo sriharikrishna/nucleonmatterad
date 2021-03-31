@@ -26,10 +26,11 @@ class Funcgradmon(object):
     min50 = minimize( fg, x0, jac=True, options=options )
     """
 
-    def __init__( self, func, gradfunc, verbose=1 ):
+    def __init__( self, func, gradfunc, filename, verbose=1 ):
         self.func = func
         self.gradfunc = gradfunc
         self.verbose = verbose
+        self.filename = filename
         self.x, self.f, self.g = [], [], []  # growing lists
         self.t = 0
 
@@ -50,6 +51,7 @@ class Funcgradmon(object):
             print("\tgrad: %s" % g)
                 # better df dx dg
         # callback: plot
+        self.savez(self.filename)
         self.t += 1
         grad[:] = g
         return f #, g
@@ -344,7 +346,9 @@ def pnm_4d_objective_der(x):
 
     # SAFETY:
     if np.isnan(f) or np.isinf(f):
-        g = np.zeros(4)
+        #g = np.zeros(4)
+        g = np.empty(4)
+        g[:] = np.nan
 
     remove_string = "rm " + output_file
     os.system(remove_string)
@@ -529,14 +533,16 @@ def main():
             xi = x0 + perturbations[i-1,:dim]
 
         # instantiate the Funcgradmon object
+        if solver == "lbfgs":
+            filename = problem + "_run_starting_at_x" + str(i) + "lbfgs.npz"
         if problem == "snm2":
-            fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, verbose=1)
+            fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
         elif problem == "snm5":
-            fg = Funcgradmon(snm_5d_objective, snm_5d_objective_der, verbose=1)
+            fg = Funcgradmon(snm_5d_objective, snm_5d_objective_der, filename, verbose=1)
         elif problem == "pnm4":
-            fg = Funcgradmon(pnm_4d_objective, pnm_4d_objective_der, verbose=1)
+            fg = Funcgradmon(pnm_4d_objective, pnm_4d_objective_der, filename, verbose=1)
         elif problem == "pnm5":
-            fg = Funcgradmon(pnm_5d_objective, pnm_5d_objective_der, verbose=1)
+            fg = Funcgradmon(pnm_5d_objective, pnm_5d_objective_der, filename, verbose=1)
 
         # remove old output and temp dat files
         #os.system("rm out* temp*")
@@ -553,10 +559,10 @@ def main():
             opt.set_min_objective(fg)
             opt.set_lower_bounds(lb)
             opt.set_upper_bounds(ub)
-            opt.set_ftol_rel(1e-16)
-            opt.set_ftol_abs(1e-16)
-            opt.set_xtol_rel(1e-16)
-            opt.set_xtol_abs(1e-16)
+            #opt.set_ftol_rel(1e-16)
+            #opt.set_ftol_abs(1e-16)
+            #opt.set_xtol_rel(1e-16)
+            #opt.set_xtol_abs(1e-16)
             opt.set_maxeval(100)
             opt.set_vector_storage(dim)
             res = opt.optimize(xi)
