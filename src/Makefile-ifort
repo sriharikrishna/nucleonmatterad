@@ -1,0 +1,14 @@
+# regular options
+OPTFLAGS = -O3 -r8 -Include -xSSE4.2 -axSSE4.2 -cm -w -WB -fpp
+FC= ifort $(OPTFLAGS)
+# variable avoids magnetic moment bug in Intel Fortran compilation
+OPTFLAGSX = $(OPTFLAGS)
+FCX=ifort $(OPTFLAGSX)
+# variable for debug options
+OPTFLAGSD= -O0 -g -r8  -traceback -Include -fpp
+FCD= ifort $(OPTFLAGSD)
+OPTFLAGSX = $(OPTFLAGSD)
+FCX=$(FCD)
+
+# flag for linking
+LDFLAGS = 

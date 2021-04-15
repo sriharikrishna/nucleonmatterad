@@ -11,7 +11,8 @@
 
 #include Makefile-theory
 #include Makefile-g95
-include Makefile-gfortran
+#include Makefile-gfortran
+include Makefile-ifort
 
 #
 # may invoke OPENMP=on
