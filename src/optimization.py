@@ -34,7 +34,7 @@ class Funcgradmon(object):
         self.x, self.f, self.g = [], [], []  # growing lists
         self.t = 0
 
-    def __call__( self, x, grad ):
+    def __call__( self, x): #( self, x, grad):
         """ f, g = func(x), gradfunc(x); save them; return f, g """
         x = np.asarray_chkfinite( x )  # always
         f = self.func(x)
@@ -53,8 +53,8 @@ class Funcgradmon(object):
         # callback: plot
         self.savez(self.filename)
         self.t += 1
-        grad[:] = g
-        return f #, g
+        #grad[:] = g
+        return f, g
 
     def restart( self, n ):
         """ x0 = fg.restart( n )  returns x[n] to minimize( fg, x0 )
@@ -284,7 +284,7 @@ def pnm_4d_objective(x):
     absxstr = ["%.17f" % elem for elem in np.abs(x)]
 
     # write call string
-    callstr = "".join(["./script_nm_pnm.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]])
+    callstr = "".join(["./script_nm_pnm_f_only.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]])
 
     # call the call string
     os.system(callstr)
@@ -346,10 +346,8 @@ def pnm_4d_objective_der(x):
 
     # SAFETY:
     if np.isnan(f) or np.isinf(f):
-        #g = np.zeros(4)
-        g = np.empty(4)
-        g[:] = np.nan
-
+        #g = 1000*np.ones(4)
+        g = np.zeros(4)
     remove_string = "rm " + output_file
     os.system(remove_string)
 
@@ -485,11 +483,11 @@ def main():
     elif problem == "snm5":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=snm")
     elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead"):
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
-        #print("ok")
+        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
+        print("ok")
     elif problem == "pnm4" and solver == "neldermead":
-        os.system(
-            "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")
+        os.system( "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")
+        #print("ok")
     elif problem == "pnm5":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=pnm")
     else:
@@ -512,8 +510,8 @@ def main():
     tolerance = 1e-8
 
     # some options to play with
-    options = {'disp': True, 'maxcor': dim, 'ftol': 1e-16, 'gtol': 1e-8, 'eps': 1e-08, 'maxfun': 1000,
-               'maxiter': 1000, 'iprint': 101, 'maxls': 20}
+    options = {'disp': True, 'maxcor': dim, 'ftol': 1e-16, 'gtol': 1e-8, 'eps': 1e-08, 'maxfun': 100,
+               'maxiter': 100, 'iprint': 101, 'maxls': 20}
 
     # read in the perturbations
     perturbation_file = open("circle.txt",'r')
@@ -530,11 +528,10 @@ def main():
         if i == 0:
             xi = x0
         else:
-            xi = x0 + perturbations[i-1,:dim]
+            xi = x0 + 0.1*perturbations[i-1,:dim]
 
         # instantiate the Funcgradmon object
-        if solver == "lbfgs":
-            filename = problem + "_run_starting_at_x" + str(i) + "lbfgs.npz"
+        filename = problem + "_run_starting_at_x" + str(i) + solver + ".npz"
         if problem == "snm2":
             fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
         elif problem == "snm5":
@@ -555,19 +552,19 @@ def main():
         bounds = bounds.T
 
         if solver == "lbfgs":
-            opt = nlopt.opt(nlopt.LD_LBFGS, dim)
-            opt.set_min_objective(fg)
-            opt.set_lower_bounds(lb)
-            opt.set_upper_bounds(ub)
-            #opt.set_ftol_rel(1e-16)
-            #opt.set_ftol_abs(1e-16)
-            #opt.set_xtol_rel(1e-16)
-            #opt.set_xtol_abs(1e-16)
-            opt.set_maxeval(100)
-            opt.set_vector_storage(dim)
-            res = opt.optimize(xi)
+            #opt = nlopt.opt(nlopt.LD_LBFGS, dim)
+            #opt.set_min_objective(fg)
+            #opt.set_lower_bounds(lb)
+            #opt.set_upper_bounds(ub)
+            ##opt.set_ftol_rel(1e-16)
+            ##opt.set_ftol_abs(1e-16)
+            ##opt.set_xtol_rel(1e-16)
+            ##opt.set_xtol_abs(1e-16)
+            #opt.set_maxeval(100)
+            #opt.set_vector_storage(dim)
+            #res = opt.optimize(xi)
 
-            #res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
+            res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
         elif solver == "scipy_neldermead":
             res = minimize(fg, xi, method='Nelder-Mead', jac = True, bounds=bounds, tol=tolerance)
         elif solver == "neldermead":
