@@ -1,4 +1,4 @@
-mkdir -p pnm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=pnm; make CASE=pnm CUSTOM_INPUTS=1 NUCMAT=1
+#mkdir -p pnm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=pnm; make CASE=pnm CUSTOM_INPUTS=1 NUCMAT=1
 cat pnm/av18uix_pnm.in >temp.dat
 echo $1 $2 $3 $4 >> temp.dat 
 
