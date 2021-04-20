@@ -362,7 +362,7 @@ def main():
     elif problem == "pnm4" and solver == "lbfgs":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
         print("ok")
-    elif problem == "pnm4" and solver == "scipy_neldermead"):
+    elif problem == "pnm4" and solver == "scipy_neldermead":
         os.system("mkdir -p pnm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=pnm; make CASE=pnm CUSTOM_INPUTS=1 NUCMAT=1")
         #print("ok")
     elif problem == "pnm4" and solver == "neldermead":
