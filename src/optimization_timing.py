@@ -80,18 +80,19 @@ class Gradmon(object):
         self.gradfunc = gradfunc
         self.verbose = verbose
         self.filename = filename
-        self.x,  self.g, self.time = [], [], []  # growing lists
+        self.x, self.f, self.g, self.time = [], [], [], []  # growing lists
         self.t = 0
         self.time_passed = Timer()
 
     def __call__( self, x): #( self, x, grad):
         """ f, g = func(x), gradfunc(x); save them; return f, g """
         x = np.asarray_chkfinite( x )  # always
-        g = self.gradfunc(x)
+        f,g = self.gradfunc(x)
         g = np.asarray_chkfinite( g )
         secs = self.time_passed()
         self.time.append(_copy(secs))
         self.x.append( np.copy(x) )
+        self.f.append( np.copy(f) )
         self.g.append( np.copy(g) )
         if self.verbose:
             print("%3d:" % self.t)
@@ -102,7 +103,7 @@ class Gradmon(object):
         self.savez(self.filename)
         self.t += 1
         #grad[:] = g
-        return g
+        return f, g
 
     def restart( self, n ):
         """ x0 = fg.restart( n )  returns x[n] to minimize( fg, x0 )
@@ -117,12 +118,12 @@ class Gradmon(object):
 
     def savez( self, npzfile, **kw ):
         """ np.savez( npzfile, x= f= g= ) """
-        x, g, time = map( np.array, [self.x, self.g, self.time] )
+        x, f, g, time = map( np.array, [self.x, self.f, self.g, self.time] )
         if self.verbose:
             asum = "f: %s \nx: %s \ng: %s" % (
                 _asum(f), _asum(x), _asum(g) )
             print("Funcgradmon: saving to %s: \n%s \n" % (npzfile, asum))
-        np.savez( npzfile, x=x, g=g, time=time, **kw )
+        np.savez( npzfile, x=x, f=f, g=g, time=time, **kw )
 
     def load( self, npzfile ):
         load = np.load( npzfile )
@@ -178,7 +179,7 @@ def snm_2d_objective(x):
 
     # SAFETY
     if np.isnan(f) or np.isinf(f):
-        f = 1e2
+        f = 1e3
 
     return f
 
@@ -207,9 +208,15 @@ def snm_2d_objective_der(x):
     line = line.split()
 
     # write g
+    f = np.float(line[0])
     g = np.zeros(2)
     g[0] = np.float(line[3])
     g[1] = np.float(line[4])
+
+    # SAFETY
+    if np.isnan(f) or np.isinf(f):
+        f = 1e3
+        g = np.zeros(2)
 
     remove_string = "rm " + output_file
     os.system(remove_string)
@@ -229,7 +236,7 @@ def snm_2d_objective_der(x):
     remove_string = "rm " + output_file
     os.system(remove_string)
 
-    return g
+    return f,g
 
 
 def pnm_4d_objective(x):
@@ -318,7 +325,7 @@ def pnm_4d_objective_der(x):
 
     # SAFETY:
     if np.isnan(f) or np.isinf(f):
-        #g = 1000*np.ones(4)
+        f = 1e3
         g = np.zeros(4)
     remove_string = "rm " + output_file
     os.system(remove_string)
@@ -338,7 +345,7 @@ def pnm_4d_objective_der(x):
     remove_string = "rm " + output_file
     os.system(remove_string)
 
-    return g
+    return f,g
 
 def main():
     # args:
@@ -354,13 +361,15 @@ def main():
     solver = args[4]
 
     # make clean and make!
-    if problem == "snm2" and (solver == "lbfgs" or solver == "scipy_neldermead"):
+    if problem == "snm2" and solver == "lbfgs":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
+    elif problem == "snm2" and solver == "scipy_neldermead":
+        os.system("mkdir -p snm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=snm; make CASE=snm CUSTOM_INPUTS=1 NUCMAT=1")
     elif problem == "snm2" and solver == "neldermead":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 CASE=snm CUSTOM_INPUTS=1")
         #print("ok")
     elif problem == "pnm4" and solver == "lbfgs":
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
+        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
         print("ok")
     elif problem == "pnm4" and solver == "scipy_neldermead":
         os.system("mkdir -p pnm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=pnm; make CASE=pnm CUSTOM_INPUTS=1 NUCMAT=1")
@@ -429,7 +438,7 @@ def main():
         bounds = bounds.T
 
         if solver == "lbfgs":
-            res = minimize(f, xi, method='L-BFGS-B', jac = g, bounds = bounds, tol = tolerance, options=options)
+            res = minimize(g, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
         elif solver == "scipy_neldermead":
             res = minimize(f, xi, method='Nelder-Mead', bounds=bounds, tol=tolerance)
         elif solver == "neldermead":
