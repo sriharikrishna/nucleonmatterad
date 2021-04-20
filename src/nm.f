@@ -153,7 +153,7 @@ c
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
-#if CASE==snm
+#if defined (CASE_SNM)
         bls=bst
 #else
         bls=0.
@@ -276,11 +276,11 @@ c     l3=2*l3
       if (n.eq.4) then
         bst=x(3)
         btn=x(4)
-#if CASE==snm
+!#if defined (CASE_SNM)
         bls=bst
-#else
-        bls=0.
-#endif
+!#else
+!        bls=0.
+!#endif
       end if
       call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
