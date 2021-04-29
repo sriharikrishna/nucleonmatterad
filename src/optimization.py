@@ -295,22 +295,18 @@ def main():
     solver = args[4]
 
     # make clean and make!
-    if problem == "snm2" and (solver == "lbfgs" or solver == "scipy_neldermead"):
+    if problem == "snm2" and (solver == "lbfgs" or solver == "scipy_neldermead" or solver == "lbfgs_fd"):
         #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
         print("ok")
     elif problem == "snm2" and solver == "neldermead":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 CASE=snm CUSTOM_INPUTS=1")
         #print("ok")
-    elif problem == "snm5":
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=snm")
-    elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead"):
+    elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead" or solver == "lbfgs_fd"):
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
         print("ok")
     elif problem == "pnm4" and solver == "neldermead":
         os.system( "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")
         #print("ok")
-    elif problem == "pnm5":
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=pnm")
     else:
         raise Exception('invalid problem name {} supplied'.format(problem))
 
@@ -318,15 +314,9 @@ def main():
     if problem == "snm2":
         x0 = np.array([3.997, 0.796])
         dim = 2
-    if problem == "snm5":
-        x0 = np.array([3.997, 0.796, 0.796, 1.000, 1.000])
-        dim = 5
     if problem == "pnm4":
         x0 = np.array([1.750, 0.531, 1.564, 3.747])
         dim = 4
-    if problem == "pnm5":
-        x0 = np.array([1.750, 0.531, 0.531, 1.564, 3.747])
-        dim = 5
     # tolerance (definition changes with solver)
     tolerance = 1e-8
 
@@ -355,15 +345,9 @@ def main():
         filename = problem + "_run_starting_at_x" + str(i) + solver + ".npz"
         if problem == "snm2":
             fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
-        elif problem == "snm5":
-            fg = Funcgradmon(snm_5d_objective, snm_5d_objective_der, filename, verbose=1)
         elif problem == "pnm4":
             fg = Funcgradmon(pnm_4d_objective, pnm_4d_objective_der, filename, verbose=1)
-        elif problem == "pnm5":
-            fg = Funcgradmon(pnm_5d_objective, pnm_5d_objective_der, filename, verbose=1)
 
-        # remove old output and temp dat files
-        #os.system("rm out* temp*")
 
         # call LBFGS
         # bounds: these are arbitrary, but seem more than reasonable:
@@ -387,7 +371,9 @@ def main():
 
             res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
         elif solver == "scipy_neldermead":
-            res = minimize(fg, xi, method='Nelder-Mead', jac = True, bounds=bounds, tol=tolerance)
+            res = minimize(fg, xi, method='Nelder-Mead', tol=tolerance)
+        elif solver == "lbfgs_fd":
+            res = minimize(fg, xi, method='L-BFGS-B', tol=tolerance)
         elif solver == "neldermead":
             xstr = ["%.17f" % elem for elem in xi]
             absxstr = ["%.17f" % elem for elem in np.abs(xi)]
@@ -405,6 +391,9 @@ def main():
             fg.savez(filename, paramstr="...")
         elif solver == "scipy_neldermead":
             filename = problem + "_run_starting_at_x" + str(i) + "scipy_neldermead.npz"
+            fg.savez(filename, paramstr="...")
+        elif solver == "lbfgs_fd":
+            filename = problem + "_run_starting_at_x" + str(i) + "lbfgs_fd.npz"
             fg.savez(filename, paramstr="...")
         elif solver == "neldermead":
             for j in range(len(xstr)):
