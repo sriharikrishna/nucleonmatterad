@@ -166,97 +166,10 @@ def snm_2d_objective_der(x):
     g[0] = np.float(line[3])
     g[1] = np.float(line[4])
 
-    remove_string = "rm " + output_file
-    os.system(remove_string)
-
-    output_file = "out_tap_all_nucmat_snm"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    remove_string = "rm " + output_file
-    os.system(remove_string)
-
-    output_file = "temp"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".dat"  # output_file.join([".txt"])
-    remove_string = "rm " + output_file
-    os.system(remove_string)
-
-    return g
-
-def snm_5d_objective(x):
-    # convert x into strings
-    xstr = ["%.17f" % elem for elem in x]
-    absxstr = ["%.17f" % elem for elem in np.abs(x)]
-
-    # write call string
-    callstr = "".join(["./script_nm_snm_fullx.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]," ",xstr[4]])
-
-    # call the call string
-    os.system(callstr)
-
-    ## the output was written to out_snm_abs(x(i))....txt
-    output_file = "out_snm"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".txt"  # output_file.join([".txt"])
-
-    # we read in f and g from the .xt:
-
-    file = open(output_file)
-    line = file.read().replace(",", " ")
-    file.close()
-    line = line.split()
-
-    # write f
-    f = np.float(line[0])
-
     # SAFETY
-    if np.isnan(f) or np.isinf(f):
-        f = 1e2
-
-    return f
-
-def snm_5d_objective_der(x):
-    xstr = ["%.17f" % elem for elem in x]
-    absxstr = ["%.17f" % elem for elem in np.abs(x)]
-
-    # write call string
-    callstr = "".join(
-        ["./script_nm_snm_fullx.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", xstr[4]])
-
-    ## the output was written to out_snm_abs(x(i))....txt
-    output_file = "out_snm"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".txt"  # output_file.join([".txt"])
-
-    # we read in f and g from the .xt:
-    if not os.path.exists(output_file):
-        # call the call string
-        os.system(callstr)
-
-    file = open(output_file)
-    line = file.read().replace(",", " ")
-    file.close()
-    line = line.split()
-
-    # write g
-    g = np.zeros(5)
-    g[0] = np.float(line[6])
-    g[1] = np.float(line[7])
-    g[2] = np.float(line[8])
-    g[3] = np.float(line[9])
-    g[4] = np.float(line[10])
-
-    # SAFETY:
     f = np.float(line[0])
-    if np.isnan(f) or np.isinf(f):
-        g = np.zeros(5)
+    if np.isinf(f) or np.isnan(f):
+        g = np.zeros(2)
 
     remove_string = "rm " + output_file
     os.system(remove_string)
@@ -368,99 +281,6 @@ def pnm_4d_objective_der(x):
 
     return g
 
-def pnm_5d_objective(x):
-    # convert x into strings
-    xstr = ["%.17f" % elem for elem in x]
-    absxstr = ["%.17f" % elem for elem in np.abs(x)]
-
-    # write call string
-    callstr = "".join(["./script_nm_pnm_fullx.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]," ",xstr[4]])
-
-    # call the call string
-    os.system(callstr)
-
-    ## the output was written to out_snm_abs(x(i))....txt
-    output_file = "out_pnm"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".txt"  # output_file.join([".txt"])
-
-    # we read in f and g from the .xt:
-
-    file = open(output_file)
-    line = file.read().replace(",", " ")
-    file.close()
-    line = line.split()
-
-    # write f
-    f = np.float(line[0])
-
-    if np.isnan(f) or np.isinf(f):
-        f = 1e3
-
-    return f
-
-def pnm_5d_objective_der(x):
-    xstr = ["%.17f" % elem for elem in x]
-    absxstr = ["%.17f" % elem for elem in np.abs(x)]
-
-    # write call string
-    callstr = "".join(
-        ["./script_nm_pnm_fullx.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", xstr[4]])
-
-    ## the output was written to out_snm_abs(x(i))....txt
-    output_file = "out_pnm"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".txt"  # output_file.join([".txt"])
-
-    # we read in f and g from the .xt:
-    if not os.path.exists(output_file):
-        # call the call string
-        os.system(callstr)
-
-    file = open(output_file)
-    line = file.read().replace(",", " ")
-    file.close()
-    line = line.split()
-
-    # write g
-    f = np.float(line[0])
-    g = np.zeros(5)
-    g[0] = np.float(line[6])
-    g[1] = np.float(line[7])
-    g[2] = np.float(line[8])
-    g[3] = np.float(line[9])
-    g[4] = np.float(line[10])
-
-    # SAFETY:
-    if np.isnan(f) or np.isinf(f):
-        g = np.zeros(5)
-
-    remove_string = "rm " + output_file
-    os.system(remove_string)
-
-    output_file = "out_tap_all_nucmat_pnm"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    remove_string = "rm " + output_file
-    os.system(remove_string)
-
-    output_file = "temp"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".dat"  # output_file.join([".txt"])
-    remove_string = "rm " + output_file
-    os.system(remove_string)
-
-
-
-    return g
-
 def main():
     # args:
     # arg1: index of first starting point
@@ -476,14 +296,15 @@ def main():
 
     # make clean and make!
     if problem == "snm2" and (solver == "lbfgs" or solver == "scipy_neldermead"):
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
+        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
+        print("ok")
     elif problem == "snm2" and solver == "neldermead":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 CASE=snm CUSTOM_INPUTS=1")
         #print("ok")
     elif problem == "snm5":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 FULLX=1 NUCMAT=1 CASE=snm")
     elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead"):
-        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
+        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
         print("ok")
     elif problem == "pnm4" and solver == "neldermead":
         os.system( "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")

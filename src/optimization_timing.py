@@ -181,6 +181,21 @@ def snm_2d_objective(x):
     if np.isnan(f) or np.isinf(f):
         f = 1e3
 
+    output_file = "out_nm_snm"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
+    output_file = "temp"
+    for j in range(len(xstr)):
+        # output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".dat"  # output_file.join([".txt"])
+    remove_string = "rm " + output_file
+    os.system(remove_string)
+
     return f
 
 def snm_2d_objective_der(x):
@@ -274,7 +289,7 @@ def pnm_4d_objective(x):
     remove_string = "rm " + output_file
     os.system(remove_string)
 
-    output_file = "out_tap_all_nucmat_pnm"
+    output_file = "out_nm_pnm"
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
@@ -362,18 +377,20 @@ def main():
 
     # make clean and make!
     if problem == "snm2" and solver == "lbfgs":
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
+        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
+        print("ok")
     elif problem == "snm2" and solver == "scipy_neldermead":
         os.system("mkdir -p snm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=snm; make CASE=snm CUSTOM_INPUTS=1 NUCMAT=1")
+        print("ok")
     elif problem == "snm2" and solver == "neldermead":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 CASE=snm CUSTOM_INPUTS=1")
         #print("ok")
     elif problem == "pnm4" and solver == "lbfgs":
-        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
+        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
         print("ok")
     elif problem == "pnm4" and solver == "scipy_neldermead":
         os.system("mkdir -p pnm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=pnm; make CASE=pnm CUSTOM_INPUTS=1 NUCMAT=1")
-        #print("ok")
+        print("ok")
     elif problem == "pnm4" and solver == "neldermead":
         os.system( "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")
         #print("ok")
@@ -384,15 +401,9 @@ def main():
     if problem == "snm2":
         x0 = np.array([3.997, 0.796])
         dim = 2
-    if problem == "snm5":
-        x0 = np.array([3.997, 0.796, 0.796, 1.000, 1.000])
-        dim = 5
     if problem == "pnm4":
         x0 = np.array([1.750, 0.531, 1.564, 3.747])
         dim = 4
-    if problem == "pnm5":
-        x0 = np.array([1.750, 0.531, 0.531, 1.564, 3.747])
-        dim = 5
     # tolerance (definition changes with solver)
     tolerance = 1e-8
 
