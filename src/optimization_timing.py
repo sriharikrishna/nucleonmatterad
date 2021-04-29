@@ -379,7 +379,7 @@ def main():
     if problem == "snm2" and solver == "lbfgs":
         #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
         print("ok")
-    elif problem == "snm2" and solver == "scipy_neldermead":
+    elif problem == "snm2" and (solver == "scipy_neldermead" or solver == "fd_lbfgs"):
         os.system("mkdir -p snm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=snm; make CASE=snm CUSTOM_INPUTS=1 NUCMAT=1")
         print("ok")
     elif problem == "snm2" and solver == "neldermead":
@@ -388,7 +388,7 @@ def main():
     elif problem == "pnm4" and solver == "lbfgs":
         os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
         print("ok")
-    elif problem == "pnm4" and solver == "scipy_neldermead":
+    elif problem == "pnm4" and (solver == "scipy_neldermead" or solver == "fd_lbfgs"):
         os.system("mkdir -p pnm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=pnm; make CASE=pnm CUSTOM_INPUTS=1 NUCMAT=1")
         print("ok")
     elif problem == "pnm4" and solver == "neldermead":
@@ -452,6 +452,8 @@ def main():
             res = minimize(g, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
         elif solver == "scipy_neldermead":
             res = minimize(f, xi, method='Nelder-Mead', bounds=bounds, tol=tolerance)
+        elif solver == "fd_lbfgs":
+            res = minimize(f, xi, method='L-BFGS-B', bounds=bounds, tol=tolerance, options=options)
         elif solver == "neldermead":
             xstr = ["%.17f" % elem for elem in xi]
             absxstr = ["%.17f" % elem for elem in np.abs(xi)]
