@@ -47,12 +47,14 @@ all: $(CASE)/$(CASE).x
 
 prep: 
 	cp -p $(PARAMS) nclude/params.f
+	cp $(CASE)/DIFFSIZES${FULLX}.inc DIFFSIZES.inc
 
 
 $(CASE)/$(CASE).x: $(CASE)/nm.pre.o $(OBJFIL) $(OBJSUB)
 	$(FC) $(OMP) $(CASE)/nm.pre.o $(OBJFIL) $(OBJSUB) $(MLIB) -o $(CASE)/$(CASE).x
 
 $(CASE)/nm.pre.o: nm.pre.f 
+	cp $(CASE)/DIFFSIZES${FULLX}.inc DIFFSIZES.inc
 	$(FC)  -c nm.pre.f -o $(CASE)/nm.pre.o
 
 # case specific subroutines
@@ -110,6 +112,9 @@ CPPFLAGS+=-DCUSTOM_INPUTS
 endif
 ifdef NUCMAT
 CPPFLAGS+=-DONLY_NUCMAT
+endif
+ifdef FULLX
+CPPFLAGS+=-DDO_FULLX
 endif
 ifeq ($(CASE), snm)
   CPPFLAGS+=-DCASE_SNM
