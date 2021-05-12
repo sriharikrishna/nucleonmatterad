@@ -12,7 +12,8 @@
 #include Makefile-theory
 #include Makefile-g95
 #include Makefile-gfortran
-include Makefile-ifort
+include Makefile-skylake
+FC=$(FC4)
 
 #
 # may invoke OPENMP=on
