@@ -1,0 +1,25 @@
+# omp options
+OMPFLAGS= -openmp -lpthread -openmp-report
+# debug compiler options
+OPTFLAGSD= -g -r8 -O0 -WB -traceback -Include
+FCD=ifort -fPIC $(OPTFLAGSD)
+# low power options
+OPTFLAGS2= -g -r8 -O2 -mcmodel=large -shared-intel -cm -w -WB -traceback -Include
+FC2=ifort -fPIC $(OPTFLAGS2)
+# regular options
+OPTFLAGS3= -g -r8 -O3 -ipo -mtune=skylake -xCORE-AVX2 -mcmodel=large -shared-intel -cm -w -WB -traceback -Include
+FC3=ifort -fPIC $(OPTFLAGS3)
+# high power options
+OPTFLAGS4= -g -r8 -O4 -ipo -mtune=skylake -xCORE-AVX2 -axCORE-AVX2 -mcmodel=large -shared-intel -cm -w -WB -traceback -Include
+FC4=ifort -fPIC $(OPTFLAGS4)
+# making room for gfortran to handle clebsch with real*4 entries
+OPTFLAGSR= -g -r8 -O3 -mcmodel=large -shared-intel -cm -w -WB -traceback -Include
+FCR=ifort -fPIC $(OPTFLAGSR)
+
+# flags for preprocessing 
+PPFLAGS= -fpp
+
+MPI=mpif90 -fPIC $(OPTFLAGS3)
+MLIB=-lsvml
+
+CC=gcc
