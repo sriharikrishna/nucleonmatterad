@@ -2,16 +2,19 @@ c *id* nmtbi ***********************************************************
 c nmtbi
 c subprogram for three-body integrations
 c ----------------------------------------------------------------------
-      subroutine nmtbi(lt,lg,le,l3,nie,no,nt)
+      subroutine nmtbi(lt,lg,le,l3,no,nt)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+c params.f sets nm (=1 for nuclear, =2 for neutron) 
+c            lgrid (maximum dimension for r-space arrays)
       include "nclude/params.f"
       parameter (nu=4/nm,n3s=5-nm,n3t=7-nm)
       parameter (legrid=lgrid*(lgrid**2+1)/2)
       parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
      &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
      &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
@@ -32,9 +35,10 @@ c ----------------------------------------------------------------------
       real*8 bj(8,6),bk(4,3),bq(6,2),vc(6,3,3),
      &       bcc(lgrid,3),bde(lgrid,3)
       common /sorfun/ bj,bk,bq,vc,bde,bcc
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
+      real*8 u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
+      common /tbcnst/ u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
       real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
      &       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
       common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
@@ -42,7 +46,7 @@ c ----------------------------------------------------------------------
       integer*4 index(lgrid,lgrid,lgrid)
       common /angle/ xtheta,ytheta,ztheta,stheta,index
 c
-      real*8 afe(6),w3vm(10),w3vx(6,2),v3(2,2)
+      real*8 afe(6),w3vm(12),v3(3,3)
      &,rcc(lgrid),rdd(lgrid),rde(lgrid),ree(lgrid),sdd(lgrid)
      &,ycc(lgrid),ydd(lgrid),yde(lgrid),yee(lgrid),ybcc(lgrid)
      &,ybdd(lgrid),ybde(lgrid),ybee(lgrid),ytcc(lgrid),ytee(lgrid)
@@ -208,7 +212,8 @@ c -------------------------
      & +(zdd(i,l)*(zde(j,m)*ree(k)+zee(j,m)*rde(k))
      &  +zdd(j,m)*(rde(k)*zee(i,l)+ree(k)*zde(i,l))
      &  +rdd(k)*(zde(i,l)*zee(j,m)+zee(i,l)*zde(j,m))
-     &  +2*zde(i,l)*zde(j,m)*rde(k)-2*nu*zcc(i,l)*zcc(j,m)*rcc(k))
+     &  +2*zde(i,l)*zde(j,m)*rde(k))
+c    & -2*nu*zcc(i,l)*zcc(j,m)*rcc(k) ! double counting 2.1
      & *(1+sddd(ijk))
       zrz(i,j,k,l,n,ijk,ikj,jik,kji)=
      & zdd(i,l)*rdd(j)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
@@ -229,6 +234,25 @@ c -------------------------
      &  +rdd(j)*(zde(k,n)*zee(i,l)+zee(k,n)*zde(i,l))
      &  +zdd(k,n)*(zde(i,l)*ree(j)+zee(i,l)*rde(j))
      &  +2*zde(i,l)*rde(j)*zde(k,n))*(1+sddd(ijk))
+      rzz(i,j,k,l,n,ijk,ikj,jik,kji)=
+     & rdd(i)*zdd(j,l)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
+     &        +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
+     &+rde(i)*zdd(j,l)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
+     &        +sdde(jik)+2*sdde(ijk)+sdee(ijk)+sdee(ikj))
+     &+rdd(i)*zde(j,l)*zdd(k,n)*(2+2*sddd(ijk)+sdde(kji)
+     &        +sdde(ijk)+2*sdde(jik)+sdee(ijk)+sdee(kji))
+     &+rdd(i)*zdd(j,l)*zde(k,n)*(2+2*sddd(ijk)+sdde(jik)
+     &        +sdde(ijk)+2*sdde(kji)+sdee(ikj)+sdee(kji))
+     & +ree(i)*zdd(j,l)*zdd(k,n)*(1+sddd(ijk)+sdde(ijk))
+     & +rdd(i)*zee(j,l)*zdd(k,n)*(1+sddd(ijk)+sdde(jik))
+     & +rdd(i)*zdd(j,l)*zee(k,n)*(1+sddd(ijk)+sdde(kji))
+     & +(rde(i)*zde(j,l)*zdd(k,n)+rde(i)*zdd(j,l)*zde(k,n)
+     &  +rdd(i)*zde(j,l)*zde(k,n))
+     &  *(3+3*sddd(ijk)+sdde(ijk)+sdde(jik)+sdde(kji))
+     & +(rdd(i)*(zde(j,l)*zee(k,n)+zee(j,l)*zde(k,n))
+     &  +zdd(j,l)*(zde(k,n)*ree(i)+zee(k,n)*rde(i))
+     &  +zdd(k,n)*(rde(i)*zee(j,l)+ree(i)*zde(j,l))
+     &  +2*rde(i)*zde(j,l)*zde(k,n))*(1+sddd(ijk))
       rbybr(i,j,k,ijk,ikj,jik,kji)=
      &  rdd(i)*ybdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)
      &  +sdde(kji)+sdee(ijk)+sdee(ikj)+sdee(kji)+seee(ijk))
@@ -327,8 +351,7 @@ c -------------------------
      & *(1+sddd(ijk))
       do 5 l=1,6
     5 afe(l)=acex(l,1,l)
-      do 10 i=1,10
-   10 w3vm(i)=0
+      w3vm(:)=0
 c ----------------------
 c set up r,y,z functions
 c ----------------------
@@ -468,14 +491,16 @@ c nt = 1 Urbana type
 c      2 Tucson
 c      3 Brazil
 c      4 density-dependent
+c    > 100 Norfolk EFT
 c s = 4/nm
 c ------------------------
-      if (nt.eq.0.or.nt.ge.4) then
+      if (nt.eq.0 .or. (nt.ge.4 .and. nt.le.100)) then
         go to 500
-      else if (nt.eq.1) then
-        pap=4*tnix*.5*(s-1)
+      else if (nt.eq.1 .or. nt.gt.100) then
+        pa=4*tnis*.5*(s-1)
         pb=4*tnia*.5*(s-1)
         pd=-16*tnic*.375*(s-2)
+        px=tnix*(s-1)
       else if (nt.eq.2) then
         pa=0.1102
         pb=-0.2517*.5*(s-1)
@@ -495,13 +520,17 @@ c ------------------------------------------
         do 290 j=1,l3
           ka=iabs(i-j)+1
           kb=min(i+j-1,ltd)
-          if (nt.eq.1) then
+          if (nt.eq.1 .or. nt.gt.100) then
             v0=tniu*tpi2(i)*tpi2(j)
-            ac=pap*xt1(i)*xt1(j)
+            ac=pa*xt1(i)*xt1(j)
             v3(1,1)=ypi(i)*ypi(j)
             v3(1,2)=ypi(i)*tpi(j)
+            v3(1,3)=ypi(i)*tpi2(j)
             v3(2,1)=tpi(i)*ypi(j)
             v3(2,2)=tpi(i)*tpi(j)
+            v3(2,3)=tpi(i)*tpi2(j)
+            v3(3,1)=tpi2(i)*ypi(j)
+            v3(3,2)=tpi2(i)*tpi(j)
           else if (nt.eq.2.or.nt.eq.3) then
             v0=0
             ac=(pa-2*pc)*xt1(i)*xt1(j)+pc*(xt0(i)*xt1(j)+xt1(i)*xt0(j))
@@ -563,8 +592,13 @@ c ----------------------------
 c anticommutator zzr zzz terms
 c   w3vm(4) := diagram 2.2
 c   w3vm(5)  ~ diagram 2.4
+c s-wave obtained by setting
+c ypi=tpi=xt1
 c   w3vm(9) := diagram 2.2-s
 c   w3vm(10) ~ diagram 2.4-s
+c cD terms
+c   w3vm(11) - zrz
+c   w3vm(12) - rzz
 c ----------------------------
   240     do 250 k=ka,kb
             ijk=index(i,j,k)
@@ -574,6 +608,7 @@ c ----------------------------
             x=xtheta(kji)
             y=ytheta(kji)
             z=ztheta(kji)
+            acx=ac/x
             qvi=qv*r(i)*r(j)*r(k)
             qttt=-4.5*x*y*z-1.5*(x**2+y**2+z**2)+1
             qtts=3*x**2-1
@@ -588,34 +623,73 @@ c ----------------------------
      &             *zzr(i,j,k,n3s,n3t,ijk,ikj,jik,kji)
      &        +( 24*v3(2,2)+6*qtts*(v3(1,1)+v3(1,2)+v3(2,1)+v3(2,2)) )
      &             *zzr(i,j,k,n3t,n3t,ijk,ikj,jik,kji))/vc(n3s,1,1)
-            w3vm(9)=w3vm(9)+qvi*pb*18*ac*x
-     &          *(  zzr(i,j,k,n3s,n3s,ijk,ikj,jik,kji)
-     &           +2*zzr(i,j,k,n3t,n3s,ijk,ikj,jik,kji)
-     &           +2*zzr(i,j,k,n3s,n3t,ijk,ikj,jik,kji)
-     &           +4*zzr(i,j,k,n3t,n3t,ijk,ikj,jik,kji))/vc(n3s,1,1)
+            w3vm(9)=w3vm(9)+qvi*pa*
+     &       ( (  6*acx+6*qtts*acx )
+     &             *zzr(i,j,k,n3s,n3s,ijk,ikj,jik,kji)
+     &        +( 12*acx+6*qtts*(acx+acx) )
+     &             *zzr(i,j,k,n3t,n3s,ijk,ikj,jik,kji)
+     &        +( 12*acx+6*qtts*(acx+acx) )
+     &             *zzr(i,j,k,n3s,n3t,ijk,ikj,jik,kji)
+     &        +( 24*acx+6*qtts*(acx+acx+acx+acx) )
+     &             *zzr(i,j,k,n3t,n3t,ijk,ikj,jik,kji))/vc(n3s,1,1)
             w3vm(5)=w3vm(5)+qvi*pb*
-     &       ((24*(v3(1,1)+acx)+24*qtts*(v3(2,2)+acx))
+     &       ( ( 24*v3(1,1)+24*qtts*v3(2,2))
      &             *zdd(i,n3s)*zdd(j,n3s)
-     &       +(-24*(v3(2,1)+acx)-12*qtts*(v3(1,2)+v3(2,2)+2*acx))
+     &        +(-24*v3(2,1)-12*qtts*(v3(1,2)+v3(2,2)))
      &             *zdd(i,n3t)*zdd(j,n3s)
-     &       +(-24*(v3(1,2)+acx)-12*qtts*(v3(2,1)+v3(2,2)+2*acx))
+     &        +(-24*v3(1,2)-12*qtts*(v3(2,1)+v3(2,2)))
      &             *zdd(i,n3s)*zdd(j,n3t)
-     &       +(72*(v3(2,2)+acx)-12*qtts*(v3(2,1)+v3(1,2)-2*v3(1,1)))
+     &        +( 72*v3(2,2)-12*qtts*(v3(2,1)+v3(1,2)))
      &             *zdd(i,n3t)*zdd(j,n3t))*zdd(k,n3s)/vc(n3s,1,1)**3
             w3vm(5)=w3vm(5)+qvi*pb*
-     &       ((-24*qtst*(v3(2,1)+acx)-24*qstt*(v3(1,2)+acx)
-     &         -24*qttt*(v3(2,2)+acx))*zdd(i,n3s)*zdd(j,n3s)
-     &       +((12*qtts+24*(qstt+qtst-1))*(v3(1,2)+acx)
-     &        +(-12*qtts+24*(qttt-qtst+1))*(v3(2,2)+acx)
-     &        -24*qtst*(v3(1,1)-2*v3(2,1)-acx))*zdd(i,n3t)*zdd(j,n3s)
-     &       +((12*qtts+24*(qstt+qtst-1))*(v3(2,1)+acx)
-     &        +(-12*qtts+24*(qttt-qstt+1))*(v3(2,2)+acx)
-     &        -24*qstt*(v3(1,1)-2*v3(1,2)-acx))*zdd(i,n3s)*zdd(j,n3t)
-     &       +((24*qtts-48*(qttt+1))*(v3(2,2)+acx)
-     &        +(-12*qtts+24*(qttt-qtst+1))*(v3(2,1)+acx)
-     &        +(-12*qtts+24*(qttt-qstt+1))*(v3(1,2)+acx)
-     &        -24*qttt*(v3(1,1)+acx))*zdd(i,n3t)*zdd(j,n3t))
+     &       ( (-24*qtst*v3(2,1)-24*qstt*v3(1,2)
+     &          -24*qttt*v3(2,2))*zdd(i,n3s)*zdd(j,n3s)
+     &        +((12*qtts+24*(qstt+qtst-1))*v3(1,2)
+     &        +(-12*qtts+24*(qttt-qtst+1))*v3(2,2)
+     &          -24*qtst*(v3(1,1)-2*v3(2,1)))*zdd(i,n3t)*zdd(j,n3s)
+     &        +((12*qtts+24*(qstt+qtst-1))*v3(2,1)
+     &        +(-12*qtts+24*(qttt-qstt+1))*v3(2,2)
+     &          -24*qstt*(v3(1,1)-2*v3(1,2)))*zdd(i,n3s)*zdd(j,n3t)
+     &        +((24*qtts-48*(qttt+1))*v3(2,2)
+     &        +(-12*qtts+24*(qttt-qtst+1))*v3(2,1)
+     &        +(-12*qtts+24*(qttt-qstt+1))*v3(1,2)
+     &          -24*qttt*v3(1,1))*zdd(i,n3t)*zdd(j,n3t) )
      &             *zdd(k,n3t)/vc(n3t,1,1)**3
+            w3vm(10)=w3vm(10)+qvi*pa*
+     &       ( ( 24*acx+24*qtts*acx)
+     &             *zdd(i,n3s)*zdd(j,n3s)
+     &        +(-24*acx-12*qtts*(acx+acx))
+     &             *zdd(i,n3t)*zdd(j,n3s)
+     &        +(-24*acx-12*qtts*(acx+acx))
+     &             *zdd(i,n3s)*zdd(j,n3t)
+     &        +( 72*acx-12*qtts*(acx+acx))
+     &             *zdd(i,n3t)*zdd(j,n3t))*zdd(k,n3s)/vc(n3s,1,1)**3
+            w3vm(10)=w3vm(10)+qvi*pa*
+     &       ( (-24*qtst*acx-24*qstt*acx
+     &          -24*qttt*acx)*zdd(i,n3s)*zdd(j,n3s)
+     &        +((12*qtts+24*(qstt+qtst-1))*acx
+     &        +(-12*qtts+24*(qttt-qtst+1))*acx
+     &          -24*qtst*(acx-2*acx))*zdd(i,n3t)*zdd(j,n3s)
+     &        +((12*qtts+24*(qstt+qtst-1))*acx
+     &        +(-12*qtts+24*(qttt-qstt+1))*acx
+     &          -24*qstt*(acx-2*acx))*zdd(i,n3s)*zdd(j,n3t)
+     &        +((24*qtts-48*(qttt+1))*acx
+     &        +(-12*qtts+24*(qttt-qtst+1))*acx
+     &        +(-12*qtts+24*(qttt-qstt+1))*acx
+     &          -24*qttt*acx)*zdd(i,n3t)*zdd(j,n3t) )
+     &             *zdd(k,n3t)/vc(n3t,1,1)**3
+            w3vm(11)=w3vm(11)+qvi*px*
+     &         (  3*v3(3,1)*zrz(i,j,k,n3s,n3s,ijk,ikj,jik,kji)
+     &           +6*qstt*v3(3,2)*zrz(i,j,k,n3s,n3t,ijk,ikj,jik,kji)
+     &           +3*qtts*v3(3,2)*zrz(i,j,k,n3t,n3s,ijk,ikj,jik,kji)
+     &           +6*(qtst*v3(3,1)+qttt*v3(3,2))
+     &             *zrz(i,j,k,n3t,n3t,ijk,ikj,jik,kji) )/vc(n3s,1,1)
+            w3vm(12)=w3vm(12)+qvi*px*
+     &         (  3*v3(1,3)*rzz(i,j,k,n3s,n3s,ijk,ikj,jik,kji)
+     &           +6*qtst*v3(2,3)*rzz(i,j,k,n3s,n3t,ijk,ikj,jik,kji)
+     &           +3*qtts*v3(2,3)*rzz(i,j,k,n3t,n3s,ijk,ikj,jik,kji)
+     &           +6*(qstt*v3(1,3)+qttt*v3(2,3))
+     &             *rzz(i,j,k,n3t,n3t,ijk,ikj,jik,kji) )/vc(n3t,1,1)
   250     continue
           if (nm.eq.2) go to 290
 c ------------------------
@@ -665,7 +739,6 @@ c ------------------------------
             x=xtheta(kji)
             y=ytheta(kji)
             z=ztheta(kji)
-            acx=ac/x
             qvi=qv*r(i)*r(j)*r(k)
             qttt=-4.5*x*y*z-1.5*(x**2+y**2+z**2)+1
             qtts=3*x**2-1
@@ -695,35 +768,30 @@ c ------------------------------
   270     continue
   290   continue
   300 continue
-      w3v0=w3vm(1)+w3vm(2)+w3vm(3)
-c w3vx not defined any where so this is commented out 2/13/16
-c     w3vx(1,1)=0
-c     fac=tnix/tniu
-c     w3v1=-.25*(fac*w3v0+w3vx(2,1)+w3vx(3,1)+w3vx(4,1)
-c    &               +w3vx(2,2)+w3vx(3,2)+w3vx(4,2))
-c -----------------------------------------------------------
-      w3vx=0.0
+      w3vu=w3vm(1)+w3vm(2)+w3vm(3)
+      w3vs=w3vs+w3vm(9)+w3vm(10)
       w3va=w3va+w3vm(4)+w3vm(5)
       w3vc=w3vm(6)+w3vm(7)+w3vm(8)
+      w3vx=w3vx+w3vm(11)+w3vm(12)
 c print ================================================================
       if (no.eq.0) go to 500
       write(nlog,973)
       write(nout,973)
-  973 format(/4x,'w3v0(g3):',15x,'w3va(g3):',7x,'w3vc(g3):'/4x,'rrr'
+  973 format(/4x,'w3vu(g3):',15x,'w3va(g3):',7x,'w3vc(g3):'/4x,'rrr'
      &,5x,'yrr',5x,'zzz',5x,'zzr',5x,'zzz',5x,'zzr',5x,'zrz',5x,'zzz')
-      write(nlog,918) w3vm
-      write(nout,918) w3vm
+      write(nlog,918) w3vm(1:8)
+      write(nout,918) w3vm(1:8)
   918 format(8f8.3)
       write(nlog,972)
       write(nout,972)
-  972 format(/4x,'w3vx:rrz,zzr'
-     &       /4x,'c',7x,'t',7x,'s',7x,'st',6x,'tn',6x,'tnt')
-      write(nlog,916) w3vx
-      write(nout,916) w3vx
+  972 format(/4x,'w3vs(g3):',7x,'w3vx(g3):'/4x,'zzr',5x,'zzz',5x,'zrz'
+     &,5x,'rzz')
+      write(nlog,916) w3vm(9:12)
+      write(nout,916) w3vm(9:12)
   916 format(6f8.3)
-      write(nlog,974) w3v0,w3v1,w3va,w3vc
-      write(nout,974) w3v0,w3v1,w3va,w3vc
-  974 format(/4x,'w3v0',4x,'w3v1',4x,'w3va',4x,'w3vc'/4f8.3)
+      write(nlog,974) w3va,w3vc,w3vs,w3vu,w3vx
+      write(nout,974) w3va,w3vc,w3vs,w3vu,w3vx
+  974 format(/4x,'w3va',4x,'w3vc',4x,'w3vs',4x,'w3vu',4x,'w3vx'/5f8.3)
 c ======================================================================
 c --------------------
 c calculate u, uf & up

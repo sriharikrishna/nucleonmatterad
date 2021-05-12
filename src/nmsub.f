@@ -10,12 +10,15 @@ c **********************************************************************
       subroutine nmhot(lkf,ld,no)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+c params.f sets nm (=1 for nuclear, =2 for neutron) 
+c            lgrid (maximum dimension for r-space arrays)
       include "nclude/params.f"
       parameter (ngrid=(20*lgrid+1))
       parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
      &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
      &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
@@ -149,12 +152,15 @@ c **********************************************************************
       subroutine nmsps(ltd)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+c params.f sets nm (=1 for nuclear, =2 for neutron) 
+c            lgrid (maximum dimension for r-space arrays)
       include "nclude/params.f"
       parameter (ngrid=(20*lgrid+1))
       parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
      &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
      &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
@@ -202,13 +208,16 @@ c **********************************************************************
       subroutine nmpion(lp,no,np,npi,npf)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+c params.f sets nm (=1 for nuclear, =2 for neutron) 
+c            lgrid (maximum dimension for r-space arrays)
       include "nclude/params.f"
       parameter (nu=4/nm)
       parameter (ngrid=(20*lgrid+1))
       parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
      &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
      &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
@@ -376,12 +385,15 @@ c **********************************************************************
       subroutine nmout(le,lg,lt,l3,nie,no,nt,nv)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+c params.f sets nm (=1 for nuclear, =2 for neutron) 
+c            lgrid (maximum dimension for r-space arrays)
       include "nclude/params.f"
       parameter (legrid=lgrid*(lgrid**2+1)/2)
       parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
      &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
      &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
@@ -403,7 +415,15 @@ c **********************************************************************
       common /echain/ eca,ecb,edd,ede,eee,sddd,sdde,sdee,seee,sdcc,secc
       common /mocfun/ gfdd,gfde,gfed,gfcc,ghdd,ghde,ghed,ghcc,
      &       grdc,grdd,grde,gred,gree,grfc,grfd,grfe,grmd,grme
-      real*8 v3cc(lgrid,6),v3dd(lgrid,6),v3de(lgrid,6),v3ee(lgrid,6)
+      real*8 u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
+      common /tbcnst/ u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
+      real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
+     &       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
+      common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
+      real*8 v3cc(lgrid,6,3),v3dd(lgrid,6,3),v3de(lgrid,6,3),
+     &       v3ee(lgrid,6,3)
       common /tbpots/ v3cc,v3dd,v3de,v3ee
 c
       real*8 f00(lgrid),f01(lgrid),f10(lgrid),f11(lgrid),
@@ -452,6 +472,7 @@ c   ---------------
         write(nout,2011) (r(j),(f(j,i),i=7,8),(fp(j,i),i=7,8)
      &                   ,(fds(j,i),i=7,8),j=1,lprt)
       end if
+c   ---------------
       write(nout,2050)
  2050 format(/3x,'r',10x,'v(r,p)')
       write(nout,2006)
@@ -469,6 +490,16 @@ c   ---------------
         write(nout,2082) (r(j),(v(j,i),i=13,14),j=1,lprt)
  2082   format(1x,0p,f6.3,5x,1p,2e11.4)
       end if
+c   ---------------
+      if (nt.ge.1) then
+        write(nout,2085)
+ 2085   format(/3x,'r',10x,'v3(r,p)')
+        write(nout,2086)
+ 2086   format(/14x,'ypi',8x,'tpi',8x,'tpi2',7x,'xt1',8x,'xt2',8x,'xt3')
+        write(nout,2011) (r(j),ypi(j),tpi(j),tpi2(j),xt1(j)
+     &                   ,xt2(j),xt3(j),j=1,lprt)
+      end if
+c   ---------------
       write(nout,2090)
  2090 format(/3x,'r',10x,'gx',9x,'gl',9x,'sl',9x,'slp',8x,'sldp'
      &       ,7x,'sltp')
@@ -592,23 +623,28 @@ c   ---------------
 c   -----------------
 c   ouput v3xx chains
 c   -----------------
-   10 if (nt.eq.0.or.nt.ge.4) go to 100
-      write(nout,5000)
- 5000 format(/3x,'r',10x,'v3dd(r,p)')
+   10 if (nt.eq.0 .or. (nt.ge.4 .and. nt.le.100)) go to 100
+      kt=1
+      if (tnis.ne.0. .or. nt.ge.2) kt=2
+      if (tnix.ne.0.) kt=3
+      do 30 k=1,kt
+      write(nout,5000) k
+ 5000 format(/3x,'r',10x,'v3dd(r,p,',i1,')')
       write(nout,2006)
-      write(nout,2011) (r(j),(v3dd(j,i),i=1,6),j=1,l3)
-      write(nout,5010)
- 5010 format(/3x,'r',10x,'v3de(r,p)')
+      write(nout,2011) (r(j),(v3dd(j,i,k),i=1,6),j=1,l3)
+      write(nout,5010) k
+ 5010 format(/3x,'r',10x,'v3de(r,p,',i1,')')
       write(nout,2006)
-      write(nout,2011) (r(j),(v3de(j,i),i=1,6),j=1,l3)
-      write(nout,5020)
- 5020 format(/3x,'r',10x,'v3ee(r,p)')
+      write(nout,2011) (r(j),(v3de(j,i,k),i=1,6),j=1,l3)
+      write(nout,5020) k
+ 5020 format(/3x,'r',10x,'v3ee(r,p,',i1,')')
       write(nout,2006)
-      write(nout,2011) (r(j),(v3ee(j,i),i=1,6),j=1,l3)
-      write(nout,5030)
- 5030 format(/3x,'r',10x,'v3cc(r,p)')
+      write(nout,2011) (r(j),(v3ee(j,i,k),i=1,6),j=1,l3)
+      write(nout,5030) k
+ 5030 format(/3x,'r',10x,'v3cc(r,p,',i1,')')
       write(nout,2006)
-      write(nout,2011) (r(j),(v3cc(j,i),i=1,6),j=1,l3)
+      write(nout,2011) (r(j),(v3cc(j,i,k),i=1,6),j=1,l3)
+   30 continue
   100 return
       end
 c *id* ac **************************************************************
@@ -1351,7 +1387,7 @@ c     $,2.,1./
 c *id* ac **************************************************************
 c subfuntions for matrices c,cex,cl2,cl2ex
 c **********************************************************************
-      function al2(i,j,k)
+      function abl2(i,j,k)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
       real*8 b(112),bex(112),bl2(112),bl2ex(112)
@@ -1527,7 +1563,6 @@ c     $,2.,1./
       data ms/2*1,2*2,2*3,2*4,2*5,2*6,2*7/
       data mt/1,2,1,2,1,2,1,2,1,2,1,2,1,2/
       ns=ms(i)+4*ms(j)+28*ms(k)-32
-      al2=bl2(ns)
+      abl2=bl2(ns)
       return
       end
-

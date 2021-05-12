@@ -1,17 +1,20 @@
 c *id* nmhnc ***********************************************************
 c subroutine for fhnc/soc equations
 c **********************************************************************
-      subroutine nmhnc(lg,le,l3,ni,nie,no,nt,nv)
+      subroutine nmhnc(lg,le,l3,ni,nie,nio,no,nt,nv)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+c params.f sets nm (=1 for nuclear, =2 for neutron) 
+c            lgrid (maximum dimension for r-space arrays)
       include "nclude/params.f"
       parameter (nu=4/nm,n3s=5-nm,n3t=7-nm)
       parameter (legrid=lgrid*(lgrid**2+1)/2)
       parameter (nphi=5,lx=512)
       parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
      &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
      &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
@@ -36,15 +39,16 @@ c **********************************************************************
      &       grmd(lgrid,6),grme(lgrid,6)
       common /mocfun/ gfdd,gfde,gfed,gfcc,ghdd,ghde,ghed,ghcc,
      &       grdc,grdd,grde,gred,gree,grfc,grfd,grfe,grmd,grme
-      real*8 v3cc(lgrid,6,2),v3dd(lgrid,6,2),v3de(lgrid,6,2),
-     &       v3ee(lgrid,6,2)
+      real*8 v3cc(lgrid,6,3),v3dd(lgrid,6,3),v3de(lgrid,6,3),
+     &       v3ee(lgrid,6,3)
       common /tbpots/ v3cc,v3dd,v3de,v3ee
       real*8 bj(8,6),bk(4,3),bq(6,2),vc(6,3,3),
      &       bcc(lgrid,3),bde(lgrid,3)
       common /sorfun/ bj,bk,bq,vc,bde,bcc
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
+      real*8 u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
+      common /tbcnst/ u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
       real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
      &       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
       common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
@@ -62,7 +66,7 @@ c
      &,xgcb(lgrid,6),xgdd(lgrid,6),xgde(lgrid,6),xgee(lgrid,6)
      &,xgca(lgrid,6)
      &,qcc(6),qdd(6),qde(6),qee(6),pcc(6),pdd(6),pde(6),pee(6)
-     &,zca(6),zcb(6),zdd(6),zde(6),zee(6),v3st(6)
+     &,zca(6),zcb(6),zdd(6),zde(6),zee(6),v3st(6,3)
       integer lit(6),mit(6),nit(6)
       data lit/0,2,2,4,4,4/,mit/0,2,4,2,4,4/,nit/0,2,4,4,2,4/
 c
@@ -129,46 +133,36 @@ c ---------------------------------------
 c -------------
 c zero matrices
 c -------------
-      do 30 i=1,lgrid
-        gx(i)=1.0
-        gy(i)=0.0
-        gz(i)=0.0
-        gl(i)=sl(i)
-   30 continue
-      do 35 i=1,legrid
-        sccd(i)=0.0
-        scce(i)=0.0
-        sddd(i)=0.0
-        sdde(i)=0.0
-        sdee(i)=0.0
-        seee(i)=0.0
-   35 continue
-      do 40 il=1,lgrid*6
-        gca(il,1)=0.0
-        gcb(il,1)=0.0
-        gdd(il,1)=0.0
-        gde(il,1)=0.0
-        gee(il,1)=0.0
-        eca(il,1)=0.0
-        ecb(il,1)=0.0
-        edd(il,1)=0.0
-        ede(il,1)=0.0
-        eee(il,1)=0.0
-   40 continue
+      do 30 l=1,6
+   30 afe(l)=acex(l,1,l)
+      gx(:)=1.0
+      gy(:)=0.0
+      gz(:)=0.0
+      gl(:)=sl(:)
+      gca(:,:)=0.0
+      gcb(:,:)=0.0
+      gdd(:,:)=0.0
+      gde(:,:)=0.0
+      gee(:,:)=0.0
+      eca(:,:)=0.0
+      ecb(:,:)=0.0
+      edd(:,:)=0.0
+      ede(:,:)=0.0
+      eee(:,:)=0.0
+      sccd(:)=0.0
+      scce(:)=0.0
+      sddd(:)=0.0
+      sdde(:)=0.0
+      sdee(:)=0.0
+      seee(:)=0.0
+      v3st(:,:)=0.0
       v3cc(:,:,:)=0.0
       v3dd(:,:,:)=0.0
       v3de(:,:,:)=0.0
       v3ee(:,:,:)=0.0
-      do 50 il=1,lgrid*3
-        bcc(il,1)=0.0
-        bde(il,1)=0.0
-   50 continue
-      do 55 l=1,6
-        afe(l)=acex(l,1,l)
-   55 continue
-      do 60 ljk=1,6*3*3
-        vc(ljk,1,1)=1.0
-   60 continue
+      bcc(:,:)=0.0
+      bde(:,:)=0.0
+      vc(:,:,:)=1.0
 c -------------------------------------
 c main iteration loop for hnc equations
 c -------------------------------------
@@ -189,7 +183,7 @@ c ---------------
         xgcb(i,1)=-fc2*gx(i)*gl(i)/nu
         xgcc(i)=xgcb(i,1)
         xgca(i,1)=xgcc(i)
-        xca(i,1)=0
+        xca(i,1)=0.0
         xcc(i)=xgcc(i)+gl(i)/nu
         sddr(i)=xgdd(i,1)*r(i)
         sder(i)=xgde(i,1)*r(i)
@@ -218,9 +212,9 @@ c ----------------------------------------
 c ----------------------------
 c construct 3-point superbonds
 c ----------------------------
-!$WOMP PARALLEL SHARED(sddd,sdde,sdee,seee,sccd,scce)
-!$WOMP& PRIVATE(i,j,k,l,m,np)
-!$WOMP DO SCHEDULE(DYNAMIC)
+!$OMP PARALLEL SHARED(sddd,sdde,sdee,seee,sccd,scce)
+!$OMP& PRIVATE(i,j,k,l,m,np)
+!$OMP DO SCHEDULE(DYNAMIC)
       do 160 i=1,le                              ! r12
         do 150 j=1,le                            ! r13
           ka=iabs(i-j)+1
@@ -281,8 +275,8 @@ c ----------------------------
   140     continue
   150   continue
   160 continue
-!$WOMP END DO NOWAIT
-!$WOMP END PARALLEL
+!$OMP END DO NOWAIT
+!$OMP END PARALLEL
 c -----------------------
 c set soc input functions
 c -----------------------
@@ -335,15 +329,16 @@ c --------------------------------
 c three-body fhnc/soc integrations
 c --------------------------------
       do 240 il=1,lgrid*6
+c        write(*,*) "1assigning gdd(",il,"1)", gdd(il,1)*co
         gdd(il,1)=gdd(il,1)*co
         gde(il,1)=gde(il,1)*co
         gee(il,1)=gee(il,1)*co
         gca(il,1)=gca(il,1)*co
         gcb(il,1)=gcb(il,1)*co
   240 continue
-!$WOMP PARALLEL SHARED(gdd,gde,gee,gca,gcb)
-!$WOMP& PRIVATE(i,j,k,l)
-!$WOMP DO SCHEDULE(DYNAMIC)
+!$OMP PARALLEL SHARED(gdd,gde,gee,gca,gcb)
+!$OMP& PRIVATE(i,j,k,l)
+!$OMP DO SCHEDULE(DYNAMIC)
       do 290 i=1,lg
         ei=q2cn*ri(i)
         do 280 j=1,lg
@@ -362,17 +357,22 @@ c --------------------------------
               xj=1.5*y**2-.5
               xk=1.5*x**2-.5
               gdd(i,l)=gdd(i,l)+sdd(j,k,l,l)
+              
+c              write(*,*) "2assigning gdd(",i,l,",)",gdd(i,l)
               gde(i,l)=gde(i,l)+sde(j,k,l,l)
               gee(i,l)=gee(i,l)+see(j,k,l,l)
               gca(i,l)=gca(i,l)+eijk*xca(j,l)*xgcc(k)
               gcb(i,l)=gcb(i,l)+eijk*xcc(j)*xgcb(k,l)
+              
               gdd(i,l+2)=gdd(i,l+2)+sdd(j,k,l+2,l+2)+xi*sdd(j,k,l+4,l+4)
+c              write(*,*) "3assigning gdd(",i,l+2,",)",gdd(i,l+2)
               gde(i,l+2)=gde(i,l+2)+sde(j,k,l+2,l+2)+xi*sde(j,k,l+4,l+4)
               gee(i,l+2)=gee(i,l+2)+see(j,k,l+2,l+2)+xi*see(j,k,l+4,l+4)
               gca(i,l+2)=gca(i,l+2)+eijk*xca(j,l+2)*xgcc(k)
               gcb(i,l+2)=gcb(i,l+2)+eijk*xcc(j)*xgcb(k,l+2)
               gdd(i,l+4)=gdd(i,l+4)+xijk*sdd(j,k,l+4,l+4)
      &                  +xk*sdd(j,k,l+4,l+2)+xj*sdd(j,k,l+2,l+4)
+c              write(*,*) "4assigning gdd(",i,l+4,",)",gdd(i,l+4)
               gde(i,l+4)=gde(i,l+4)+xijk*sde(j,k,l+4,l+4)
      &                  +xk*sde(j,k,l+4,l+2)+xj*sde(j,k,l+2,l+4)
               gee(i,l+4)=gee(i,l+4)+xijk*see(j,k,l+4,l+4)
@@ -383,8 +383,8 @@ c --------------------------------
   270     continue
   280   continue
   290 continue
-!$WOMP END DO NOWAIT
-!$WOMP END PARALLEL
+!$OMP END DO NOWAIT
+!$OMP END PARALLEL
 c -------------------------------
 c elementary diagram integrations
 c -------------------------------
@@ -395,9 +395,9 @@ c -------------------------------
         eca(il,1)=eca(il,1)*coe
         ecb(il,1)=ecb(il,1)*coe
   340 continue
-!$WOMP PARALLEL SHARED(edd,ede,eee,eca,ecb)
-!$WOMP& PRIVATE(i,j,k,l)
-!$WOMP DO SCHEDULE(DYNAMIC)
+!$OMP PARALLEL SHARED(edd,ede,eee,eca,ecb)
+!$OMP& PRIVATE(i,j,k,l)
+!$OMP DO SCHEDULE(DYNAMIC)
       do 390 i=1,le
         ei=q3cne*ri(i)
         do 380 j=1,le
@@ -458,6 +458,7 @@ c         do 370 l=1,2,nm
               ecb(i,l)=ecb(i,l)+eijk*
      &            ( sddd(ijk)* xgcc(j)*   xgcb(k,l)
      &             +sccd(kji)* xgcc(j)*   xgdd(k,l) )
+c           if (nio.eq.0) go to 360
 c             edd(i,l+2)=edd(i,l+2)+eijk*
 c    &            ( sddd(ijk)*(xgdd(j,l+2)*(xgdd(k,l+2)*vc(l+2,2,1)
 c    &                                     +xgde(k,l+2)*vc(l+2,2,2))
@@ -620,9 +621,10 @@ c    &             +sccd(kji)* xgcc(j)*     xgdd(k,l+4) )
   370     continue
   380   continue
   390 continue
-!$WOMP END DO NOWAIT
-!$WOMP END PARALLEL
+!$OMP END DO NOWAIT
+!$OMP END PARALLEL
       do 395 i=1,lg
+c        write(*,*) "lg", lg, "i",i,gdd(i,1),edd(i,1)
         eca(i,1)=.5*eca(i,1)
         ecb(i,1)=.5*ecb(i,1)
         edd(i,1)=.5*edd(i,1)
@@ -643,7 +645,7 @@ c bj(l,5)=J^l(d,e,P)   - RMP(6.33)
 c bj(l,6)=K^l(d,e,f^2) - W80(3.14)
 c --------------------------------
       do 400 lj=1,8*6
-        bj(lj,1)=0
+        bj(lj,1)=0.0
   400 continue
       do 420 l=1,6,nm
         if (l.eq.1) go to 420
@@ -674,13 +676,13 @@ c --------------------------------
 c --------------------------------
       do 470 k=1+nm,6,nm
         do 430 l=1,3
-          vce(k,l)=0
+          vce(k,l)=0.0
           vco(k,1,l)=vc(k,1,l)
           vco(k,2,l)=vc(k,2,l)
           vco(k,3,l)=vc(k,3,l)
-          vc(k,1,l)=0
-          vc(k,2,l)=0
-          vc(k,3,l)=0
+          vc(k,1,l)=0.0
+          vc(k,2,l)=0.0
+          vc(k,3,l)=0.0
   430   continue
         do 450 l=1+nm,6,nm
           dlk=ad(l,k)
@@ -729,24 +731,24 @@ c -------------
 c moc integrals
 c -------------
       do 505 k=1,lgrid
-        xcc(k)=0
+        xcc(k)=0.0
   505 continue
       do 510 kl=1,lgrid*6
-        gfcc(kl,1)=0
-        gfdd(kl,1)=0
-        gfde(kl,1)=0
-        gfed(kl,1)=0
-        ghcc(kl,1)=0
-        ghdd(kl,1)=0
-        ghde(kl,1)=0
-        ghed(kl,1)=0
-        xca(kl,1)=0
-        xdd(kl,1)=0
-        xee(kl,1)=0
-        xgcb(kl,1)=0
-        xgdd(kl,1)=0
-        xgde(kl,1)=0
-        xgee(kl,1)=0
+        gfcc(kl,1)=0.0
+        gfdd(kl,1)=0.0
+        gfde(kl,1)=0.0
+        gfed(kl,1)=0.0
+        ghcc(kl,1)=0.0
+        ghdd(kl,1)=0.0
+        ghde(kl,1)=0.0
+        ghed(kl,1)=0.0
+        xca(kl,1)=0.0
+        xdd(kl,1)=0.0
+        xee(kl,1)=0.0
+        xgcb(kl,1)=0.0
+        xgdd(kl,1)=0.0
+        xgde(kl,1)=0.0
+        xgee(kl,1)=0.0
   510 continue
       do 530 l=1+nm,6,nm
         do 512 k=1,lg
@@ -1072,6 +1074,11 @@ c print ================================================================
         write(nout,1002) nie,cne,coe,nphi
  1002   format(/4x,'# elementary diagram iterations (new/old) = ',i2
      &        ,' (',f3.2,'/',f3.2,')',' nphi = ',i1)
+        if (nio.eq.1) then
+          write(nlog,1004)
+          write(nout,1004)
+ 1004     format(6x,'included in single-operator chains')
+        end if
       end if
       write(nout,1006)
  1006 format(/4x,'j(i:ddf2,edf2,ddp,edp,dep,def2)')
@@ -1088,17 +1095,29 @@ c ------------------------------
 c set three-body force functions
 c ------------------------------
   700 if (nt.eq.0) go to 900
-      if (nt.le.1.or.nt.ge.4) then
-        xmu=.7
+c -----------------------------
+c Urbana / Illinois type forces
+c -----------------------------
+      if (nt.le.1 .or. (nt.ge.4 .and. nt.le.100)) then
+c       xmu=.7                   ! Up to Urbana VIII
+        hc=197.327053
+        xpi0=134.9739
+        xpic=139.5675
+        xpi=(xpi0+2.*xpic)/3.
+        xmu=xpi/hc               ! from Urbana IX on
+c       write(6,"(/4x,'xmu = ',f10.7)") xmu
         do 710 j=1,lmax
           rx=xmu*r(j)
-          rcut=1-exp(-cut*rs(j))
+          rcut=1.0-exp(-cut*rs(j))
           ypi(j)=exp(-rx)*rcut/rx
           tpi(j)=(1+3/rx+3/rx**2)*ypi(j)*rcut
-          rcut0=1-exp(-cut0*rs(j))
+          rcut0=1.0-exp(-cut0*rs(j))
           tpi2(j)=(tpi(j)*(rcut0/rcut)**2)**2
-          xt1(j)=(ypi(j)-tpi(j))*r(j)/3
+          xt1(j)=(ypi(j)-tpi(j))*rx/3
   710   continue
+c -----------------------------------------------
+c Tucson-Melbourne (nt=2) or Brazil (nt=3) forces
+c -----------------------------------------------
       else if (nt.eq.2.or.nt.eq.3) then
         pa=0.1102*(3-nt)+0.1023*(nt-2)
         pb=-0.2517*(3-nt)-0.2230*(nt-2)
@@ -1117,11 +1136,106 @@ c ------------------------------
      &          -.5*xlm*(xlm2-1)*(1+1/rlm)*erlm*rmu
           xt3(j)=ermu-xlm2*erlm-.5*xlm*(xlm2-1)*(1-2/rlm)*erlm*rmu
   720   continue
+c -----------
+c Norfolk EFT
+c -----------
+      else if (nt.gt.100 .and. nt.le.200) then
+        hc=197.32697
+        ga=1.29
+        ha=2.74
+        xpi0=134.9766/hc
+        xpic=139.5702/hc
+        xmu=( xpi0+2.d0*xpic )/3.d0
+        amdn=293.1/hc
+        amp=938.27192d0/hc
+        amn=939.56524d0/hc
+        ampn=(amp+amn)/2.d0
+        fpi=92.40/hc
+        alamchi=1000./hc
+        c1=-0.57*hc/1000.
+        c3=-0.79*hc/1000.
+        c4=1.33*hc/1000.
+        c4=c4+0.25d0/ampn
+c
+        if (nt .eq. 104) then
+          acd=-1.7d0
+          ace=-1.046d0
+        else if(nt .eq. 105) then
+c NVIb
+          acd=-2.061d0
+          ace=-0.982d0
+        else if(nt .eq. 106) then
+c NVIa
+          acd= 3.666d0
+          ace=-1.638d0
+        else if(nt .eq. 109) then
+c NVIIb
+          acd=-4.480d0
+          ace=-0.412d0
+        else if(nt .eq. 110) then
+c NVIIa
+          acd= 1.278d0
+          ace=-1.029d0
+c
+c The * models are obtained fitting triton GT and trinucleon binding
+c energy
+        else if (nt .eq. 115) then
+c NVIb*        
+          acd=-4.705d0
+          ace= 0.550d0
+        else if (nt .eq. 116) then
+c NVIa*         
+          acd=-0.635d0
+          ace=-0.090d0
+        else if (nt .eq. 119) then
+c NVIIb*         
+          acd=-5.250d0
+          ace= 0.050d0
+        else if (nt .eq. 120) then
+c NVIIa*         
+          acd=-0.610d0
+          ace=-0.350d0
+        end if
+        tnia=(ga**2*xmu**6*c3/1152./pi**2/fpi**4
+     x       -ga**2*ha**2*xmu**6/72./144./pi**2/amdn/fpi**4)*hc
+        tnic=(-ga**2*xmu**6*c4/2304./pi**2/fpi**4
+     x        -ga**2*ha**2*xmu**6/288./144./pi**2/amdn/fpi**4)*hc
+        tniu=(ace/alamchi/fpi**4)*hc
+        tnis=(ga**2*xmu**6*c1/32./pi**2/fpi**4)*hc/18.
+        tnix=(ga*xmu**3*acd/96./pi/alamchi/fpi**4)*hc
+c
+        if (nt.eq.101 .or. nt.eq.107 .or. nt.eq.108) then
+          rcf =0.8d0
+          rcf1=0.6d0
+        else if (nt .eq.102 .or. nt .eq. 104 .or.
+     x           nt .eq.105 .or. nt .eq. 109 .or.
+     x           nt .eq.111 .or. nt .eq. 112 .or.
+     x           nt .eq.113 .or.
+     x           nt .eq.115 .or. nt .eq. 119)  then
+          rcf =1.d0
+          rcf1=0.7d0
+        else if (nt.eq.103 .or.
+     x           nt.eq.106 .or. nt.eq.110 .or.
+     x           nt.eq.116 .or. nt.eq.120) then
+           rcf =1.2d0
+           rcf1=0.8d0
+        endif        
+        ann=1./pi/dsqrt(pi)/rcf1**3
+        acf=rcf/2.
+        do 725 j=1,lmax
+          fshort=ann*exp(-(r(j)/rcf1)**2)
+          flong=1.-1./( ( r(j)/rcf )**6*dexp( ( r(j)-rcf )/acf )+1. )
+          rmu=xmu*r(j)
+          ypi(j)=exp(-rmu)/rmu*flong
+          tpi(j)=(1.+3./rmu+3./rmu**2)*ypi(j)
+          xt1(j)=(ypi(j)-tpi(j))*rmu/3
+          tpi2(j)=fshort
+  725   continue
       end if
 c -------------------------------
 c calculate effective two-body v3
 c -------------------------------
-      if (nt.ge.4) go to 900
+      if (nt.ge.4 .and. nt.le.100) go to 900
       do 730 i=1,l3
         xgdd(i,1)=f(i,1)**2*gx(i)
         xgde(i,1)=xgdd(i,1)*gy(i)
@@ -1134,10 +1248,11 @@ c -------------------------------
           eij=ei*r(j)
           ka=iabs(i-j)+1
           kb=min(i+j-1,l3)
-c ---------
-c urbana v3
-c ---------
-          if (nt.eq.1) then
+c ------------------------------
+c urbana v3 & norfolk EFT
+c Eqs.(C.1-2) NPA 401, 59 (1983)
+c ------------------------------
+          if (nt.eq.1 .or. nt.gt.100) then
 cdir$ ivdep
           do 750 k=ka,kb
             eijk=eij*r(k)
@@ -1149,28 +1264,29 @@ cdir$ ivdep
             xj=1.5*y**2-.5
             xk=1.5*x**2-.5
             xijk=-4.5*x*y*z-1.5*(x**2+y**2+z**2)+1
-            v3st(n3s)=4*tnia*(ypi(j)*ypi(k)+tpi(j)*tpi(k)*xi)
-            v3st(n3t)=4*tnia*(ypi(j)*tpi(k)*xj+tpi(j)*ypi(k)*xk
-     &                       +tpi(j)*tpi(k)*xijk)
-            do 740 l=n3s,n3t,2
-              v3dd(i,l,1)=v3dd(i,l,1)+v3st(l)*udd(j,k,1,1)
-              v3de(i,l,1)=v3de(i,l,1)+v3st(l)*ude(j,k,1,1)
-              v3ee(i,l,1)=v3ee(i,l,1)+v3st(l)*uee(j,k,1,1)
-              v3cc(i,l,1)=v3cc(i,l,1)+v3st(l)*eijk*xgcc(j)*xgcc(k)
-  740       continue
+c ------------
+c p-wave parts
+c ------------
+            v3st(n3s,1)=4*tnia*(ypi(j)*ypi(k)+tpi(j)*tpi(k)*xi)
+            v3st(n3t,1)=4*tnia*(ypi(j)*tpi(k)*xj+tpi(j)*ypi(k)*xk
+     &                         +tpi(j)*tpi(k)*xijk)
 c ------------
 c s-wave parts
 c ------------
-            if (tnix.eq.0.) go to 750
-            pap=tnix*xt1(j)*xt1(k)/z
-            v3st(n3s)=pap*(xi+1)
-            v3st(n3t)=pap*(xijk+xj+xk)
-            do 745 l=n3s,n3t,2
-              v3dd(i,l,2)=v3dd(i,l,2)+v3st(l)*udd(j,k,1,1)
-              v3de(i,l,2)=v3de(i,l,2)+v3st(l)*ude(j,k,1,1)
-              v3ee(i,l,2)=v3ee(i,l,2)+v3st(l)*uee(j,k,1,1)
-              v3cc(i,l,2)=v3cc(i,l,2)+v3st(l)*eijk*xgcc(j)*xgcc(k)
-  745       continue
+            v3st(n3s,2)=4*tnis*xt1(j)*xt1(k)*(xi+1)/z
+            v3st(n3t,2)=4*tnis*xt1(j)*xt1(k)*(xijk+xj+xk)/z
+c -------------
+c cD-like parts
+c -------------
+            v3st(n3s,3)=tnix*ypi(i)*(tpi2(j)+tpi2(k))
+            v3st(n3t,3)=tnix*tpi(i)*(tpi2(j)+tpi2(k))
+c -------------
+            do 740 l=n3s,n3t,2
+              v3dd(i,l,:)=v3dd(i,l,:)+v3st(l,:)*udd(j,k,1,1)
+              v3de(i,l,:)=v3de(i,l,:)+v3st(l,:)*ude(j,k,1,1)
+              v3ee(i,l,:)=v3ee(i,l,:)+v3st(l,:)*uee(j,k,1,1)
+              v3cc(i,l,:)=v3cc(i,l,:)+v3st(l,:)*eijk*xgcc(j)*xgcc(k)
+  740       continue
   750     continue
 c -------------------
 c tucson-melbourne v3
@@ -1187,29 +1303,26 @@ cdir$ ivdep
             xj=1.5*y**2-.5
             xk=1.5*x**2-.5
             xijk=-4.5*x*y*z-1.5*(x**2+y**2+z**2)+1
-            v3st(n3s)=pb*(xt3(j)*xt3(k)+xt2(j)*xt2(k)*xi)
-            v3st(n3t)=pb*(xt3(j)*xt2(k)*xj+xt2(j)*xt3(k)*xk
-     &                   +xt2(j)*xt2(k)*xijk)
-            do 760 l=n3s,n3t,2
-              v3dd(i,l,1)=v3dd(i,l,1)+v3st(l)*udd(j,k,1,1)
-              v3de(i,l,1)=v3de(i,l,1)+v3st(l)*ude(j,k,1,1)
-              v3ee(i,l,1)=v3ee(i,l,1)+v3st(l)*uee(j,k,1,1)
-              v3cc(i,l,1)=v3cc(i,l,1)+v3st(l)*eijk*xgcc(j)*xgcc(k)
-  760       continue
+c ------------
+c p-wave parts
+c ------------
+            v3st(n3s,1)=pb*(xt3(j)*xt3(k)+xt2(j)*xt2(k)*xi)
+            v3st(n3t,1)=pb*(xt3(j)*xt2(k)*xj+xt2(j)*xt3(k)*xk
+     &                     +xt2(j)*xt2(k)*xijk)
 c ------------
 c s-wave parts
 c ------------
-            if (tnix.eq.0.) go to 770
             pac=((pa-2*pc)*xt1(j)*xt1(k)
      &         +pc*(xt0(j)*xt1(k)+xt1(j)*xt0(k)))/z
-            v3st(n3s)=pac*(xi+1)
-            v3st(n3t)=pac*(xijk+xj+xk)
-            do 765 l=n3s,n3t,2
-              v3dd(i,l,2)=v3dd(i,l,2)+v3st(l)*udd(j,k,1,1)
-              v3de(i,l,2)=v3de(i,l,2)+v3st(l)*ude(j,k,1,1)
-              v3ee(i,l,2)=v3ee(i,l,2)+v3st(l)*uee(j,k,1,1)
-              v3cc(i,l,2)=v3cc(i,l,2)+v3st(l)*eijk*xgcc(j)*xgcc(k)
-  765       continue
+            v3st(n3s,2)=pac*(xi+1)
+            v3st(n3t,2)=pac*(xijk+xj+xk)
+c -------------
+            do 760 l=n3s,n3t,2
+              v3dd(i,l,:)=v3dd(i,l,:)+v3st(l,:)*udd(j,k,1,1)
+              v3de(i,l,:)=v3de(i,l,:)+v3st(l,:)*ude(j,k,1,1)
+              v3ee(i,l,:)=v3ee(i,l,:)+v3st(l,:)*uee(j,k,1,1)
+              v3cc(i,l,:)=v3cc(i,l,:)+v3st(l,:)*eijk*xgcc(j)*xgcc(k)
+  760       continue
   770     continue
           end if
   780   continue
@@ -1226,8 +1339,9 @@ c --------------------------
           kb=min(i+j-1,le)
 c ---------
 c urbana v3
+c & norfolk EFT
 c ---------
-          if (nt.eq.1) then
+          if (nt.eq.1 .or. nt.gt.100) then
 cdir$ ivdep
           do 850 k=ka,kb                         ! r23
             eijk=eij*r(k)
@@ -1241,14 +1355,28 @@ cdir$ ivdep
             xj=1.5*y**2-.5
             xk=1.5*x**2-.5
             xijk=-4.5*x*y*z-1.5*(x**2+y**2+z**2)+1
-            v3st(n3s)=4*tnia*(ypi(j)*ypi(k)+tpi(j)*tpi(k)*xi)
-            v3st(n3t)=4*tnia*(ypi(j)*tpi(k)*xj+tpi(j)*ypi(k)*xk
-     &                       +tpi(j)*tpi(k)*xijk)
+c ------------
+c p-wave parts
+c ------------
+            v3st(n3s,1)=4*tnia*(ypi(j)*ypi(k)+tpi(j)*tpi(k)*xi)
+            v3st(n3t,1)=4*tnia*(ypi(j)*tpi(k)*xj+tpi(j)*ypi(k)*xk
+     &                         +tpi(j)*tpi(k)*xijk)
+c ------------
+c s-wave parts
+c ------------
+            v3st(n3s,2)=4*tnis*xt1(j)*xt1(k)*(xi+1)/z
+            v3st(n3t,2)=4*tnis*xt1(j)*xt1(k)*(xijk+xj+xk)/z
+c -------------
+c cD-like parts
+c -------------
+            v3st(n3s,3)=tnix*ypi(i)*(tpi2(j)+tpi2(k))
+            v3st(n3t,3)=tnix*tpi(i)*(tpi2(j)+tpi2(k))
+c -------------
             do 840 l=n3s,n3t,2
-              v3dd(i,l,1)=v3dd(i,l,1)+v3st(l)*eijk*
+              v3dd(i,l,:)=v3dd(i,l,:)+v3st(l,:)*eijk*
      &              ( sddd(ijk)*xgdd(j,1)*(xgdd(k,1)+2*xgde(k,1))
      &               +sdde(ijk)*xgdd(j,1)*xgdd(k,1) )
-              v3de(i,l,1)=v3de(i,l,1)+v3st(l)*eijk*
+              v3de(i,l,:)=v3de(i,l,:)+v3st(l,:)*eijk*
      &              ( sddd(ijk)*(xgdd(j,1)*(xgde(k,1)+xgee(k,1))
      &                          +xgde(j,1)*xgde(k,1))
      &               +sdde(jik)*(xgdd(j,1)*(xgdd(k,1)+xgde(k,1))
@@ -1256,7 +1384,7 @@ cdir$ ivdep
      &               +sdde(ijk)*xgdd(j,1)*xgde(k,1)
      &               +sdee(ijk)*xgdd(j,1)*xgdd(k,1)
      &          -2*nu*sccd(kji)*xgdd(j,1)*xgcc(k) )
-              v3ee(i,l,1)=v3ee(i,l,1)+v3st(l)*eijk*
+              v3ee(i,l,:)=v3ee(i,l,:)+v3st(l,:)*eijk*
      &              ( sddd(ijk)*xgde(j,1)*(xgde(k,1)+2*xgee(k,1))
      &             +2*sdde(jik)*(xgde(j,1)*(xgdd(k,1)+xgde(k,1))
      &                          +xgee(j,1)*xgdd(k,1))
@@ -1267,9 +1395,9 @@ cdir$ ivdep
      &       -2*nu*(2*sccd(kji)*xgde(j,1)*xgcc(k)
      &             +2*scce(kji)*xgdd(j,1)*xgcc(k)
      &               +sccd(ijk)*xgcc(j)*xgcc(k)) )
-              v3cc(i,l,1)=v3cc(i,l,1)+v3st(l)*eijk*
-     &            ( 2*sddd(ijk)*xgcc(j)*xgcc(k)
-     &             +2*sccd(kji)*xgcc(j)*xgdd(k,1) )
+              v3cc(i,l,:)=v3cc(i,l,:)+v3st(l,:)*eijk*
+     &              ( 2*sddd(ijk)*xgcc(j)*xgcc(k)
+     &               +2*sccd(kji)*xgcc(j)*xgdd(k,1) )
   840       continue
   850     continue
 c -------------------
@@ -1289,24 +1417,33 @@ cdir$ ivdep
             xj=1.5*y**2-.5
             xk=1.5*x**2-.5
             xijk=-4.5*x*y*z-1.5*(x**2+y**2+z**2)+1
+c ------------
+c p-wave parts
+c ------------
+            v3st(n3s,1)=pb*(xt3(j)*xt3(k)+xt2(j)*xt2(k)*xi)
+            v3st(n3t,1)=pb*(xt3(j)*xt2(k)*xj+xt2(j)*xt3(k)*xk
+     &                     +xt2(j)*xt2(k)*xijk)
+c ------------
+c s-wave parts
+c ------------
             pac=((pa-2*pc)*xt1(j)*xt1(k)
      &         +pc*(xt0(j)*xt1(k)+xt1(j)*xt0(k)))/z
-            v3st(n3s)=pb*(xt3(j)*xt3(k)+xt2(j)*xt2(k)*xi)+pac*(xi+1)
-            v3st(n3t)=pb*(xt3(j)*xt2(k)*xj+xt2(j)*xt3(k)*xk
-     &                   +xt2(j)*xt2(k)*xijk)+pac*(xijk+xj+xk)
+            v3st(n3s,2)=pac*(xi+1)
+            v3st(n3t,2)=pac*(xijk+xj+xk)
+c -------------
             do 860 l=n3s,n3t,2
-              v3dd(i,l,1)=v3dd(i,l,1)+v3st(l)*eijk*
+              v3dd(i,l,:)=v3dd(i,l,:)+v3st(l,:)*eijk*
      &              ( sddd(ijk)*xgdd(j,1)*(xgdd(k,1)+2*xgde(k,1))
      &               +sdde(ijk)*xgdd(j,1)*xgdd(k,1) )
-              v3de(i,l,1)=v3de(i,l,1)+v3st(l)*eijk*
+              v3de(i,l,:)=v3de(i,l,:)+v3st(l,:)*eijk*
      &              ( sddd(ijk)*(xgdd(j,1)*(xgde(k,1)+xgee(k,1))
      &                            +xgde(j,1)*xgde(k,1))
      &               +sdde(jik)*(xgdd(j,1)*(xgdd(k,1)+xgde(k,1))
      &                            +xgde(j,1)*xgdd(k,1))
      &               +sdde(ijk)*xgdd(j,1)*xgde(k,1)
-     &               +sdee(ijk)*xgdd(j,1)*xgdd(k,1)
+     &               +sdee(ijk)*xgdd(j,1)*xgdd(k,1) ! kji ?
      &          -2*nu*sccd(kji)*xgdd(j,1)*xgcc(k) )
-              v3ee(i,l,1)=v3ee(i,l,1)+v3st(l)*eijk*
+              v3ee(i,l,:)=v3ee(i,l,:)+v3st(l,:)*eijk*
      &              ( sddd(ijk)*xgde(j,1)*(xgde(k,1)+2*xgee(k,1))
      &             +2*sdde(jik)*(xgde(j,1)*(xgdd(k,1)+xgde(k,1))
      &                            +xgee(j,1)*xgdd(k,1))
@@ -1317,7 +1454,7 @@ cdir$ ivdep
      &       -2*nu*(2*sccd(kji)*xgde(j,1)*xgcc(k)
      &             +2*scce(kji)*xgdd(j,1)*xgcc(k)
      &               +sccd(ijk)*xgcc(j)*xgcc(k)) )
-              v3cc(i,l,1)=v3cc(i,l,1)+v3st(l)*eijk*
+              v3cc(i,l,:)=v3cc(i,l,:)+v3st(l,:)*eijk*
      &              ( 2*sddd(ijk)*xgcc(j)*xgcc(k)
      &               +2*sccd(kji)*xgcc(j)*xgdd(k,1) )
   860       continue

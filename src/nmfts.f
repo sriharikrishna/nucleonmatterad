@@ -6,13 +6,15 @@ c **********************************************************************
       subroutine nmfts(lc,ls,lt,ll,lf,no,np,nt,nv)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
-c
+c params.f sets nm (=1 for nuclear, =2 for neutron) 
+c            lgrid (maximum dimension for r-space arrays)
       include "nclude/params.f"
       parameter (ngrid=(20*lgrid+1))
       parameter (nlog=0,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
      &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
      &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
@@ -23,30 +25,26 @@ c
       common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
       real*8 rx(ngrid),slx(ngrid),slpx(ngrid),sldpx(ngrid),sltpx(ngrid)
       common /hotfun/ rx,slx,slpx,sldpx,sltpx
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
+      real*8 u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
+      common /tbcnst/ u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
       real*8 rr,vv(22),vp(12),vw(10),rv(6)
       real*8 rix(ngrid),rsx(ngrid),slsx(ngrid),slpsx(ngrid),
      & chi(ngrid),phir(10,ngrid),pm(8,ngrid),psi(8,ngrid),vx(14,ngrid),
      & rlm(8,ngrid),rlx(2,ngrid),ets(2,2),c(3,8),ca(3,8),blm(8)
-c      data ets/4*0./
-      ets(1,1) = 0.
-      ets(1,2) = 0.
-      ets(2,1) = 0.
-      ets(2,2) = 0.
       rt2=sqrt(2.)
       rt5=sqrt(5.)
       lfh=lf/2
       ltx=lf*lt
       h=dt/float(ltx)
       if (np.le.100) then
-        gam=1. ; del=1. ; xmn=1. ; chi=1. ; omg=1. ; ftp=1.
+        gam=1. ; del=1. ; xmn=1. ; chj=1. ; omg=1. ; ftp=1.
         if (nt.ge.4) then
           gam=tniu
           del=rho
         end if
-        call setpot(np,xmn,gam,del,chi(1),omg,ftp,h2m,h2mcs)
+        call setpot(np,xmn,gam,del,chj,omg,ftp,h2m,h2mcs)
       else if (np.gt.100 .and. np.le.200) then
         call setpot_chiral(np,h2m,h2mcs)
       end if
@@ -121,12 +119,12 @@ c   --------------------
           vx(6,i)=atn*(vv(5)-3*vv(6))
           vx(7,i)=als*(vv(7)+vv(8))
           vx(8,i)=als*(vv(7)-3*vv(8))
-          vx(9,i)=acn*vv(9)+ast*(vv(10)-3*(vv(11)+vv(12)))
-          vx(10,i)=acn*vv(9)-3*ast*(vv(10)+vv(11)-3.*vv(12))
-          vx(11,i)=acn*vv(9)+ast*(vv(10)+vv(11)+vv(12))
-          vx(12,i)=acn*vv(9)+ast*(vv(11)-3*(vv(10)+vv(12)))
-          vx(13,i)=acn*(vv(13)+vv(14))
-          vx(14,i)=acn*(vv(13)-3*vv(14))
+          vx(9,i)=al2*vv(9)+ast*(vv(10)-3*(vv(11)+vv(12)))
+          vx(10,i)=al2*vv(9)-3*ast*(vv(10)+vv(11)-3.*vv(12))
+          vx(11,i)=al2*vv(9)+ast*(vv(10)+vv(11)+vv(12))
+          vx(12,i)=al2*vv(9)+ast*(vv(11)-3*(vv(10)+vv(12)))
+          vx(13,i)=als2*(vv(13)+vv(14))
+          vx(14,i)=als2*(vv(13)-3*vv(14))
         else if (nm.eq.2) then
           vx(1,i)=acn*(vv(1)+vv(2)+2*(vv(15)-vv(19)))
      &         -3*ast*(vv(3)+vv(4)+2*vv(16))
@@ -134,9 +132,9 @@ c   --------------------
      &           +ast*(vv(3)+vv(4)+2*vv(16))
           vx(5,i)=atn*(vv(5)+vv(6)+2*vv(17))
           vx(7,i)=als*(vv(7)+vv(8)+2*vv(18))
-          vx(9,i)=acn*(vv(9)+vv(10))-3*ast*(vv(11)+vv(12))
-          vx(11,i)=acn*(vv(9)+vv(10))+ast*(vv(11)+vv(12))
-          vx(13,i)=acn*(vv(13)+vv(14))
+          vx(9,i)=al2*(vv(9)+vv(10))-3*ast*(vv(11)+vv(12))
+          vx(11,i)=al2*(vv(9)+vv(10))+ast*(vv(11)+vv(12))
+          vx(13,i)=als2*(vv(13)+vv(14))
         end if
         if (nm.eq.1) then
           pm(2,i)=pm(3,i)
@@ -179,9 +177,10 @@ c   ---------------------------
         kp=9-k
         kq=k+8
         blm(k)=0.
-        small=1.e-10
+        small=1.e-9
         lcx=lf*lc
-        if (k.eq.2) lcx=lf*ls
+c       if (k.eq.2) lcx=lf*ls
+        if (k.eq.2) lcx=lf*ll
         do 140 loop=1,20
           do 110 i=1,lcx
             rlm(k,i)=blm(k)
@@ -210,14 +209,16 @@ c   ---------------------------
             blmo=blm(k)
             blm(k)=(-1.)**k
           else
-            if (abs(dldifo-dldif).le.small) go to 170
+            if (abs(dldifo-dldif).le.small) exit
             blmn=(dldifo*blm(k)-dldif*blmo)/(dldifo-dldif)
             dldifo=dldif
             blmo=blm(k)
             blm(k)=blmn
+c           blm(k)=.5*(blmn+blmo)
           end if
+c         write(6,*) k,loop,blmo,blmn,blm(k)
   140   continue
-  170   fac=phir(k,lcx)/psi(k,lcx)
+        fac=phir(k,lcx)/psi(k,lcx)
         do 180 j=1,lcx
           psi(k,j)=fac*psi(k,j)
   180   continue
@@ -256,7 +257,14 @@ c -----------------------------
         do 205 i=llx+1,ltx+1
           rlm(n,i)=vx(n,i)-.5*vx(kbb,i)
   205   continue
-        do 500 iloop=1,10
+        do 500 iloop=1,20
+c --------------------------
+c set convergence parameters
+c --------------------------
+          lcon=0
+          blmc=blm(l)
+          blmt=blm(m)
+          blmb=blm(n)
 c ---------------
 c central channel
 c ---------------
@@ -327,18 +335,29 @@ c ---------------
               blmo=blm(l)
               blm(l)=blmo+(-1.)**(l-1)
             else
-              if (abs(dldifo-dldif).le.small) go to 290
+              if (abs(dldifo-dldif).le.small) exit
               blmn=(dldifo*blm(l)-dldif*blmo)/(dldifo-dldif)
               dldifo=dldif
               blmo=blm(l)
               blm(l)=blmn
+c             blm(l)=.5*(blmn+blmo)
             end if
+c           write(6,*) iloop,l,loop,blmo,blmn,blm(l)
   240     continue
-  290     psi(l,lcx+1)=phir(l,lcx+1)
+          if (abs(blm(l)-blmc).le.small) lcon=lcon+1
+c         write(6,*) iloop,l,loop,lcon,abs(blm(l)-blmc)
+          psi(l,lcx+1)=phir(l,lcx+1)
 c --------------
 c tensor channel
 c --------------
-          if (nv.le.4) go to 500
+          if (nv.le.4) then
+            if (lcon.eq.1) then
+              exit
+            else
+              go to 500
+            end if
+          end if
+c         if (nv.le.4) go to 500
           do 360 loop=1,20
             do 310 i=lcx+1,ltx+1
               xft=psi(m,i)/phir(m,i)
@@ -419,18 +438,32 @@ c --------------
               blmo=blm(m)
               blm(m)=blmo+(-1.)**(l-1)
             else
-              if (abs(dldifo-dldif).le.small) go to 390
+              if (abs(dldifo-dldif).le.small) exit
               blmn=(dldifo*blm(m)-dldif*blmo)/(dldifo-dldif)
               dldifo=dldif
               blmo=blm(m)
               blm(m)=blmn
+c             blm(m)=.5*(blmn+blmo)
             end if
+c           write(6,*) iloop,m,loop,blmo,blmn,blm(m)
   360     continue
-  390     psi(m,ltx+1)=0.
+          if (abs(blm(m)-blmt).le.small) lcon=lcon+1
+c         write(6,*) iloop,m,loop,lcon,abs(blm(m)-blmt)
+          psi(m,ltx+1)=0.
 c ------------------
 c spin-orbit channel
 c ------------------
-          if (nv.le.6) go to 500
+c test to turn off ls correlation first
+c         if (nv.le.6 .or. bls.eq.0.) then
+c ------------------
+          if (nv.le.6) then
+            if (lcon.eq.2) then
+              exit
+            else
+              go to 500
+            end if
+          end if
+c         if (nv.le.6) go to 500
           do 460 loop=1,20
             do 410 i=lcx+1,ltx+1
               xft=psi(m,i)/phir(m,i)
@@ -505,14 +538,19 @@ c ------------------
               blmo=blm(n)
               blm(n)=blmo+(-1)**k
             else
-              if (abs(dldifo-dldif).le.small) go to 490
+              if (abs(dldifo-dldif).le.small) exit
               blmn=(dldifo*blm(n)-dldif*blmo)/(dldifo-dldif)
               dldifo=dldif
               blmo=blm(n)
               blm(n)=blmn
+c             blm(n)=.5*(blmn+blmo)
             end if
+c           write(6,*) iloop,n,loop,blmo,blmn,blm(n)
   460     continue
-  490     psi(n,llx+1)=0.
+          if (abs(blm(n)-blmb).le.small) lcon=lcon+1
+c         write(6,*) iloop,n,loop,lcon,abs(blm(n)-blmb)
+          psi(n,llx+1)=0.
+          if (lcon.eq.3) exit
   500   continue
   510 continue
 c print ================================================================
@@ -542,6 +580,7 @@ c ======================================================================
 c -------------------
 c projections for r<d
 c -------------------
+      ets(:,:)=0.
   520 do 690 i=1,lt
         j=lf*i-lfh
         jp=j+1
@@ -689,9 +728,11 @@ c -------------------
         sldp(i)=sldpy
         sltp(i)=3*(-sldpy*ry+2*slpy-2*(sly+z-2*y/x)/ry
      &   -kf*(y+2*z/x-2*y/xx))/rsy
+        if (i.eq.2*lt) then
+          evx=.25*ets(1,1)+.75*ets(1,2)
+          if (nm.eq.1) evx=.75*evx+.0625*ets(2,1)+.1875*ets(2,2)
+        end if
   790 continue
-      evx=.25*ets(1,1)+.75*ets(1,2)
-      if (nm.eq.1) evx=.75*evx+.0625*ets(2,1)+.1875*ets(2,2)
       e1=.3*h2m*kf**2
       trpidr=2*rho*pi*lf*h
       ets(1,1)=ets(1,1)*trpidr*.25
@@ -706,6 +747,8 @@ c -------------------
       end if
       evx=e2-trpidr*evx
 c write ================================================================
+c note c2(ts) = v(2b)+k(2b) if as=at=al=bs==bt=bl=1
+c cvx is energy contribution from r > 2*dt
       if (no.ge.1) then
         write(nout,954) e1,e2,ets,evx
   954   format (/4x,'c1',4x,'c2(ts)',2x,'c2(10)',2x,'c2(00)',2x,'c2(11)'

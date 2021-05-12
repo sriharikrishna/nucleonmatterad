@@ -4,12 +4,15 @@ c ----------------------------------------------------------------------
       subroutine nmchain(nv,nt,no,lg,l3)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
+c params.f sets nm (=1 for nuclear, =2 for neutron) 
+c            lgrid (maximum dimension for r-space arrays)
       include "nclude/params.f"
       parameter (nu=4/nm)
       parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
      &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
      &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
@@ -30,20 +33,21 @@ c ----------------------------------------------------------------------
      &       grmd(lgrid,6),grme(lgrid,6)
       common /mocfun/ gfdd,gfde,gfed,gfcc,ghdd,ghde,ghed,ghcc,
      &       grdc,grdd,grde,gred,gree,grfc,grfd,grfe,grmd,grme
-      real*8 v3cc(lgrid,6,2),v3dd(lgrid,6,2),v3de(lgrid,6,2),
-     &       v3ee(lgrid,6,2)
+      real*8 v3cc(lgrid,6,3),v3dd(lgrid,6,3),v3de(lgrid,6,3),
+     &       v3ee(lgrid,6,3)
       common /tbpots/ v3cc,v3dd,v3de,v3ee
       real*8 bj(8,6),bk(4,3),bq(6,2),vc(6,3,3),
      &       bcc(lgrid,3),bde(lgrid,3)
       common /sorfun/ bj,bk,bq,vc,bde,bcc
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
+      real*8 u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
+      common /tbcnst/ u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
       real*8 temp,mstar,chmpot,entrpy,ksav,kqav
       common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
       real*8 ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6,
      &       wx(14,10),wcx(8,10),wcdx(8,10),wcmx(8,10),wcrx(8,10),
-     &       w3x(6,4,2)
+     &       w3x(6,4,3)
       common /eblock/ ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6,
      &       wx,wcx,wcdx,wcmx,wcrx,w3x
 c ----------------------------------------------------------------------
@@ -60,10 +64,11 @@ c ----------------------------------------------------------------------
       wpccc=0
       wpcsdd=0
       wpcscc=0
-      w3v0=0
-      w3v1=0
+      w3vs=0
       w3va=0
       w3vc=0
+      w3vu=0
+      w3vx=0
       do 50 kj=1,8*10
         wcx(kj,1)=0
         wcdx(kj,1)=0
@@ -126,7 +131,7 @@ c ----------------------------------------------------------------------
 c ------------------------
 c exchange potential terms
 c ------------------------
-            if (x4.eq.0..and.x5.eq.0..and.x6.eq.0.) go to 521
+            if (x4.eq.0. .and. x5.eq.0. .and. x6.eq.0.) go to 521
             do 520 ir=1,li
               xdd=gx(ir)
               xcc=gl(ir)
@@ -143,15 +148,22 @@ c effective 2-body part of tni
 c ----------------------------
               z3=f(ir,i)*f(ir,k)*xdd*qx*rs(ir)
               w3x(j,4,1)=w3x(j,4,1)
-     &         -z3*(ydd*x4*(v3dd(ir,j,1)*xcc**2/s-2*v3cc(ir,j,1)*xcc)
-     &         -(4*yca*x5-2*ycb*x6)*(v3dd(ir,j,1)*xcc-s*v3cc(ir,j,1)))
+     &         -z3*(ydd*x4*(v3dd(ir,j,1)*xcc**2/nu-2*v3cc(ir,j,1)*xcc)
+     &         -(4*yca*x5-2*ycb*x6)*(v3dd(ir,j,1)*xcc-nu*v3cc(ir,j,1)))
      &         *ve**2
 c -----------
 c s-wave part
 c -----------
               w3x(j,4,2)=w3x(j,4,2)
-     &         -z3*(ydd*x4*(v3dd(ir,j,2)*xcc**2/s-2*v3cc(ir,j,2)*xcc)
-     &         -(4*yca*x5-2*ycb*x6)*(v3dd(ir,j,2)*xcc-s*v3cc(ir,j,2)))
+     &         -z3*(ydd*x4*(v3dd(ir,j,2)*xcc**2/nu-2*v3cc(ir,j,2)*xcc)
+     &         -(4*yca*x5-2*ycb*x6)*(v3dd(ir,j,2)*xcc-nu*v3cc(ir,j,2)))
+     &         *ve**2
+c -------------
+c cD-like parts
+c -------------
+              w3x(j,4,3)=w3x(j,4,3)
+     &         -z3*(ydd*x4*(v3dd(ir,j,3)*xcc**2/nu-2*v3cc(ir,j,3)*xcc)
+     &         -(4*yca*x5-2*ycb*x6)*(v3dd(ir,j,3)*xcc-nu*v3cc(ir,j,3)))
      &         *ve**2
 c ----------------------------
               gnn(ir,j)=gnn(ir,j)+f(ir,i)*f(ir,k)*xdd*(-ydd*x4*xcc**2
@@ -193,6 +205,14 @@ c -----------
      &         *vd**2+2*v3de(ir,j,2)*(1+xde)*vd*vp+v3ee(ir,j,2)*vp**2)
      &         +2*yde*x2*(v3dd(ir,j,2)*(1+xde)*vd*ve+v3de(ir,j,2)*vp*ve)
      &         +yee*x3*v3dd(ir,j,2)*ve**2)
+c -------------
+c cD-like parts
+c -------------
+              w3x(j,3,3)=w3x(j,3,3)
+     &         +z3*(ydd*x1*(v3dd(ir,j,3)*((1+xde)**2+xee)
+     &         *vd**2+2*v3de(ir,j,3)*(1+xde)*vd*vp+v3ee(ir,j,3)*vp**2)
+     &         +2*yde*x2*(v3dd(ir,j,3)*(1+xde)*vd*ve+v3de(ir,j,3)*vp*ve)
+     &         +yee*x3*v3dd(ir,j,3)*ve**2)
 c ----------------------------
               gnn(ir,j)=gnn(ir,j)+f(ir,i)*f(ir,k)*xdd*
      &         (ydd*x1*(vd**2+2*xde*vd*vp+(xde**2+xee)*vp**2)
@@ -268,7 +288,8 @@ cdir$ ivdep
       wvc=wvc+wcx(j,1)+wcx(j,2)+wcx(j,3)+wcx(j,4)+wcx(j,5)
       wvcs=wvcs+wcx(j,6)+wcx(j,7)+wcx(j,8)+wcx(j,9)+wcx(j,10)
       w3va=w3va+w3x(j,1,1)+w3x(j,2,1)+w3x(j,3,1)+w3x(j,4,1)
-      w3v1=w3v1+w3x(j,1,2)+w3x(j,2,2)+w3x(j,3,2)+w3x(j,4,2)
+      w3vs=w3vs+w3x(j,1,2)+w3x(j,2,2)+w3x(j,3,2)+w3x(j,4,2)
+      w3vx=w3vx+w3x(j,1,3)+w3x(j,2,3)+w3x(j,3,3)+w3x(j,4,3)
   550 continue
       do 555 m=1,10
   555 wcjx(m)=.5*(wcjx(m)+wckx(m))
@@ -852,35 +873,51 @@ c print ================================================================
  1290 format(/4x,'wcr:d,e')
       write(nout,1133)
       write(nout,1140) ((wcrx(i,j),i=1,8),wcrkx(j),wcrjx(j),j=1,2)
-      if (nt.ge.1.and.nt.le.3) then
+      if (nt.ge.1.and.nt.le.3 .or. nt.gt.100) then
         d3=dr*float(l3)
-        write(nlog,1300) d3,tnia,tnic,tniu,tnix,cut,cut0
-        write(nout,1300) d3,tnia,tnic,tniu,tnix,cut,cut0
- 1300   format(/4x,'d3',6x,'a',7x,'c',7x,'u',7x,'x',7x,'cut',5x,'cut0'
-     &        ,/f8.3,4f8.4,2f8.3)
+        if (nt.le.3) then
+        write(nlog,1300) d3,tnia,tnic,tnis,tniu,tnix,cut,cut0
+        write(nout,1300) d3,tnia,tnic,tnis,tniu,tnix,cut,cut0
+ 1300   format(/4x,'d3',6x,'tnia',6x,'tnic',6x,'tnis',6x,'tniu',6x
+     &        ,'tnix',6x,'cut',5x,'cut0',/f8.3,5f10.6,2f8.3)
+        else if (nt.gt.100) then
+        write(nlog,1301) d3,tnia,tnic,tnis,tniu,tnix,cut,cut0
+        write(nout,1301) d3,tnia,tnic,tnis,tniu,tnix,cut,cut0
+ 1301   format(/4x,'d3',6x,'tnia',6x,'tnic',6x,'tnis',6x,'tniu',6x
+     &        ,'tnix',6x,'cut',5x,'cut0',/f8.3,3f10.6,f10.3,f10.4,2f8.3)
+        end if
         write(nlog,1305)
         write(nout,1305)
  1305   format(/4x,'w3v(e2b):df,ef,dg,eg')
         write(nlog,1310)
         write(nout,1310)
  1310   format(4x,'c',7x,'t',7x,'s',7x,'st',6x,'tn',6x,'tnt')
-        write(nlog,1150) (w3x(jk,1,1),jk=1,6*4)
-        write(nout,1150) (w3x(jk,1,1),jk=1,6*4)
+        write(nlog,1150) ((w3x(j,k,1),j=1,6),k=1,4)
+        write(nout,1150) ((w3x(j,k,1),j=1,6),k=1,4)
  1150   format(6f8.3)
-        if (tnix.ne.0. .or. nt.eq.2 .or. nt.eq.3) then
+        if (tnis.ne.0. .or. nt.eq.2 .or. nt.eq.3) then
           write(nlog,1315)
           write(nout,1315)
  1315     format(/4x,'w3v(e2b):df,ef,dg,eg - s-wave')
           write(nlog,1310)
           write(nout,1310)
-          write(nlog,1150) (w3x(jk,1,2),jk=1,6*4)
-          write(nout,1150) (w3x(jk,1,2),jk=1,6*4)
+          write(nlog,1150) ((w3x(j,k,2),j=1,6),k=1,4)
+          write(nout,1150) ((w3x(j,k,2),j=1,6),k=1,4)
+        end if
+        if (tnix.ne.0.) then
+          write(nlog,1320)
+          write(nout,1320)
+ 1320     format(/4x,'w3v(e2b):df,ef,dg,eg - cD-type')
+          write(nlog,1310)
+          write(nout,1310)
+          write(nlog,1150) ((w3x(j,k,3),j=1,6),k=1,4)
+          write(nout,1150) ((w3x(j,k,3),j=1,6),k=1,4)
         end if
       end if
-      if (nt.ge.4) then
-        write(nlog,1320) tniu,tnia,tnic
-        write(nout,1320) tniu,tnia,tnic
- 1320   format(/4x,'gam1',4x,'gam2',4x,'gam3',/f8.3,f8.0,f8.1)
+      if (nt.ge.4 .and. nt.le.100) then
+        write(nlog,1325) tniu,tnia,tnic
+        write(nout,1325) tniu,tnia,tnic
+ 1325   format(/4x,'gam1',4x,'gam2',4x,'gam3',/f8.3,f8.0,f8.1)
       end if
   800 ev6=ev6+wvc+wvcs+wvcd+wvcds+wvcm+wvcms+wvcr
       evb=evb+wvcb

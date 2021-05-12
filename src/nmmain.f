@@ -2,17 +2,25 @@ c *id* nmmain **********************************************************
 c main subroutine for calculating properties of nuclear or
 c neutron matter
 c **********************************************************************
-      subroutine nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &                 ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
+c      subroutine nmmain(np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le
+c     &                 ,l3,lk,dor,npi,npf, gint,
+c     & endiff, efree)
+      subroutine nmmain(np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le
+     &                 ,l3,lk,dor,npi,npf, gint,
+     & endiff, efree)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
       include "nclude/params.f"
+c params.f sets nm (=1 for nuclear, =2 for neutron) 
+c            lgrid (maximum dimension for r-space arrays)
       parameter (nu=4/nm)
-      parameter (ngrid=(20*lgrid+1))
       parameter (nlog=0,nin=5,nout=6)
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      logical larya
+      data larya/.false./
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
       real*8 r(lgrid),ri(lgrid),rs(lgrid),sl(lgrid),sls(lgrid),
      &       slp(lgrid),slps(lgrid),sldp(lgrid),sltp(lgrid),
      &       rllp(lgrid),rlssx(lgrid),rsdsl(lgrid)
@@ -26,15 +34,16 @@ c **********************************************************************
      &       gee(lgrid,6),gl(lgrid),gx(lgrid),gy(lgrid),gz(lgrid),
      &       gnn(lgrid,14)
       common /gchain/ gca,gcb,gdd,gde,gee,gl,gx,gy,gz,gnn
-      real*8 v3cc(lgrid,6,2),v3dd(lgrid,6,2),v3de(lgrid,6,2),
-     &       v3ee(lgrid,6,2)
+      real*8 v3cc(lgrid,6,3),v3dd(lgrid,6,3),v3de(lgrid,6,3),
+     &       v3ee(lgrid,6,3)
       common /tbpots/ v3cc,v3dd,v3de,v3ee
       real*8 bj(8,6),bk(4,3),bq(6,2),vc(6,3,3),
      &       bcc(lgrid,3),bde(lgrid,3)
       common /sorfun/ bj,bk,bq,vc,bde,bcc
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
+      real*8 u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
+      common /tbcnst/ u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
       real*8 tpi(lgrid),ypi(lgrid),tpi2(lgrid),
      &       xt0(lgrid),xt1(lgrid),xt2(lgrid),xt3(lgrid)
       common /tbfunc/ tpi,ypi,tpi2,xt0,xt1,xt2,xt3
@@ -46,7 +55,7 @@ c **********************************************************************
       common /parhol/ xph,yph
       real*8 ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6,
      &       wx(14,10),wcx(8,10),wcdx(8,10),wcmx(8,10),wcrx(8,10),
-     &       w3x(6,4,2)
+     &       w3x(6,4,3)
       common /eblock/ ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6,
      &       wx,wcx,wcdx,wcmx,wcrx,w3x
 c ----------------------------------------------------------------------
@@ -78,24 +87,24 @@ c print ================================================================
         write(nout,1015) kf,rho,r0,dc,ds,dt,dl
  1015   format(/4x,'kf',6x,'rho',5x,'r0',6x,'dc',6x,'ds',6x,'dt',6x,'dl'
      &        ,/7f8.3)
-        write(nlog,1016) lc,lt,dcor,dtor,acn,ast,atn,als
-        write(nout,1016) lc,lt,dcor,dtor,acn,ast,atn,als
- 1016   format(/3x,'lc/lt',3x,'dc/r0',3x,'dt/r0',4x,'ac',6x,'as'
-     &         ,6x,'at',6x,'al'/3x,i2,'/',i2,6f8.3)
+        write(nlog,1016) lc,ls,lt,ll,dcor,dtor
+        write(nout,1016) lc,ls,lt,ll,dcor,dtor
+ 1016   format(/3x,'lc/ls',3x,'lt/ll',3x,'dc/r0',3x,'dt/r0'
+     &         /3x,i2,'/',i2,3x,i2,'/',i2,2f8.3)
+        write(nlog,1017) acn,ast,atn,als,al2,als2
+        write(nout,1017) acn,ast,atn,als,al2,als2
+ 1017   format(/3x,'acn',5x,'ast',5x,'atn',5x,'als',5x,'al2',5x,'als2'
+     &         /6f8.3)
       end if
 c ======================================================================
 c -------------------------------------------------------
 c find correlation functions and solve fhnc/soc equations
 c -------------------------------------------------------
-      do 4 irl=1,lgrid*14
-        gnn(irl,1)=0
-        v(irl,1)=0
-    4 continue
-      do 6 irl=1,lgrid*8
-        f(irl,1)=0
-        fp(irl,1)=0
-        fds(irl,1)=0
-    6 continue
+      gnn(:,:)=0
+      v(:,:)=0
+      f(:,:)=0
+      fp(:,:)=0
+      fds(:,:)=0
 c ======================================================================
       call nmfts(lc,ls,lt,ll,lf,no,np,nt,nv)
 c ======================================================================
@@ -106,6 +115,17 @@ c ======================================================================
 c ======================================================================
       if (ns.eq.1) call nmsps(ltd)
 c ======================================================================
+c --------------
+c Fermi gas test
+c --------------
+      if (ns.eq.-1) then
+      do 11 ir=1,lt
+        f(ir,1)=1.
+        fp(ir,1)=0.
+        fds(ir,1)=0.
+   11 continue
+      end if
+c --------------
       do 13 l=1,4,nm
         if (l.eq.1) go to 13
         do 12 ir=1,lt
@@ -124,7 +144,6 @@ c ======================================================================
       if (nv.le.6) go to 20
       do 16 l=7,8,nm
       do 16 ir=1,lt
-c        stop "boo hoo"
         f(ir,l)=bls*f(ir,l)
         fp(ir,l)=bls*fp(ir,l)
         fds(ir,l)=bls*fds(ir,l)
@@ -136,7 +155,7 @@ c print ================================================================
  1030   format(/4x,'dg',6x,'de',6x,'bs',6x,'bt',6x,'bl'/5f8.3)
       end if
 c ======================================================================
-      call nmhnc(lg,le,l3,ni,nie,no,nt,nv)
+      call nmhnc(lg,le,l3,ni,nie,nio,no,nt,nv)
 c ======================================================================
       do 30 ir=1,ltd
         xsq(ir)=ksav*rs(ir)/3
@@ -154,16 +173,10 @@ c -----------------------
 c calculate w0,ws,wf0,wfs
 c -----------------------
    40 x=2*rho*pi*dr
-      do 50 kj=1,14*10
-        wx(kj,1)=0
-   50 continue
-      do 51 j=1,10
-        wkx(j)=0
-        wjx(j)=0
-   51 continue
-      do 52 kj=1,6*4*2
-        w3x(kj,1,1)=0
-   52 continue
+      wx(:,:)=0
+      wkx(:)=0
+      wjx(:)=0
+      w3x(:,:,:)=0
       wv2=0
       wvh=0
       wvs=0
@@ -299,6 +312,15 @@ c -----------
      & +v3ee(ir,j,2)*(1+yee+zee))*xdd*x1
       w3x(j,2,2)=w3x(j,2,2)
      & -z3*(v3dd(ir,j,2)*xcc-2*v3cc(ir,j,2)*gl(ir))*(1+ycc+zcc)*xdd*x2
+c -------------
+c cD-like parts
+c -------------
+      w3x(j,1,3)=w3x(j,1,3)
+     & +z3*(v3dd(ir,j,3)*(1+ydd+zdd+2*xde*(1+yde+zde)
+     & +xee*(1+yee+zee))+2*v3de(ir,j,3)*(1+yde+zde+xde*(1+yee+zee))
+     & +v3ee(ir,j,3)*(1+yee+zee))*xdd*x1
+      w3x(j,2,3)=w3x(j,2,3)
+     & -z3*(v3dd(ir,j,3)*xcc-2*v3cc(ir,j,3)*gl(ir))*(1+ycc+zcc)*xdd*x2
 c ---------------------------
 c pair distribution functions
 c ---------------------------
@@ -423,8 +445,6 @@ c -------------------------------------------------
       end if
       qx=2*x
       if (i.eq.k) qx=x
-c     write(nlog,*) i,j,k,qx,x1,x2
-c     write(nout,*) i,j,k,qx,x1,x2
 c -------------------------------
 c vertex corrections for wsb(bik)
 c -------------------------------
@@ -449,6 +469,7 @@ c -------------------------------
   200 do 205 n=1,4,nm
       y4=.25*(dlj+ad(l,n))
       do 205 mp=1,8,nx
+c following line not in AA
       if (nm.eq.4 .and. mp.eq.3) go to 205
       yc=yc+.5*(ak(n,i,mp)*ak(j,k,mp)+ak(n,k,mp)*ak(i,j,mp))*ab(mp)
      & *((.5*ad(l,mp)+y4)*bj(l,2)+(.25*ad(l,mp)+.5*y4+y3/3)*bj(l,4))
@@ -456,7 +477,7 @@ c -------------------------------
   210 continue
       ydd=2*yd+ye+yb
       yde=2*yd
-      ycc=al2(i,j,k)*yc/x2
+      ycc=abl2(i,j,k)*yc/x2
       if (i.ge.7) go to 215
       ydd=ydd+ye-yb
       ycc=-36*yc/x2
@@ -474,6 +495,9 @@ c --------------------------------------
         xcc=r(ir)*gl(ir)*slp(ir)/nu
         xi=rlss(ir)/nu
         xicc=rlssx(ir)/nu
+c-----------------------------------------------------
+c RBW version
+        if (.not.larya) then
         if (k.ge.7) then
           xbe=bde(ir,2)/xb
           xbc=bcc(ir,2)
@@ -481,10 +505,12 @@ c --------------------------------------
           xbe=(.5*(bde(ir,1)+bde(ir,2))+bde(ir,3))/xb
           xbc=.5*(bcc(ir,1)+bcc(ir,2))+bcc(ir,3)
         end if
+        else
 c-----------------------------------------------------
 c Arya Akmal version uses this instead
-c       xbe=bde(ir,1)/xb
-c       xbc=bcc(ir,1)
+        xbe=bde(ir,1)/xb
+        xbc=bcc(ir,1)
+        end if ! larya
 c-----------------------------------------------------
       else
         xb=1
@@ -828,19 +854,49 @@ c integration for w2q, wsq
 c ------------------------
   309 do 310 ir=1,ltd
       z=f(ir,i)*v(ir,j)*f(ir,k)*qx*rs(ir)
+      xdd=gx(ir)
+      xde=gde(ir,1)
+      xee=gee(ir,1)
+      xc3=1.+2.*xde+xde**2+xee
+      xc4=gl(ir)**2/nu
       if (k.le.6) then
         xq=xsq(ir)
         xqex=rllp(ir)/nu
+        xc1=1.+xde+bde(ir,1)/xq
+        xc2=r(ir)*gl(ir)*slp(ir)/nu+bcc(ir,1)
+        xc0=rllp(ir)/nu
       else
         xq=xqq(ir)
         xqex=rdls(ir)/nu
+        xc1=1.
+        xc2=xqex
+        xc0=xqex
       end if
       wx(j,1)=wx(j,1)+z*(x1*xq+x3)
       wx(j,2)=wx(j,2)-z*(x2*xqex+x4*sls(ir)/nu)
+c-----------------------------------------------------
+c Bob uses this
+c     if (.not.larya) then
       wx(j,5)=wx(j,5)+z*(x1*xq*yd+x3*ytd)
       wx(j,6)=wx(j,6)-z*(x2*xqex*yc+x4*ytc*sls(ir)/nu)
       wx(j,9)=wx(j,9)+.5*z*rs(ir)*yqd
       wx(j,10)=wx(j,10)-.5*z*rs(ir)*yqc*sls(ir)/nu
+c     else
+c-----------------------------------------------------
+c Arya Akmal version uses this instead
+c     wx(j,3)=wx(j,3)+z*(x1*xq*(xc1*xdd-1)+x3*(xdd*xc3-1))
+c     wx(j,4)=wx(j,4)-z*(x2*(xc2*xdd-xc0)+x4*(xc4*xdd-sls(ir)/s))
+c     if(j.eq.13)then
+c     wz(i,k,2)=wz(i,k,2)+0.5*z*(xq*acl2(i,9,k)+ac(i,9,k))
+c    &+(1./6.)*z*(xq*acl2(i,11,k)+ac(i,11,k))
+c     end if
+c     if(j.eq.14)then
+c     wz(i,k,1)=wz(i,k,1)+z*(x1*xq+x3)
+c     wz(i,k,3)=wz(i,k,3)+0.5*z*(xq*acl2(i,10,k)+ac(i,10,k))
+c    &+(1./6.)*z*(xq*acl2(i,12,k)+ac(i,12,k))
+c     end if
+c     end if ! larya
+c-----------------------------------------------------
 c ---------------------------
 c pair distribution functions
 c ---------------------------
@@ -851,6 +907,7 @@ c ---------------------------
   315 continue
   316 continue
       wv2q=wv2q+wx(j,1)+wx(j,2)
+      wvhq=wvhq+wx(j,3)+wx(j,4)
       wvsq=wvsq+wx(j,5)+wx(j,6)
       wvsxq=wvsxq+wx(j,9)+wx(j,10)
   320 continue
@@ -943,10 +1000,10 @@ c ================================
 c ================================
 c calculate u and uf and 3-body part of tni
 c =============================================
-      call nmtbi(lt,lg,le,l3,nie,no,nt)
+      call nmtbi(lt,lg,le,l3,no,nt)
 c =============================================
       if (nt.eq.4) w3va=-tnia*rho**2*exp(-tnic*rho)*(s-1)
-      w3=w3v0+w3v1+w3va+w3vc
+      w3=w3va+w3vc+w3vs+w3vu+w3vx
 c ---------------------
 c electromagnetic terms
 c ---------------------
@@ -1083,6 +1140,20 @@ c print ================================================================
       write(nout,1425) ev2,evm,ek2,ekm,ej2,ejm
  1425 format(/4x,'v(2b)',3x,'v(mb)',3x,'k(2b)',3x,'k(mb)',3x,'j(2b)'
      &,3x,'j(mb)'/6f8.3)
+c -----------
+c APR summary
+c -----------
+      t_2b=(ek2+ej2)/2
+      t_mb=(ekm+ejm)/2
+      vs_2b=wv2
+      vs_mb=ev6-wv2
+      vmd_2b=wv2b+wv2q
+      vmd_mb=evb+evq-vmd_2b
+      write(nlog,1428) rho,tf,t_2b,t_mb,endiff,vs_2b,vs_mb,vmd_2b,vmd_mb
+      write(nout,1428) rho,tf,t_2b,t_mb,endiff,vs_2b,vs_mb,vmd_2b,vmd_mb
+ 1428 format(/4x,'rho',5x,'T_F',5x,'T_2b',4x,'T_mb',4x,'D_T'
+     &       ,4x,'vs_2b',3x,'vs_mb',3x,'vmd_2b',2x,'vmd_mb',/9f8.3)
+c -----------
       write(nlog,1430) energy,endiff,epb,ejf
       write(nout,1430) energy,endiff,epb,ejf
  1430 format(/2x,'energy  endiff    epb     ejf',/4f8.3)

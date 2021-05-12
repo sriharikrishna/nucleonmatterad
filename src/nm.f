@@ -24,18 +24,18 @@ c **********************************************************************
       write(nlog,6) sysdat,timdat
       write(nout,6) sysdat,timdat
     6 format(/80('*')//1x,a50,8x,a20)
-      read(nin,*) maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,n
-      read(nin,*) (scale(i),i=1,n)
+      read(nin,*) maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,ndim
+      read(nin,*) (scale(i),i=1,ndim)
 #if !defined(ONLY_NUCMAT) && !defined(BFGS) && defined(DO_FULLX)
-      do i=n+1, nbdirsmax
+      do i=ndim+1, nbdirsmax
         scale(i) = scale(2)
       end do
 #endif
       read(nin,*) econ,ncon,ntype
-      call nminit(x,n)
+      call nminit(x,ndim)
       if (maxcl1.ge.1) then
-        write(nlog,7) etype(ntype+2),n
-        write(nout,7) etype(ntype+2),n
+        write(nlog,7) etype(ntype+2),ndim
+        write(nout,7) etype(ntype+2),ndim
     7   format(/4x,a4,'energy minimization in',i2,' dimensions')
         if (econ.ne.0.) then
           write(nlog,8) econ,ncon
@@ -43,8 +43,8 @@ c **********************************************************************
     8     format(5x,'with constraint',f6.0,
      &              '*sqrt(sum((1+gint(k))**2))**',i1)
         end if
-        write(nlog,9) tol1,alpha,beta,gamma,tol2,(scale(i),i=1,n)
-        write(nout,9) tol1,alpha,beta,gamma,tol2,(scale(i),i=1,n)
+        write(nlog,9) tol1,alpha,beta,gamma,tol2,(scale(i),i=1,ndim)
+        write(nout,9) tol1,alpha,beta,gamma,tol2,(scale(i),i=1,ndim)
     9   format(5x,'simplex tolerance is',f7.3,' with coefficients of',
      &        /5x,'reflection ',f7.3,' contraction ',f7.3,
      &          ' expansion ',f7.3,
@@ -54,7 +54,7 @@ c **********************************************************************
 #ifndef BFGS
 #ifndef DO_FULLX
         call minimi(maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,scale,x,
-     &              fbest,nucmat,n)
+     &              fbest,nucmat,ndim)
 #else
         call minimi(maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,scale,x,
      &              fbest,nucmat,nbdirsmax)
@@ -62,22 +62,22 @@ c **********************************************************************
 #else
         mbfgs=6
 #ifndef DO_FULLX
-        call sdrive(n,mbfgs,x(1:n),nucmat)
+        call sdrive(ndim,mbfgs,x(1:ndim),nucmat)
 #else
-        call sdrive(nbdirsmax,n,mbfgs,x(1:nbdirsmax),nucmat)
+        call sdrive(nbdirsmax,ndim,mbfgs,x(1:nbdirsmax),nucmat)
 #endif
 #endif
 #else
 #ifdef ALLOW_TAPENADE
 #ifndef DO_FULLX
-      call nucmat(x(1:n),n)
+      call nucmat(x(1:ndim),ndim)
 #else
       call nucmat(x(1:nbdirsmax),nbdirsmax)
 #endif
 #else
       f=0.0
 #ifndef DO_FULLX
-      call nucmat(x(1:n),n,f,.TRUE.)
+      call nucmat(x(1:ndim),ndim,f,.TRUE.)
 #else
       call nucmat(x(1:nbdirsmax),nbdirsmax,0.0,.TRUE.)
 #endif
@@ -85,7 +85,7 @@ c **********************************************************************
 #endif
       end if
 #if !defined (ALLOW_TAPENADE) && !defined (ONLY_NUCMAT)
-      call nmfin(x,n)
+      call nmfin(x,ndim)
 #endif
       timeit=timer(timeit)
       write(nlog,999) timeit
@@ -97,30 +97,33 @@ c **********************************************************************
 c *id* nucmat **********************************************************
 c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
-      subroutine nucmat(x,n,f,lprt)
+      subroutine nucmat(x,ndim,f,lprt)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
       parameter (nlog=0,nin=5,nout=6,nres=7)
       logical lprt
-      real*8 x(n)
+      real*8 x(ndim)
       common /minim/ econ,ncon,ntype
 c
-      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
-      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
-     &       h2m,h2mcs,pi,s
+      real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+      common /consts/ kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
+     &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
 
       real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
      &       as(6),at(8,8),ax(6,6,6)
       common /amatrx/ aa,ab,ad,ae,af,ak,al,as,at,ax
-      real*8 u,uf,up,tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
-      common /tbcnst/ u,uf,up,
-     &       tnia,tnic,tniu,tnix,cut,cut0,w3v0,w3v1,w3va,w3vc
+      real*8 u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
+      common /tbcnst/ u,uf,up,tnia,tnic,tnis,tniu,tnix,cut,cut0,
+     &       w3va,w3vc,w3vs,w3vu,w3vx
       real*8 eav,fsof,plm,qmin,qmax
       common /pionic/ eav,fsof,plm,qmin,qmax
       real*8 temp,mstar,chmpot,entrpy,ksav,kqav
       common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
-      save nmlocal,np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk,
-     &npi,npf,bst,btn,bls,nosave,npisav
+      save nmlocal,np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+c     &,npi,npf,bst,btn,bls,nosave,npisav
+     &,npi,npf,nosave,npisav
 c
       real*8 gint(6)
       character*20 pname(30),tname(0:5),ptnnam
@@ -145,32 +148,33 @@ c
      &          ,' + DD TNR       ',' + DD TNR & TNA '/
 c
       dor=x(1)
-      if (n.ge.2) then
+      if (ndim.ge.2) then
         ast=x(2)
         atn=ast
         als=ast
       end if
-      if (n.eq.4) then
+      if (ndim.ge.4) then
         bst=x(3)
         btn=x(4)
-!#if defined (CASE_SNM)
-        bls=bst
-!#else
-!        bls=0.
-!#endif
+        if (bls.ne.0.) bls=bst
       end if
-      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
+      call nmmain(np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,dor,npi,npf, gint, endiff, efree)
       g2=0.
       do l=1,2,nmlocal
         g2=g2+(gint(l)+1.)**2
       end do
+      cons=econ*sqrt(g2)**ncon
       f=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-       no=0
+c $$$$$$$$$$$$$$$$$$$$$$$
+c NEW stability condition
+c $$$$$$$$$$$$$$$$$$$$$$$
+      f=f+abs(endiff)/2
+      no=0
 #if defined CUSTOM_INPUTS && defined ONLY_NUCMAT
       write(nres,*) f
 #ifndef DO_FULLX
-     & ,(x(i),i=1,n)
+     & ,(x(i),i=1,ndim)
 #else
      &, (x(i),i=1,nbdirsmax)
 #endif
@@ -179,7 +183,7 @@ c
 c ************************
 c entry for initialization
 c ************************
-      entry nminit(x,n)
+      entry nminit(x,ndim)
       pi=acos(-1.)
       do 1 i=1,8
       do 1 j=1,8
@@ -190,12 +194,15 @@ c ************************
 c   ------------------
 c   read in parameters
 c   ------------------
-      read(nin,1001) nmlocal,np,nv,nt,ni,nie,no,ns,lf,
-     & lc,ls,lt,ll,lg,le,l3,lk
+      read(nin,1001) nmlocal,np,nv,nt,ni,nie,nio,no,ns
  1001 format(5x,i3)
-      read(nin,1002) kf,rho,dor,acn,ast,atn,als,bst,btn,bls,cn,cne
+      read(nin,1001) lf,lc,ls,lt,ll,lg,le,l3,lk
+      read(nin,1002) kf,rho,dor
  1002 format(5x,f10.4)
-      read(nin,1002) temp,mstar,tnia,tnic,tniu,tnix,cut,cut0
+      read(nin,1002) acn,ast,atn,als,al2,als2
+      read(nin,1002) bst,btn,bls,cn,cne
+      read(nin,1002) temp,mstar,tnia,tnic,tnis
+      read(nin,1002) tniu,tnix,cut,cut0
       read(nin,1001) npi,npf
       read(nin,1002) eav,fsof,plm,qmin,qmax
       write(nlog,1010) mname(nmlocal)
@@ -209,34 +216,40 @@ c   ------------------
       ptnnam=' '
       if (np.le.100) then
         ptnnam(1:20)=pname(np)
+        write(nlog,1012) ptnnam,tname(nt)
+        write(nout,1012) ptnnam,tname(nt)
+ 1012   format(/4x,2a20)
       else if (np.gt.100 .and. np.le.200) then
-        ptnnam(1:13)='Norfolk v19 #'
-        write(ptnnam(14:16),'(i3)') np
+        ptnnam(1:12)='Norfolk vij '
+        if (nt.gt.100) ptnnam(13:18)='+ Vijk'
+        write(nlog,1014) ptnnam,np
+        write(nout,1014) ptnnam,np
+ 1014   format(/4x,a20,'#',i3)
       end if
-      write(nlog,1012) ptnnam,tname(nt)
-      write(nout,1012) ptnnam,tname(nt)
- 1012 format(/4x,2a20)
       s=float(4/nmlocal)
       x(1)=dor
-      if (n.ge.2) x(2)=ast
-      if (n.eq.4) then
+      if (ndim.ge.2) then
+        x(2)=ast
+      end if
+      if (ndim.ge.4) then
         x(3)=bst
         x(4)=btn
+        if (bls.ne.0.) bls=bst
       end if
       nosave=no
       npisav=npi
       no=1
       npi=0
 #ifdef CUSTOM_INPUTS
-      write(*,*) "N is", n
+      write(*,*) "N is", ndim
 #ifndef DO_FULLX
-      read(nin,*) (x(i),i=1,n)
+      read(nin,*) (x(i),i=1,ndim)
 #if defined (CASE_SNM)
       write(fname,"(A7,2(A1,F19.17),A4)")
-     &"out_snm", ("_",abs(x(i)),i=1,n),".txt"
+     &"out_snm", ("_",abs(x(i)),i=1,ndim),".txt"
 #else
       write(fname,"(A7,4(A1,F19.17),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,n),".txt"
+     &"out_pnm", ("_",abs(x(i)),i=1,ndim),".txt"
 #endif
 #else
       nbdirsmax=7
@@ -255,7 +268,7 @@ c   ------------------
 c *******************
 c entry for final run
 c *******************
-      entry nmfin(x,n)
+      entry nmfin(x,ndim)
       ni=ni+5
       if (nie.gt.0) nie=nie+1
       no=nosave
@@ -268,31 +281,27 @@ c     lg=2*lg
 c     le=2*le
 c     l3=2*l3
       dor=x(1)
-      if (n.ge.2) then
+      if (ndim.ge.2) then
         ast=x(2)
         atn=ast
         als=ast
       end if
-      if (n.eq.4) then
+      if (ndim.eq.5) then
         bst=x(3)
         btn=x(4)
-!#if defined (CASE_SNM)
-        bls=bst
-!#else
-!        bls=0.
-!#endif
+        if (bls.ne.0.) bls=bst
       end if
-      call nmmain(np,nv,nt,ni,nie,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
-     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
+      call nmmain(np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
+     &           ,dor,npi,npf, gint, endiff, efree)
+c     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do 995 l=1,2,nmlocal
   995 g2=g2+(gint(l)+1.)**2
       final=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-      fplus=final+abs(endiff)
-
+      fplus=final+abs(endiff)/2
       write(nlog,1095) final,fplus
       write(nout,1095) final,fplus
- 1095 format(/2x,'final   fplus',/2f8.3)
+ 1095 format(/2x,'econs   eplus',/2f8.3)
       if (no.le.1) go to 999
       call nmout(le,lg,lt,l3,nie,no,nt,nv)
   999 return
