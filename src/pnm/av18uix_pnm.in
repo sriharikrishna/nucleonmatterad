@@ -25,12 +25,12 @@
  acn=1.          central potential quencher
  ast=0.774       spin-isospin potential quencher
  atn=1.          tensor potential quencher
- als=0.351.          spin-orbit potential quencher
+ als=0.351          spin-orbit potential quencher
  al2=1.          l**2 potential quencher
 als2=1.          (l.s)**2 potential quencher
  bst=1.111       spin-isospin correlation modifier
  btn=1.797       tensor correlation modifier
- bls=0.351.          spin-orbit correlation modifier
+ bls=0.351          spin-orbit correlation modifier
   cn=.5          fraction new solution in chains
  cne=.5          fraction new solution in elementary diagrams
 temp=0.          temperature in mev
