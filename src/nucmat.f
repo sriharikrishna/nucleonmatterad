@@ -71,7 +71,7 @@ c
       character*20 timdat
       character*32 mname(4)
       character*50 sysdat
-      character*160 fname
+      character*200 fname
       data mname/'Nuclear matter','Neutron matter'
      &          ,'Not implemented at this time'
      &          ,'Spin-polarized neutron matter'/
@@ -299,8 +299,9 @@ c   ------------------
       write(fname,"(A7,2(A1,F19.17),A4)")
      &"out_snm", ("_",abs(x(i)),i=1,n),".txt"
 #else
-      write(fname,"(A7,4(A1,F19.17),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,n),".txt"
+      write(fname,"(A7,4(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
 #endif
 #else
       read(nin,*) (x(i),i=1,nbdirsmax)
@@ -308,8 +309,9 @@ c   ------------------
       write(fname,"(A7,5(A1,F19.17),A4)")
      &"out_snm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
 #else
-      write(fname,"(A7,5(A1,F19.17),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
+      write(fname,"(A7,5(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
 #endif
 #endif
       open(unit=nres,file=fname,action="WRITE")
