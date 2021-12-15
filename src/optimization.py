@@ -195,9 +195,10 @@ def pnm_4d_objective(x,rho,lc,ls,lt):
     # convert x into strings
     xstr = ["%.17f" % elem for elem in x]
     absxstr = ["%.17f" % elem for elem in np.abs(x)]
+    rhostr = "%.17f" % rho
 
     # write call string
-    callstr = "".join(["./script_nm_pnm_f_only.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3], " ", rho, " ", lc, " ", ls, " ", lt])
+    callstr = "".join(["./script_nm_pnm_f_only.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
 
     # call the call string
     os.system(callstr)
@@ -207,7 +208,7 @@ def pnm_4d_objective(x,rho,lc,ls,lt):
     for j in range(len(xstr)):
         #output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + "_" + str(rho) + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt" #output_file.join([".txt"])
+    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt" #output_file.join([".txt"])
 
     # we read in f and g from the .txt:
 
@@ -228,20 +229,19 @@ def pnm_4d_objective(x,rho,lc,ls,lt):
 def pnm_4d_objective_der(x,rho,lc,ls,lt):
     xstr = ["%.17f" % elem for elem in x]
     absxstr = ["%.17f" % elem for elem in np.abs(x)]
-
+    rhostr = "%.17f" % rho
     # write call string
-    callstr = "".join(["./script_nm_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rho, " ", lc, " ", ls, " ", lt])
+    callstr = "".join(["./script_nm_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
 
-    ## the output was written to out_snm_abs(x(i))....txt
     output_file = "out_pnm"
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-        output_file = output_file + "_" + str(rho) + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
 
-    if not os.path.exists(output_file):
+    #if not os.path.exists(output_file):
         # call the call string
-        os.system(callstr)
+    os.system(callstr)
 
     # we read in f and g from the .txt:
     file = open(output_file)
@@ -268,7 +268,7 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + "_" + str(rho) + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
     remove_string = "rm " + output_file
     os.system(remove_string)
 
@@ -276,7 +276,7 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + "_" + str(rho) + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
+    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
     remove_string = "rm " + output_file
     os.system(remove_string)
 
@@ -294,10 +294,10 @@ def main():
     end_index = int(args[2])
     problem = args[3]
     solver = args[4]
-    rho = args[5]
-    lc = args[6]
-    ls = args[7]
-    lt = args[8]
+    rho = float(args[5])
+    lc = int(args[6])
+    ls = int(args[7])
+    lt = int(args[8])
 
 
     # make clean and make!
@@ -356,7 +356,7 @@ def main():
         elif problem == "pnm4":
             objective = lambda x: pnm_4d_objective(x,rho,lc,ls,lt)
             objective_der = lambda x: pnm_4d_objective_der(x,rho,lc,ls,lt)
-            fg = Funcgradmon(objective, objective_der, filename, rho, lc, ls, lt, verbose=1)
+            fg = Funcgradmon(objective, objective_der, filename, verbose=1)
 
 
         # call LBFGS
