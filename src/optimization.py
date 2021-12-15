@@ -191,13 +191,13 @@ def snm_2d_objective_der(x):
 
     return g
 
-def pnm_4d_objective(x):
+def pnm_4d_objective(x,rho,lc,ls,lt):
     # convert x into strings
     xstr = ["%.17f" % elem for elem in x]
     absxstr = ["%.17f" % elem for elem in np.abs(x)]
 
     # write call string
-    callstr = "".join(["./script_nm_pnm_f_only.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]])
+    callstr = "".join(["./script_nm_pnm_f_only.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3], " ", rho, " ", lc, " ", ls, " ", lt])
 
     # call the call string
     os.system(callstr)
@@ -207,7 +207,7 @@ def pnm_4d_objective(x):
     for j in range(len(xstr)):
         #output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".txt" #output_file.join([".txt"])
+    output_file = output_file + "_" + str(rho) + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt" #output_file.join([".txt"])
 
     # we read in f and g from the .txt:
 
@@ -225,19 +225,19 @@ def pnm_4d_objective(x):
 
     return f
 
-def pnm_4d_objective_der(x):
+def pnm_4d_objective_der(x,rho,lc,ls,lt):
     xstr = ["%.17f" % elem for elem in x]
     absxstr = ["%.17f" % elem for elem in np.abs(x)]
 
     # write call string
-    callstr = "".join(["./script_nm_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3]])
+    callstr = "".join(["./script_nm_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rho, " ", lc, " ", ls, " ", lt])
 
     ## the output was written to out_snm_abs(x(i))....txt
     output_file = "out_pnm"
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".txt"  # output_file.join([".txt"])
+        output_file = output_file + "_" + str(rho) + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
 
     if not os.path.exists(output_file):
         # call the call string
@@ -268,6 +268,7 @@ def pnm_4d_objective_der(x):
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + "_" + str(rho) + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
     remove_string = "rm " + output_file
     os.system(remove_string)
 
@@ -275,7 +276,7 @@ def pnm_4d_objective_der(x):
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".dat"  # output_file.join([".txt"])
+    output_file = output_file + "_" + str(rho) + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
     remove_string = "rm " + output_file
     os.system(remove_string)
 
@@ -293,6 +294,11 @@ def main():
     end_index = int(args[2])
     problem = args[3]
     solver = args[4]
+    rho = args[5]
+    lc = args[6]
+    ls = args[7]
+    lt = args[8]
+
 
     # make clean and make!
     if problem == "snm2" and (solver == "lbfgs" or solver == "scipy_neldermead" or solver == "fd_lbfgs"):
@@ -342,11 +348,15 @@ def main():
             xi = x0 + 0.1*perturbations[i-1,:dim]
 
         # instantiate the Funcgradmon object
-        filename = problem + "_run_starting_at_x" + str(i) + solver + ".npz"
+        filename = problem + "_run_starting_at_x" + str(i) + solver + "_rho=" + str(rho) + "_lc_" + str(lc) + "_ls_" + str(ls) + "_lt_" + str(lt) + ".npz"
+
         if problem == "snm2":
-            fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
+            raise Exception('snm2 is currently not implemented, pending Krishna changes to allow for rho, lc, ls, lt inputs')
+            #fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
         elif problem == "pnm4":
-            fg = Funcgradmon(pnm_4d_objective, pnm_4d_objective_der, filename, verbose=1)
+            objective = lambda x: pnm_4d_objective(x,rho,lc,ls,lt)
+            objective_der = lambda x: pnm_4d_objective_der(x,rho,lc,ls,lt)
+            fg = Funcgradmon(objective, objective_der, filename, rho, lc, ls, lt, verbose=1)
 
 
         # call LBFGS
@@ -387,7 +397,7 @@ def main():
 
         # write the output file
         if solver == "lbfgs":
-            filename = problem + "_run_starting_at_x" + str(i) + "lbfgs.npz"
+            filename = problem + "_rho=" + str(rho) + "_lc=" + str(lc) + "_ls=" + str(ls) + "_lt=" + str(lt) + "_run_starting_at_x" + str(i) + "lbfgs.npz"
             fg.savez(filename, paramstr="...")
         elif solver == "scipy_neldermead":
             filename = problem + "_run_starting_at_x" + str(i) + "scipy_neldermead.npz"
