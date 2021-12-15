@@ -1,4 +1,10 @@
-mkdir -p pnm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=pnm; make CASE=pnm CUSTOM_INPUTS=1 NUCMAT=1
+FILE=./pnm/pnm.x
+if [ -f "$FILE" ]; then
+    echo "$FILE exists. So not compiling"
+else 
+    echo "$FILE does not exist. Compiling"
+    mkdir -p pnm/obj/; make clean; make -f MakefileTapf clean; make prep CASE=pnm; make CASE=pnm CUSTOM_INPUTS=1 NUCMAT=1
+fi
 cat pnm/av18uix_pnm.in >temp_$1_$2_$3_$4_$5_$6_$7_$8.dat
 echo $1 $2 $3 $4 >> temp_$1_$2_$3_$4_$5_$6_$7_$8.dat 
 

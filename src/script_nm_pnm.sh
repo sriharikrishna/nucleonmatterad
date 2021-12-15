@@ -1,4 +1,12 @@
-make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm
+
+FILE=nmadv
+if [ -f "$FILE" ]; then
+    echo "$FILE exists. So not compiling"
+else 
+    echo "$FILE does not exist. Compiling"
+    make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm
+fi
+
 cat pnm/av18uix_pnm.in >temp_$1_$2_$3_$4_$5_$6_$7_$8.dat
 echo $1 $2 $3 $4 >> temp_$1_$2_$3_$4_$5_$6_$7_$8.dat
 
