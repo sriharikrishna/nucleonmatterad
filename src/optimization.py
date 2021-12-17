@@ -26,9 +26,8 @@ class Funcgradmon(object):
     min50 = minimize( fg, x0, jac=True, options=options )
     """
 
-    def __init__( self, func, gradfunc, filename, verbose=1 ):
+    def __init__( self, func, filename, verbose=1 ):
         self.func = func
-        self.gradfunc = gradfunc
         self.verbose = verbose
         self.filename = filename
         self.x, self.f, self.g = [], [], []  # growing lists
@@ -37,8 +36,7 @@ class Funcgradmon(object):
     def __call__( self, x): #( self, x, grad):
         """ f, g = func(x), gradfunc(x); save them; return f, g """
         x = np.asarray_chkfinite( x )  # always
-        f = self.func(x)
-        g = self.gradfunc(x)
+        f,g = self.func(x)
         g = np.asarray_chkfinite( g )
         self.x.append( np.copy(x) )
         self.f.append( _copy( f ))
@@ -257,19 +255,23 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
     g[2] = np.float(line[7])
     g[3] = np.float(line[8])
 
-    # SAFETY:
+    # SAFETY
     if np.isnan(f) or np.isinf(f):
-        #g = 1000*np.ones(4)
+        f = 1e3
+    # SAFETY:
+    if np.any(np.isnan(g)) or np.any(np.isnan(g)):
         g = np.zeros(4)
     remove_string = "rm " + output_file
+    print(remove_string)
     os.system(remove_string)
 
     output_file = "out_tap_all_nucmat_pnm"
     for j in range(len(xstr)):
         # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt)
     remove_string = "rm " + output_file
+    print(remove_string)
     os.system(remove_string)
 
     output_file = "temp"
@@ -278,9 +280,10 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
         output_file = output_file + "_" + absxstr[j]
     output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
     remove_string = "rm " + output_file
+    print(remove_string)
     os.system(remove_string)
 
-    return g
+    return f, g
 
 def main():
     # args:
@@ -301,21 +304,21 @@ def main():
 
 
     # make clean and make!
-    if problem == "snm2" and (solver == "lbfgs" or solver == "scipy_neldermead" or solver == "fd_lbfgs"):
+    #if problem == "snm2" and (solver == "lbfgs" or solver == "scipy_neldermead" or solver == "fd_lbfgs"):
         #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
-        print("ok")
-    elif problem == "snm2" and solver == "neldermead":
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 CASE=snm CUSTOM_INPUTS=1")
+    #    print("ok")
+    #elif problem == "snm2" and solver == "neldermead":
+    #    os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 CASE=snm CUSTOM_INPUTS=1")
         #print("ok")
-    elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead" or solver == "fd_lbfgs"):
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
-        print("ok")
-    elif problem == "pnm4" and solver == "neldermead":
-        os.system( "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")
-        #print("ok")
-    else:
-        raise Exception('invalid problem name {} supplied'.format(problem))
-
+    #elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead" or solver == "fd_lbfgs"):
+    #    os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
+    #    print("ok")
+    #elif problem == "pnm4" and solver == "neldermead":
+    #    os.system( "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")
+    #    #print("ok")
+    #else:
+    #    raise Exception('invalid problem name {} supplied'.format(problem))
+    
     # initial point
     if problem == "snm2":
         x0 = np.array([3.997, 0.796])
@@ -354,9 +357,8 @@ def main():
             raise Exception('snm2 is currently not implemented, pending Krishna changes to allow for rho, lc, ls, lt inputs')
             #fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
         elif problem == "pnm4":
-            objective = lambda x: pnm_4d_objective(x,rho,lc,ls,lt)
-            objective_der = lambda x: pnm_4d_objective_der(x,rho,lc,ls,lt)
-            fg = Funcgradmon(objective, objective_der, filename, verbose=1)
+            objective = lambda x: pnm_4d_objective_der(x,rho,lc,ls,lt)
+            fg = Funcgradmon(objective, filename, verbose=1)
 
 
         # call LBFGS
