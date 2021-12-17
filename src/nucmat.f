@@ -26,24 +26,28 @@ c
        common /consts/ kf,rho,acn,ast,atn,als,al2,als2,
      &bst,btn,bls,
      &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
+#if defined (DO_ALL) && defined (ALLOW_TAPENADE)
+      real*8 kfd(nbdirsmax), rhod(nbdirsmax), acnd(nbdirsmax),
+     & astd(nbdirsmax), atnd(nbdirsmax), alsd(nbdirsmax),
+     & bstd(nbdirsmax), btnd(nbdirsmax),
+     & blsd(nbdirsmax),
+     & cnd(nbdirsmax), cned(nbdirsmax),
+     & dtd(nbdirsmax), drd(nbdirsmax), evxd(nbdirsmax),
+     & h2md(nbdirsmax), h2mcsd(nbdirsmax), pid(nbdirsmax),
+     & sd(nbdirsmax)
+c      real*8 bstd(nbdirsmax), btnd(nbdirsmax),
+c     & blsd(nbdirsmax), dord(nbdirsmax)
+      real*8 dord(nbdirsmax)
+#endif
 #ifdef ALLOW_TAPENADE
 #if defined (DO_ALL)
-      COMMON /consts_dv/ astd, atnd, alsd, dtd, drd, evxd
+      COMMON /consts_dv/ astd, atnd, alsd, bstd, btnd, blsd, dtd, drd, 
+     +evxd
       real*8 xperturb(30,7)
 #else
       common /consts_d/ kfd, rhod, acnd, astd, atnd, alsd, cnd, cned,
      & dtd, drd, evxd, h2md, h2mcsd, pid, sd
 #endif
-#endif
-#if defined (DO_ALL) && defined (ALLOW_TAPENADE)
-      real*8 kfd(nbdirsmax), rhod(nbdirsmax), acnd(nbdirsmax),
-     & astd(nbdirsmax), atnd(nbdirsmax), alsd(nbdirsmax),
-     & cnd(nbdirsmax), cned(nbdirsmax),
-     & dtd(nbdirsmax), drd(nbdirsmax), evxd(nbdirsmax),
-     & h2md(nbdirsmax), h2mcsd(nbdirsmax), pid(nbdirsmax),
-     & sd(nbdirsmax)
-      real*8 bstd(nbdirsmax), btnd(nbdirsmax),
-     & blsd(nbdirsmax), dord(nbdirsmax)
 #endif
       real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
      &       as(6),at(8,8),ax(6,6,6)
