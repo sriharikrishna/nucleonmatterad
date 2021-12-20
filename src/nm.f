@@ -45,11 +45,11 @@ c **********************************************************************
         end if
         write(nlog,9) tol1,alpha,beta,gamma,tol2,(scale(i),i=1,ndim)
         write(nout,9) tol1,alpha,beta,gamma,tol2,(scale(i),i=1,ndim)
-    9   format(5x,'simplex tolerance is',f7.3,' with coefficients of',
-     &        /5x,'reflection ',f7.3,' contraction ',f7.3,
-     &          ' expansion ',f7.3,
-     &        /5x,'quadratic tolerance is',f7.3,
-     &        /5x,'scale factors are',5f7.3)
+    9   format(5x,'simplex tolerance is',f6.2,' with coefficients of',
+     &        /5x,'reflection ',f6.2,' contraction ',f6.2,
+     &          ' expansion ',f6.2,
+     &        /5x,'quadratic tolerance is',f6.2,
+     &        /5x,'scale factors are',9f6.2)
 #ifndef ONLY_NUCMAT
 #ifndef BFGS
 #ifndef DO_FULLX
@@ -120,6 +120,8 @@ c
       real*8 eav,fsof,plm,qmin,qmax
       common /pionic/ eav,fsof,plm,qmin,qmax
       real*8 temp,mstar,chmpot,entrpy,ksav,kqav
+      character*24 nffile
+      common /files/ nffile
       common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
       save nmlocal,np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
 c     &,npi,npf,bst,btn,bls,nosave,npisav
@@ -148,15 +150,33 @@ c
      &          ,' + DD TNR       ',' + DD TNR & TNA '/
 c
       dor=x(1)
-      if (ndim.ge.2) then
+      if (ndim.eq.2) then
         ast=x(2)
         atn=ast
         als=ast
-      end if
-      if (ndim.ge.4) then
+      else if (ndim.eq.4) then
+        ast=x(2)
+        atn=ast
+        als=ast
         bst=x(3)
         btn=x(4)
         if (bls.ne.0.) bls=bst
+      else if (ndim.eq.7) then
+        ast=x(2)
+        atn=x(3)
+        als=x(4)
+        bst=x(5)
+        btn=x(6)
+        bls=x(7)
+      else if (ndim.eq.9) then
+        ast=x(2)
+        atn=x(3)
+        als=x(4)
+        al2=x(5)
+        als2=x(6)
+        bst=x(7)
+        btn=x(8)
+        bls=x(9)
       end if
       call nmmain(np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,npi,npf, gint, endiff, efree)
@@ -205,6 +225,8 @@ c   ------------------
       read(nin,1002) tniu,tnix,cut,cut0
       read(nin,1001) npi,npf
       read(nin,1002) eav,fsof,plm,qmin,qmax
+      if (ns.eq.3) read(nin,1003) nffile
+ 1003 format(5x,a24)
       write(nlog,1010) mname(nmlocal)
       write(nout,1010) mname(nmlocal)
  1010 format(/4x,a32)
@@ -221,49 +243,84 @@ c   ------------------
  1012   format(/4x,2a20)
       else if (np.gt.100 .and. np.le.200) then
         ptnnam(1:12)='Norfolk vij '
-        if (nt.gt.100) ptnnam(13:18)='+ Vijk'
-        write(nlog,1014) ptnnam,np
-        write(nout,1014) ptnnam,np
- 1014   format(/4x,a20,'#',i3)
+        if (nt.gt.100) then
+          ptnnam(13:18)='+ Vijk'
+          write(nlog,1014) ptnnam,np,nt
+          write(nout,1014) ptnnam,np,nt
+ 1014     format(/4x,a20,'#',i3,' + #',i3)
+        else
+          write(nlog,1016) ptnnam,np
+          write(nout,1016) ptnnam,np
+ 1016     format(/4x,a12,'#',i3)
+        end if
       end if
       s=float(4/nmlocal)
-      x(1)=dor
-      if (ndim.ge.2) then
+            x(1)=dor
+      if (ndim.eq.2) then
+        write(nlog,*) "Setting 2"
+        write(nout,*) "Setting 2"
         x(2)=ast
-      end if
-      if (ndim.ge.4) then
+      else if (ndim.eq.4) then
+        write(nlog,*) "Setting 4"
+        write(nout,*) "Setting 4"
+        x(2)=ast
         x(3)=bst
         x(4)=btn
         if (bls.ne.0.) bls=bst
+      else if (ndim.eq.7) then
+        write(nlog,*) "Setting 7"
+        write(nout,*) "Setting 7"
+        x(2)=ast
+        x(3)=atn
+        x(4)=als
+        x(5)=bst
+        x(6)=btn
+        x(7)=bls
+      else if (ndim.eq.9) then
+        write(nlog,*) "Setting 9"
+        write(nout,*) "Setting 9"
+        x(2)=ast
+        x(3)=atn
+        x(4)=als
+        x(5)=al2
+        x(6)=als2
+        x(7)=bst
+        x(8)=btn
+        x(9)=bls
+      else
+        write(nlog,666)
+        write(nout,666)
+  666   format(/6x,'stopping because of non-standard ndim')
+        stop 666
       end if
       nosave=no
       npisav=npi
       no=1
       npi=0
 #ifdef CUSTOM_INPUTS
-      write(*,*) "N is", ndim
-#ifndef DO_FULLX
-      read(nin,*) (x(i),i=1,ndim)
-#if defined (CASE_SNM)
-      write(fname,"(A7,2(A1,F19.17),A4)")
-     &"out_snm", ("_",abs(x(i)),i=1,ndim),".txt"
-#else
-      write(fname,"(A7,4(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
-     & "_",ls,"_",lt,".txt"
-#endif
-#else
-      nbdirsmax=7
-      read(nin,*) (x(i),i=1,nbdirsmax)
-#if defined (CASE_SNM)
-      write(fname,"(A7,7(A1,F19.17),A4)")
-     &"out_snm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
-#else
-      write(fname,"(A7,7(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
-     & "_",ls,"_",lt,".txt"
-#endif
-#endif
+c      write(*,*) "N is", ndim
+c#ifndef DO_FULLX
+c      read(nin,*) (x(i),i=1,ndim)
+c#if defined (CASE_SNM)
+c      write(fname,"(A7,2(A1,F19.17),A4)")
+c     &"out_snm", ("_",abs(x(i)),i=1,ndim),".txt"
+c#else
+c      write(fname,"(A7,4(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
+c     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
+c     & "_",ls,"_",lt,".txt"
+c#endif
+c#else
+c      nbdirsmax=7
+c      read(nin,*) (x(i),i=1,nbdirsmax)
+c#if defined (CASE_SNM)
+c      write(fname,"(A7,7(A1,F19.17),A4)")
+c     &"out_snm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
+c#else
+c      write(fname,"(A7,7(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
+c     &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
+c     & "_",ls,"_",lt,".txt"
+c#endif
+c#endif
       open(unit=nres,file=fname,action="WRITE")
 #endif
       return
@@ -283,15 +340,33 @@ c     lg=2*lg
 c     le=2*le
 c     l3=2*l3
       dor=x(1)
-      if (ndim.ge.2) then
+      if (ndim.eq.2) then
         ast=x(2)
         atn=ast
         als=ast
-      end if
-      if (ndim.eq.5) then
+      else if (ndim.eq.4) then
+        ast=x(2)
+        atn=ast
+        als=ast
         bst=x(3)
         btn=x(4)
         if (bls.ne.0.) bls=bst
+      else if (ndim.eq.7) then
+        ast=x(2)
+        atn=x(3)
+        als=x(4)
+        bst=x(5)
+        btn=x(6)
+        bls=x(7)
+      else if (ndim.eq.9) then
+        ast=x(2)
+        atn=x(3)
+        als=x(4)
+        al2=x(5)
+        als2=x(6)
+        bst=x(7)
+        btn=x(8)
+        bls=x(9)
       end if
       call nmmain(np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
      &           ,dor,npi,npf, gint, endiff, efree)
