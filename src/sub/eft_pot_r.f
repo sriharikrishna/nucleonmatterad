@@ -31,6 +31,9 @@ c
       logical lpotls,lpotll
       common /logpot/ lpotls,lpotll
 c
+      integer*4 ilb
+      common /pot_chiral_entry/ ilb
+c
       dimension vnlo(8), vdnlo(6,2), vn2lo(6),vdn2lo(6,2)
       dimension cc0cvxpp(0:1,0:1),cc2cvxpp(0:1,0:1),ct2tvxpp(0:1,0:1),
      x          cb2bvxpp(0:1,0:1),cc0ctxpp(0:1,0:1),cc2ctxpp(0:1,0:1),
@@ -161,6 +164,7 @@ c
      x          cb2bvxnn(0:1,0:1),cc0ctxnn(0:1,0:1),cc2ctxnn(0:1,0:1),
      x                            ct2ttxnn(0:1,0:1),cb2btxnn(0:1,0:1)
       dimension vv(22),vp(12)
+      common /pot_chiral_entry/ ilb
 c
 #if 0
       data idlt / 1 /
