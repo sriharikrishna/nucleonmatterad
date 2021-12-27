@@ -32,7 +32,6 @@ c
       common /logpot/ lpotls,lpotll
 c
       integer*4 ilb
-      common /pot_chiral_entry/ ilb
 c
       dimension vnlo(8), vdnlo(6,2), vn2lo(6),vdn2lo(6,2)
       dimension cc0cvxpp(0:1,0:1),cc2cvxpp(0:1,0:1),ct2tvxpp(0:1,0:1),
@@ -43,6 +42,15 @@ c
       dimension cc0cvxnn(0:1,0:1),cc2cvxnn(0:1,0:1),ct2tvxnn(0:1,0:1),
      x          cb2bvxnn(0:1,0:1),cc0ctxnn(0:1,0:1),cc2ctxnn(0:1,0:1),
      x                            ct2ttxnn(0:1,0:1),cb2btxnn(0:1,0:1)
+      common /pot_chiral_entry/ ilb,  vnlo, vdnlo, vn2lo, vdn2lo,
+     x       cc0cvxpp,cc2cvxpp,ct2tvxpp,
+     x          cb2bvxpp,cc0ctxpp,cc2ctxpp,
+     x                            ct2ttxpp,cb2btxpp,
+     x    cc0ctxnp,cc2ctxnp,ct2ttxnp,
+     x                                              cb2btxnp,
+     x    cc0cvxnn,cc2cvxnn,ct2tvxnn,
+     x          cb2bvxnn,cc0ctxnn,cc2ctxnn,
+     x                            ct2ttxnn,cb2btxnn
       dimension vv(22),vp(12)
 c
 #if 0
@@ -164,7 +172,15 @@ c
      x          cb2bvxnn(0:1,0:1),cc0ctxnn(0:1,0:1),cc2ctxnn(0:1,0:1),
      x                            ct2ttxnn(0:1,0:1),cb2btxnn(0:1,0:1)
       dimension vv(22),vp(12)
-      common /pot_chiral_entry/ ilb
+      common /pot_chiral_entry/ ilb,  vnlo, vdnlo, vn2lo, vdn2lo,
+     x       cc0cvxpp,cc2cvxpp,ct2tvxpp,
+     x          cb2bvxpp,cc0ctxpp,cc2ctxpp,
+     x                            ct2ttxpp,cb2btxpp,
+     x    cc0ctxnp,cc2ctxnp,ct2ttxnp,
+     x                                              cb2btxnp,
+     x    cc0cvxnn,cc2cvxnn,ct2tvxnn,
+     x          cb2bvxnn,cc0ctxnn,cc2ctxnn,
+     x                            ct2ttxnn,cb2btxnn
 c
 #if 0
       data idlt / 1 /
@@ -2967,7 +2983,7 @@ c
       q3 = -0.3655620d-1
       q4 =0.1504268d-1
       q5 = -0.780353d-2
-      q6 =-0.325614d-2
+      q6 =0.325614d-2
       q7 = -0.68245d-3
 #endif
 c
