@@ -257,19 +257,13 @@ c   ------------------
       s=float(4/nmlocal)
             x(1)=dor
       if (ndim.eq.2) then
-        write(nlog,*) "Setting 2"
-        write(nout,*) "Setting 2"
         x(2)=ast
       else if (ndim.eq.4) then
-        write(nlog,*) "Setting 4"
-        write(nout,*) "Setting 4"
         x(2)=ast
         x(3)=bst
         x(4)=btn
         if (bls.ne.0.) bls=bst
       else if (ndim.eq.7) then
-        write(nlog,*) "Setting 7"
-        write(nout,*) "Setting 7"
         x(2)=ast
         x(3)=atn
         x(4)=als
@@ -277,8 +271,6 @@ c   ------------------
         x(6)=btn
         x(7)=bls
       else if (ndim.eq.9) then
-        write(nlog,*) "Setting 9"
-        write(nout,*) "Setting 9"
         x(2)=ast
         x(3)=atn
         x(4)=als
@@ -298,29 +290,42 @@ c   ------------------
       no=1
       npi=0
 #ifdef CUSTOM_INPUTS
-c      write(*,*) "N is", ndim
-c#ifndef DO_FULLX
-c      read(nin,*) (x(i),i=1,ndim)
-c#if defined (CASE_SNM)
-c      write(fname,"(A7,2(A1,F19.17),A4)")
-c     &"out_snm", ("_",abs(x(i)),i=1,ndim),".txt"
-c#else
-c      write(fname,"(A7,4(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
-c     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
-c     & "_",ls,"_",lt,".txt"
-c#endif
-c#else
-c      nbdirsmax=7
-c      read(nin,*) (x(i),i=1,nbdirsmax)
-c#if defined (CASE_SNM)
-c      write(fname,"(A7,7(A1,F19.17),A4)")
-c     &"out_snm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
-c#else
-c      write(fname,"(A7,7(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
-c     &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
-c     & "_",ls,"_",lt,".txt"
-c#endif
-c#endif
+#ifndef DO_FULLX
+      read(nin,*) (x(i),i=1,ndim)
+#if defined (CASE_SNM)
+      write(fname,"(A7,2(A1,F19.17),A4)")
+     &"out_snm", ("_",abs(x(i)),i=1,ndim),".txt"
+#else
+      if (ndim.eq.2) then
+      write(fname,"(A7,2(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
+      else if (ndim.eq.4) then
+      write(fname,"(A7,4(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
+      else if (ndim.eq.7) then
+      write(fname,"(A7,7(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
+      else if (ndim.eq.9) then
+      write(fname,"(A7,9(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
+      end if
+#endif
+#else
+      nbdirsmax=7
+      read(nin,*) (x(i),i=1,nbdirsmax)
+#if defined (CASE_SNM)
+      write(fname,"(A7,7(A1,F19.17),A4)")
+     &"out_snm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
+#else
+      write(fname,"(A7,7(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
+#endif
+#endif
       open(unit=nres,file=fname,action="WRITE")
 #endif
       return

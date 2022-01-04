@@ -1,0 +1,51 @@
+0  .020  5  .010  1.  .5  2.  2
+20.  40.  40.  40.  40.  40.  40.  20.  20.
+1000.  2   0
+  nm= 2     1=nuclear, 2=neutron matter
+  np=109    1=mtv 2=rsc8 3=uv14 4=av8 6=av14 9=av18 10=av8p 18=ssc(c)
+  nv=14     # of terms in potential
+  nt=119    0=no, 1=urbana, 2=tucson, 3=brazil, 4=tni-I, 5=tni-II
+  ni=25     # of iterations in chain equations
+ nie= 5     # of iterations in elementary diagram equations
+ nio= 0     0=no elementary in soc, 1=include elementary in soc
+  no= 1     0=no output, 1=energy, 2=+f,fp,fds,v,sl, 3=+g
+  ns= 0     0=normal calculation, -1= fermi gas, 1=single-particle spectrum
+  lf=20     fine grid multiplier in correlation equations
+  lc=     # of points in dc (central grid)
+  ls=     # of points in ds (spin grid)
+  lt=     # of points in dt (tensor grid)
+  ll=32     # of points in dl (spin-orbit grid)
+  lg=64     # of points in chains
+  le=32     # of points in abe diagrams
+  l3=64     # of points in 3b potential integration
+  lk= 2     # * kf for upper limit in k integration for finite temp
+  kf=0.          fermi momentum used in correlation generator
+ rho=        density
+ dor=1.916       dt/r0 or dc/r0 (nm=1 or 2)
+ acn=1.          central potential quencher
+ ast=0.721       spin-isospin potential quencher
+ atn=1.          tensor potential quencher
+ als=1.          spin-orbit potential quencher
+ al2=1.          l**2 potential quencher
+als2=1.          (l.s)**2 potential quencher
+ bst=1.          spin-isospin correlation modifier
+ btn=1.          tensor correlation modifier
+ bls=1.          spin-orbit correlation modifier
+  cn=.5          fraction new solution in chains
+ cne=.5          fraction new solution in elementary diagrams
+temp=0.          temperature in mev
+mstr=.5          m*/m for finite temperature spectrum
+tnia=-.0293      3b urbana 2pi anticommutator force /gamma2
+tnic=-.007325    3b urbana 2pi commutator force /gamma3
+tnis=0.          3b urbana 2pi s-wave force
+tniu=0.0048      3b urbana central force /gamma1
+tnix=0.          3b urbana exchange force
+ cut=2.1         3b urbana cutoff in 2pi functions
+cut0=2.1         3b urbana cutoff in central force
+ npi= 0     0=no calc., >0=# of points in q calculated
+ npf= 1     power in pion form factor
+ eav=500.        average energy denominator in closure
+fsof=4.00        (f*/f)**2 for pion coupling constants
+ plm=4.8         cutoff (fm-1) for pion form factor
+ qmn=0.25        first value of q
+ qmx=6.00        last value of q
