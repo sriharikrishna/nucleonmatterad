@@ -84,9 +84,9 @@ c **********************************************************************
 #endif
 #endif
       end if
-#if !defined (ALLOW_TAPENADE) && !defined (ONLY_NUCMAT)
+!#if !defined (ALLOW_TAPENADE) && !defined (ONLY_NUCMAT)
       call nmfin(x,ndim)
-#endif
+!#endif
       timeit=timer(timeit)
       write(nlog,999) timeit
       write(nout,999) timeit
