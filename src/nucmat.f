@@ -28,7 +28,21 @@ c
      &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
 #ifdef ALLOW_TAPENADE
 #if defined (DO_ALL)
-      COMMON /consts_dv/ astd, atnd, alsd, dtd, drd, evxd
+c      COMMON /consts_dv/ astd, atnd, alsd, dtd, drd, evxd
+#ifdef VARS2
+      COMMON /consts_dv/ astd, dtd, drd, evxd
+#endif
+#ifdef VARS4
+      COMMON /consts_dv/ astd, bstd, btnd, dtd, drd, evxd
+#endif
+#ifdef VARS7
+      COMMON /consts_dv/ astd, atnd, alsd, bstd,
+     & btnd, blsd, dtd, drd, evxd
+#endif
+#ifdef VARS9
+      COMMON /consts_dv/ astd, atnd, alsd, al2d, als2d, bstd, btnd, blsd
+     +, dtd, drd, evxd
+#endif
       real*8 xperturb(30,7)
 #else
       common /consts_d/ kfd, rhod, acnd, astd, atnd, alsd, cnd, cned,
@@ -44,6 +58,7 @@ c
      & sd(nbdirsmax)
       real*8 bstd(nbdirsmax), btnd(nbdirsmax),
      & blsd(nbdirsmax), dord(nbdirsmax)
+      real*8 al2d(nbdirsmax), als2d(nbdirsmax)
 #endif
       real*8 aa(8),ab(8),ad(8,8),ae(6,2),af(8),ak(8,8,8),al(6,6,6),
      &       as(6),at(8,8),ax(6,6,6)
@@ -56,6 +71,8 @@ c
       common /pionic/ eav,fsof,plm,qmin,qmax
       real*8 temp,mstar,chmpot,entrpy,ksav,kqav
       common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
+      character*24 nffile
+      common /files/ nffile
       save nmlocal,np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
 c     &,npi,npf,bst,btn,bls,nosave,npisav
      &,npi,npf,nosave,npisav
@@ -90,15 +107,33 @@ c
 c
 #ifndef DO_FULLX
       dor=x(1)
-      if (n.ge.2) then
+      if (n.eq.2) then
         ast=x(2)
         atn=ast
         als=ast
-      end if
-      if (n.ge.3) then
+      else if (n.eq.4) then
+        ast=x(2)
+        atn=ast
+        als=ast
         bst=x(3)
         btn=x(4)
         if (bls.ne.0.) bls=bst
+      else if (n.eq.7) then
+        ast=x(2)
+        atn=x(3)
+        als=x(4)
+        bst=x(5)
+        btn=x(6)
+        bls=x(7)
+      else if (n.eq.9) then
+        ast=x(2)
+        atn=x(3)
+        als=x(4)
+        al2=x(5)
+        als2=x(6)
+        bst=x(7)
+        btn=x(8)
+        bls=x(9)
       end if
 #else
       dor=x(1)
@@ -138,6 +173,52 @@ c
         ndirs=ndirs+1
         btnd(ndirs)=1.0
         if (bls.ne.0.)blsd=bstd
+      end if
+      if (n.eq.2) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        atnd=astd
+        alsd=astd
+      else if (n.eq.4) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        atnd=astd
+        alsd=astd
+        ndirs=ndirs+1
+        bstd(ndirs)=1.0
+        ndirs=ndirs+1
+        btnd(ndirs)=1.0
+        if (bls.ne.0.) blsd=bstd
+      else if (n.eq.7) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        ndirs=ndirs+1
+        atnd(ndirs)=1.0
+        ndirs=ndirs+1
+        alsd(ndirs)=1.0
+        ndirs=ndirs+1
+        bstd(ndirs)=1.0
+        ndirs=ndirs+1
+        btnd(ndirs)=1.0
+        ndirs=ndirs+1
+        blsd(ndirs)=1.0
+      else if (n.eq.9) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        ndirs=ndirs+1
+        atnd(ndirs)=1.0
+        ndirs=ndirs+1
+        alsd(ndirs)=1.0
+        ndirs=ndirs+1
+        al2d(ndirs)=1.0
+        ndirs=ndirs+1
+        als2d(ndirs)=1.0
+        ndirs=ndirs+1
+        bstd(ndirs)=1.0
+        ndirs=ndirs+1
+        btnd(ndirs)=1.0
+        ndirs=ndirs+1
+        blsd(ndirs)=1.0
       end if
 #else
       dord(1)=1.0
@@ -223,6 +304,8 @@ c   ------------------
       read(nin,1002) tniu,tnix,cut,cut0
       read(nin,1001) npi,npf
       read(nin,1002) eav,fsof,plm,qmin,qmax
+      if (ns.eq.3) read(nin,1003) nffile
+ 1003 format(5x,a24)
       write(nlog,1010) mname(nmlocal)
       write(nout,1010) mname(nmlocal)
  1010 format(/4x,a32)
@@ -261,12 +344,34 @@ c   ------------------
       btn=btn*(1+delta*xperturb(nperturb,7))
 #ifndef DO_FULLX
       x(1)=dor
-      if (ndim.ge.2) then
+      if (n.eq.2) then
         x(2)=ast
-      end if
-      if (ndim.ge.4) then
+      else if (n.eq.4) then
+        x(2)=ast
         x(3)=bst
         x(4)=btn
+        if (bls.ne.0.) bls=bst
+      else if (n.eq.7) then
+        x(2)=ast
+        x(3)=atn
+        x(4)=als
+        x(5)=bst
+        x(6)=btn
+        x(7)=bls
+      else if (n.eq.9) then
+        x(2)=ast
+        x(3)=atn
+        x(4)=als
+        x(5)=al2
+        x(6)=als2
+        x(7)=bst
+        x(8)=btn
+        x(9)=bls
+      else
+        write(nlog,666)
+        write(nout,666)
+  666   format(/6x,'stopping because of non-standard n')
+        stop 666
       end if
 #else
       x(1)=dor
@@ -299,9 +404,23 @@ c   ------------------
       write(fname,"(A7,2(A1,F19.17),A4)")
      &"out_snm", ("_",abs(x(i)),i=1,n),".txt"
 #else
-      write(fname,"(A7,4(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
+      if (n.eq.2) then
+      write(fname,"(A7,2(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
      &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
+      else if (n.eq.4) then
+      write(fname,"(A7,4(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
+      else if (n.eq.7) then
+      write(fname,"(A7,7(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
+      else if (n.eq.9) then
+      write(fname,"(A7,9(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+     &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
+     & "_",ls,"_",lt,".txt"
+      end if
 #endif
 #else
       read(nin,*) (x(i),i=1,nbdirsmax)
@@ -334,15 +453,33 @@ c     le=2*le
 c     l3=2*l3
 #ifndef DO_FULLX
       dor=x(1)
-      if (n.ge.2) then
+      if (n.eq.2) then
         ast=x(2)
         atn=ast
         als=ast
-      end if
-      if (n.ge.3) then
+      else if (n.eq.4) then
+        ast=x(2)
+        atn=ast
+        als=ast
         bst=x(3)
         btn=x(4)
         if (bls.ne.0.) bls=bst
+      else if (n.eq.7) then
+        ast=x(2)
+        atn=x(3)
+        als=x(4)
+        bst=x(5)
+        btn=x(6)
+        bls=x(7)
+      else if (n.eq.9) then
+        ast=x(2)
+        atn=x(3)
+        als=x(4)
+        al2=x(5)
+        als2=x(6)
+        bst=x(7)
+        btn=x(8)
+        bls=x(9)
       end if
 #else
       dor=x(1)
@@ -374,12 +511,58 @@ c     l3=2*l3
         atnd=astd
         alsd=astd
       end if
-      if (n.ge.3) then
+      if (n.eq.4) then
         ndirs=ndirs+1
         bstd(ndirs)=1.0
         ndirs=ndirs+1
-        if (bls.ne.0.) btnd(ndirs)=1.0
-c        blsd=bstd
+        btnd(ndirs)=1.0
+        if (bls.ne.0.)blsd=bstd
+      end if
+      if (n.eq.2) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        atnd=astd
+        alsd=astd
+      else if (n.eq.4) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        atnd=astd
+        alsd=astd
+        ndirs=ndirs+1
+        bstd(ndirs)=1.0
+        ndirs=ndirs+1
+        btnd(ndirs)=1.0
+        if (bls.ne.0.) blsd=bstd
+      else if (n.eq.7) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        ndirs=ndirs+1
+        atnd(ndirs)=1.0
+        ndirs=ndirs+1
+        alsd(ndirs)=1.0
+        ndirs=ndirs+1
+        bstd(ndirs)=1.0
+        ndirs=ndirs+1
+        btnd(ndirs)=1.0
+        ndirs=ndirs+1
+        blsd(ndirs)=1.0
+      else if (n.eq.9) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        ndirs=ndirs+1
+        atnd(ndirs)=1.0
+        ndirs=ndirs+1
+        alsd(ndirs)=1.0
+        ndirs=ndirs+1
+        al2d(ndirs)=1.0
+        ndirs=ndirs+1
+        als2d(ndirs)=1.0
+        ndirs=ndirs+1
+        bstd(ndirs)=1.0
+        ndirs=ndirs+1
+        btnd(ndirs)=1.0
+        ndirs=ndirs+1
+        blsd(ndirs)=1.0
       end if
 #else
       dord(1)=1.0
@@ -421,8 +604,29 @@ c $$$$$$$$$$$$$$$$$$$$$$$
       fplus=flocal+abs(endiff)
 #endif
 
-      write(nlog,1095) final,fplus
-      write(nout,1095) final,fplus
+      write(nlog,1095) f,fplus
+      write(nout,1095) f,fplus
+      write(nres,*) f,fplus
+#if defined (ALLOW_TAPENADE)
+#ifdef DO_ALL
+#ifndef DO_FULLX
+     & ,(",",x(i),i=1,n)
+#else
+     &, (",",x(i),i=1,nbdirsmax)
+#endif
+     & ,(",",flocald(i),i=1,nbdirsmax)
+      do i=1,nbdirsmax
+        write(nlog,*) "flocald%d", flocald(i)
+        write(nout,*) "flocald%d", flocald(i)
+        write(nres,*) "flocald%d", flocald(i)
+      end do
+#else
+      write(nlog,*) "flocald%d", flocald
+      write(nout,*) "flocald%d", flocald
+      write(nres,*) "flocald%d", flocald
+#endif
+#endif
+
  1095 format(/2x,'final   fplus',/2f8.3)
       if (no.le.1) go to 999
       call nmout(le,lg,lt,l3,nie,no,nt,nv)

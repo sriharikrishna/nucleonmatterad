@@ -26,8 +26,9 @@ sub/pot.pre.f\
 sub/numrec.pre.f\
 sub/dgamma.pre.f
 
-DIFFSIZES.inc: $(CASE)/DIFFSIZES${FULLX}.inc
-	cp $(CASE)/DIFFSIZES${FULLX}.inc DIFFSIZES.inc
+DIFFSIZES.inc: 
+	rm -f $@
+	cat "      integer, parameter :: nbdirsmax="${VARS} >> $@
 
 OBJSUB= sub/dtime.o sub/headtime.pre.o sub/linpack.pre.o sub/minimi.pre.o sub/numrec.pre.o \
    sub/pot.pre.o sub/eft_pot_r.pre.o sub/dgamma.pre.o isnan_d.o
@@ -48,7 +49,8 @@ info:
        "ALL="${ALL}\
        "FULLX="${FULLX}\
        "NUCMAT="${NUCMAT}\
-       "CUSTOM_INPUTS="${CUSTOM_INPUTS}
+       "CUSTOM_INPUTS="${CUSTOM_INPUTS}\
+       "VARS="${VARS}
 
 nmad: numCore_d.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
 	${FC} ${FFLAGS} -o $@ $^
@@ -59,14 +61,22 @@ nmadv: numCore_dv.pre.o nm.pre.o nucmat.pre.o nmsub.pre.o $(OBJSUB) $(OBJLBFGS)
 numCore.f: $(SRC) $(SRCSUB)
 	@cat $^ > $@ 
 
+VARSTR = "nmmainad(flocal)/(dor,bls,bst,btn,als,al2,als2,ast,atn)"
+ifeq ($(VARS),2)
+VARSTR = "nmmainad(flocal)/(dor,ast)"
+endif
+ifeq ($(VARS),4)
+VARSTR = "nmmainad(flocal)/(dor,bst,btn,ast)"
+endif
+ifeq ($(VARS),7)
+VARSTR = "nmmainad(flocal)/(dor,bls,bst,btn,als,ast,atn)"
+endif
 
-#numCore_d.pre.f: numCore.pre.f
-#	${TPN} -forward -head nmmainad  $< 
-#	mv numCore.pre_d.f $@
-
-numCore_dv.pre.f: numCore.pre.f DIFFSIZES.inc
-	@echo "--- Generating Tapenade Output: nmmainad(flocal,gint,endiff,efree)/(dor,bls,bst,btn,als,ast,atn)"
-	@${TPN} -forward -vector -head "nmmainad(flocal)/(dor,bls,bst,btn,als,ast,atn)"  $< 
+numCore_dv.pre.f: numCore.pre.f
+	@echo "--- Generating Tapenade Output: " $(VARSTR) "VARS is" $(VARS) 
+	rm -f DIFFSIZES.inc
+	@echo "      integer, parameter :: nbdirsmax="${VARS} >> DIFFSIZES.inc
+	@${TPN} -forward -vector -head $(VARSTR)  $< 
 	@mv numCore.pre_dv.f $@
 
 CPPFLAGS= $(DIFF) $(WFLAGS) -DALLOW_TAPENADE -DALLOW_DATA 
@@ -89,6 +99,18 @@ ifeq ($(CASE), snm)
   CPPFLAGS+=-DCASE_SNM
 else
   CPPFLAGS+=-DCASE_PNM
+endif
+ifeq ($(VARS),2)
+  CPPFLAGS+=-DVARS2
+endif
+ifeq ($(VARS),4)
+  CPPFLAGS+=-DVARS4
+endif
+ifeq ($(VARS),7)
+  CPPFLAGS+=-DVARS7
+endif
+ifeq ($(VARS),9)
+  CPPFLAGS+=-DVARS9
 endif
 
 CPPCMD = @cat $< |  cpp  $(CPPFLAGS)  -I../ -I./ -traditional-cpp -P 
