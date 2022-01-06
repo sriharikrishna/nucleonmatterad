@@ -28,7 +28,6 @@ class Funcgradmon(object):
 
     def __init__( self, func, filename, computing_grads=True, verbose=1 ):
         self.func = func
-        self.gradfunc = gradfunc
         self.verbose = verbose
         self.filename = filename
         self.x, self.f = [], []
@@ -190,12 +189,12 @@ def snm_2d_objective_der(x):
 
 def pnm_4d_objective(x,rho,lc,ls,lt):
     # convert x into strings
-    xstr = ["%.17f" % elem for elem in x]
-    absxstr = ["%.17f" % elem for elem in np.abs(x)]
-    rhostr = "%.17f" % rho
+    xstr = ["%.4f" % elem for elem in x]
+    absxstr = ["%.4f" % elem for elem in np.abs(x)]
+    rhostr = "%.4f" % rho
 
     # write call string
-    callstr = "".join(["./script_nm_pnm_f_only.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
+    callstr = "".join(["./script_nm_pnm_f_only_4.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
 
     # call the call string
     os.system(callstr)
@@ -242,11 +241,11 @@ def pnm_4d_objective(x,rho,lc,ls,lt):
     return f
 
 def pnm_4d_objective_der(x,rho,lc,ls,lt):
-    xstr = ["%.17f" % elem for elem in x]
-    absxstr = ["%.17f" % elem for elem in np.abs(x)]
-    rhostr = "%.17f" % rho
+    xstr = ["%.4f" % elem for elem in x]
+    absxstr = ["%.4f" % elem for elem in np.abs(x)]
+    rhostr = "%.4f" % rho
     # write call string
-    callstr = "".join(["./script_nm_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
+    callstr = "".join(["./script_nm_pnm_4.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
 
     output_file = "out_pnm"
     for j in range(len(xstr)):
@@ -292,7 +291,7 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
     remove_string = "rm " + output_file
     os.system(remove_string)
 
-    return g
+    return f,g
 
 def main():
     # args:
