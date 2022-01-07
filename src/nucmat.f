@@ -405,19 +405,19 @@ c   ------------------
      &"out_snm", ("_",abs(x(i)),i=1,n),".txt"
 #else
       if (n.eq.2) then
-      write(fname,"(A7,2(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+      write(fname,"(A7,2(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
      &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       else if (n.eq.4) then
-      write(fname,"(A7,4(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+      write(fname,"(A7,4(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
      &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       else if (n.eq.7) then
-      write(fname,"(A7,7(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+      write(fname,"(A7,7(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
      &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       else if (n.eq.9) then
-      write(fname,"(A7,9(A1,F6.4),A1,F6.4,3(A1,I2),A4)")
+      write(fname,"(A7,9(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
      &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       end if
