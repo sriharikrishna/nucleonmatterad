@@ -604,9 +604,9 @@ c $$$$$$$$$$$$$$$$$$$$$$$
       fplus=flocal+abs(endiff)
 #endif
 
-      write(nlog,1095) f,fplus
-      write(nout,1095) f,fplus
-      write(nres,*) f,fplus
+      write(nlog,1095) flocal,f,fplus
+      write(nout,1095) flocal,f,fplus
+      write(nres,*) flocal,f,fplus
 #if defined (ALLOW_TAPENADE)
 #ifdef DO_ALL
 #ifndef DO_FULLX
