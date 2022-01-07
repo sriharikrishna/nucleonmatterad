@@ -33,7 +33,9 @@ c      COMMON /consts_dv/ astd, atnd, alsd, dtd, drd, evxd
       COMMON /consts_dv/ astd, dtd, drd, evxd
 #endif
 #ifdef VARS4
-      COMMON /consts_dv/ astd, bstd, btnd, dtd, drd, evxd
+c      COMMON /consts_dv/ astd, bstd, btnd, dtd, drd, evxd
+      COMMON /consts_dv/ astd, atnd, alsd, bstd, btnd, 
+     &blsd, dtd, drd, evxd
 #endif
 #ifdef VARS7
       COMMON /consts_dv/ astd, atnd, alsd, bstd,
