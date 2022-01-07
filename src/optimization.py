@@ -3,6 +3,7 @@ import os.path
 import numpy as np
 from scipy.optimize import minimize
 import nlopt
+import glob
 
 # this class wraps functions and gradient functions to write all evaluations to a file
 class Funcgradmon(object):
@@ -241,23 +242,19 @@ def pnm_4d_objective(x,rho,lc,ls,lt):
     return f
 
 def pnm_4d_objective_der(x,rho,lc,ls,lt):
-    xstr = ["%.4f" % elem for elem in x]
-    absxstr = ["%.4f" % elem for elem in np.abs(x)]
-    rhostr = "%.4f" % rho
+    xstr = [str(elem) for elem in x]
+    rhostr = "%.3f" % rho
+
     # write call string
     callstr = "".join(["./script_nm_pnm_4.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
 
-    output_file = "out_pnm"
-    for j in range(len(xstr)):
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
-
-    #if not os.path.exists(output_file):
-        # call the call string
     os.system(callstr)
 
     # we read in f and g from the .txt:
-    file = open(output_file)
+    searchstr = "out_pnm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    output_file = glob.glob(searchstr)
+    pnm_file = output_file[0]
+    file = open(pnm_file)
     line = file.read().replace(","," ")
     file.close()
     line = line.split()
@@ -265,30 +262,28 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
     # write g
     f = np.float(line[0])
     g = np.zeros(4)
-    g[0] = np.float(line[5])
-    g[1] = np.float(line[6])
-    g[2] = np.float(line[7])
-    g[3] = np.float(line[8])
+    g[0] = np.float(line[6])
+    g[1] = np.float(line[7])
+    g[2] = np.float(line[8])
+    g[3] = np.float(line[9])
 
     # SAFETY:
-    if np.isnan(f) or np.isinf(f):
-        #g = 1000*np.ones(4)
+    if np.isnan(f):
+        f = 1e3
         g = np.zeros(4)
-    remove_string = "rm " + output_file
+    
+    # CLEANUP:
+    remove_string = "rm " + pnm_file
     os.system(remove_string)
 
-    output_file = "out_tap_all_nucmat_pnm"
-    for j in range(len(xstr)):
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
-    remove_string = "rm " + output_file
+    searchstr = "out_tap*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt)
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
     os.system(remove_string)
 
-    output_file = "temp"
-    for j in range(len(xstr)):
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
-    remove_string = "rm " + output_file
+    searchstr = "temp*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
     os.system(remove_string)
 
     return f,g
@@ -369,8 +364,8 @@ def main():
 
         # call LBFGS
         # bounds: these are arbitrary, but seem more than reasonable:
-        lb = -9.9999*np.ones(dim)
-        ub = 9.9999*np.ones(dim)
+        lb = -9.999*np.ones(dim)
+        ub = 9.999*np.ones(dim)
         bounds = np.vstack((lb,ub))
         bounds = bounds.T
 
