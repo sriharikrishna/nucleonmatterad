@@ -262,10 +262,10 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
     # write g
     f = np.float(line[0])
     g = np.zeros(4)
-    g[0] = np.float(line[6])
-    g[1] = np.float(line[7])
-    g[2] = np.float(line[8])
-    g[3] = np.float(line[9])
+    g[0] = np.float(line[7])
+    g[1] = np.float(line[8])
+    g[2] = np.float(line[9])
+    g[3] = np.float(line[10])
 
     # SAFETY:
     if np.isnan(f):
