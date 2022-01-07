@@ -26,35 +26,40 @@ class Funcgradmon(object):
     min50 = minimize( fg, x0, jac=True, options=options )
     """
 
-    def __init__( self, func, gradfunc, filename, verbose=1 ):
+    def __init__( self, func, filename, computing_grads=True, verbose=1 ):
         self.func = func
-        self.gradfunc = gradfunc
         self.verbose = verbose
         self.filename = filename
-        self.x, self.f, self.g = [], [], []  # growing lists
+        self.x, self.f = [], []
+        self.computing_grads = computing_grads
+        if computing_grads:
+            self.g = []
         self.t = 0
 
-    def __call__( self, x): #( self, x, grad):
+    def __call__( self, x):
         """ f, g = func(x), gradfunc(x); save them; return f, g """
         x = np.asarray_chkfinite( x )  # always
-        f = self.func(x)
-        g = self.gradfunc(x)
-        g = np.asarray_chkfinite( g )
+        if self.computing_grads:
+            f,g = self.func(x)
+            g = np.asarray_chkfinite( g )
+            self.g.append( np.copy(g) )
+        else:
+            f = self.func(x)
         self.x.append( np.copy(x) )
         self.f.append( _copy( f ))
-        self.g.append( np.copy(g) )
         if self.verbose:
             print("%3d:" % self.t)
             fmt = "%-12g" if np.isscalar(f)  else "%s\t"
             print(fmt % f)
             print("x: %s" % x)  # with user's np.set_printoptions
-            print("\tgrad: %s" % g)
-                # better df dx dg
-        # callback: plot
+            if self.computing_grads:
+                print("\tgrad: %s" % g)
         self.savez(self.filename)
         self.t += 1
-        #grad[:] = g
-        return f, g
+        if self.computing_grads:
+            return f, g
+        else:
+            return f
 
     def restart( self, n ):
         """ x0 = fg.restart( n )  returns x[n] to minimize( fg, x0 )
@@ -62,7 +67,8 @@ class Funcgradmon(object):
         x0 = self.x[n]  # minimize from here
         del self.x[:n]
         del self.f[:n]
-        del self.g[:n]
+        if self.computing_grads:
+            del self.g[:n]
         self.t = n
         if self.verbose:
             print("Funcgradmon: restart from x[%d] %s" % (n, x0))
@@ -70,38 +76,28 @@ class Funcgradmon(object):
 
     def savez( self, npzfile, **kw ):
         """ np.savez( npzfile, x= f= g= ) """
-        x, f, g = map( np.array, [self.x, self.f, self.g] )
-        if self.verbose:
-            asum = "f: %s \nx: %s \ng: %s" % (
-                _asum(f), _asum(x), _asum(g) )
-            print("Funcgradmon: saving to %s: \n%s \n" % (npzfile, asum))
-        np.savez( npzfile, x=x, f=f, g=g, **kw )
+        if self.computing_grads:
+            x, f, g = map( np.array, [self.x, self.f, self.g] )
+            np.savez( npzfile, x=x, f=f, g=g, **kw )
+        else:
+            x, f = map(np.array, [self.x, self.f] )
+            np.savez( npzfile, x=x, f=f, **kw )
 
     def load( self, npzfile ):
         load = np.load( npzfile )
-        x, f, g = load["x"], load["f"], load["g"]
-        if self.verbose:
-            asum = "f: %s \nx: %s \ng: %s" % (
-                _asum(f), _asum(x), _asum(g) )
-            print("Funcgradmon: load %s: \n%s \n" % (npzfile, asum))
+        if self.computing_grads:
+            x, f, g = load["x"], load["f"], load["g"]
+            self.g = list( g )
+        else:
+            x, f = load["x"], load["f"]
         self.x = list( x )
         self.f = list( f )
-        self.g = list( g )
         self.loaddict = load
         return self.restart( len(x) - 1 )
-
-
-def _asum( X ):
-    """ one-line array summary: "shape type min av max" """
-    if not hasattr( X, "dtype" ):
-        return str(X)
-    return "%s %s  min av max %.3g %.3g %.3g" % (
-            X.shape, X.dtype, X.min(), X.mean(), X.max() )
 
 def _copy( x ):
     return x if x is None  or np.isscalar(x) \
         else np.copy( x )
-# a wrapper for the SNM call
 
 def snm_2d_objective(x):
     # convert x into strings
@@ -193,12 +189,12 @@ def snm_2d_objective_der(x):
 
 def pnm_4d_objective(x,rho,lc,ls,lt):
     # convert x into strings
-    xstr = ["%.17f" % elem for elem in x]
-    absxstr = ["%.17f" % elem for elem in np.abs(x)]
-    rhostr = "%.17f" % rho
+    xstr = ["%.4f" % elem for elem in x]
+    absxstr = ["%.4f" % elem for elem in np.abs(x)]
+    rhostr = "%.4f" % rho
 
     # write call string
-    callstr = "".join(["./script_nm_pnm_f_only.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
+    callstr = "".join(["./script_nm_pnm_f_only_4.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
 
     # call the call string
     os.system(callstr)
@@ -208,9 +204,7 @@ def pnm_4d_objective(x,rho,lc,ls,lt):
     for j in range(len(xstr)):
         #output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt" #output_file.join([".txt"])
-
-    # we read in f and g from the .txt:
+    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
 
     file = open(output_file)
     line = file.read().replace(","," ")
@@ -223,19 +217,38 @@ def pnm_4d_objective(x,rho,lc,ls,lt):
     # SAFETY
     if np.isnan(f) or np.isinf(f):
         f = 1e3
+    
+    remove_string = "rm " + output_file
+    print(remove_string)
+    os.system(remove_string)
+
+    output_file = "out_tap_all_nucmat_pnm"
+    for j in range(len(xstr)):
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt)
+    remove_string = "rm " + output_file
+    print(remove_string)
+    os.system(remove_string)
+
+    output_file = "temp"
+    for j in range(len(xstr)):
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
+    remove_string = "rm " + output_file
+    print(remove_string)
+    os.system(remove_string)
 
     return f
 
 def pnm_4d_objective_der(x,rho,lc,ls,lt):
-    xstr = ["%.17f" % elem for elem in x]
-    absxstr = ["%.17f" % elem for elem in np.abs(x)]
-    rhostr = "%.17f" % rho
+    xstr = ["%.4f" % elem for elem in x]
+    absxstr = ["%.4f" % elem for elem in np.abs(x)]
+    rhostr = "%.4f" % rho
     # write call string
-    callstr = "".join(["./script_nm_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
+    callstr = "".join(["./script_nm_pnm_4.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
 
     output_file = "out_pnm"
     for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
     output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
 
@@ -266,7 +279,6 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
 
     output_file = "out_tap_all_nucmat_pnm"
     for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
     output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
     remove_string = "rm " + output_file
@@ -274,55 +286,47 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
 
     output_file = "temp"
     for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
         output_file = output_file + "_" + absxstr[j]
     output_file = output_file + "_" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
     remove_string = "rm " + output_file
     os.system(remove_string)
 
-    return g
+    return f,g
 
 def main():
     # args:
-    # arg1: index of first starting point
-    # arg2: index of second starting point
-    # arg3: identifier of objective function to use
+    # arg1: dor
+    # arg2: alpha
+    # arg3: betas
+    # arg4: betat
+    # arg5: problem (e.g., "pnm4")
+    # arg6: solver (e.g., "lbfgs")
+    # arg7: rho
+    # arg8: lc
+    # arg9: ls
+    # arg10: lt
 
     import sys
     args = sys.argv
-    start_index = int(args[1])
-    end_index = int(args[2])
-    problem = args[3]
-    solver = args[4]
-    rho = float(args[5])
-    lc = int(args[6])
-    ls = int(args[7])
-    lt = int(args[8])
-
-
-    # make clean and make!
-    if problem == "snm2" and (solver == "lbfgs" or solver == "scipy_neldermead" or solver == "fd_lbfgs"):
-        #os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=snm")
-        print("ok")
-    elif problem == "snm2" and solver == "neldermead":
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=snm prep ; make -f MakefileTapf ALL=1 CASE=snm CUSTOM_INPUTS=1")
-        #print("ok")
-    elif problem == "pnm4" and (solver == "lbfgs" or solver == "scipy_neldermead" or solver == "fd_lbfgs"):
-        os.system("make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 NUCMAT=1 CASE=pnm")
-        print("ok")
-    elif problem == "pnm4" and solver == "neldermead":
-        os.system( "make -f MakefileTapf clean; make -f Makefile clean; make -f Makefile CASE=pnm prep ; make -f MakefileTapf ALL=1 CASE=pnm CUSTOM_INPUTS=1")
-        #print("ok")
-    else:
-        raise Exception('invalid problem name {} supplied'.format(problem))
+    dor = args[1]
+    alpha = args[2]
+    betas = args[3]
+    betat = args[4]
+    problem = args[5]
+    solver = args[6]
+    rho = float(args[7])
+    lc = int(args[8])
+    ls = int(args[9])
+    lt = int(args[10])
 
     # initial point
+    # WARNING, CURRENTLY HARDCODED TO READ FIRST FOUR ARGUMENTS AS INITIAL POINT FOR PNM, MUST FIX LATER
     if problem == "snm2":
         x0 = np.array([3.997, 0.796])
         dim = 2
     if problem == "pnm4":
-        x0 = np.array([1.750, 0.531, 1.564, 3.747])
-        dim = 4
+        x0 = np.array([float(dor), float(alpha), float(betas), float(betat)])
+        dim = 4 
     # tolerance (definition changes with solver)
     tolerance = 1e-8
 
@@ -331,15 +335,17 @@ def main():
                'maxiter': 100, 'iprint': 101, 'maxls': 20}
 
     # read in the perturbations
-    perturbation_file = open("circle.txt",'r')
-    lines = perturbation_file.readlines()
-    perturbation_file.close()
-    perturbations = np.zeros((30,7))
-    count = 0
-    for line in lines:
-        perturbations[count,:] = np.fromstring(line, sep = " ")
-        count += 1
+    #perturbation_file = open("circle.txt",'r')
+    #lines = perturbation_file.readlines()
+    #perturbation_file.close()
+    #perturbations = np.zeros((30,7))
+    #count = 0
+    #for line in lines:
+    #    perturbations[count,:] = np.fromstring(line, sep = " ")
+    #    count += 1
 
+    start_index = 0
+    end_index = 1
     for i in range(start_index,end_index):
 
         if i == 0:
@@ -354,10 +360,12 @@ def main():
             raise Exception('snm2 is currently not implemented, pending Krishna changes to allow for rho, lc, ls, lt inputs')
             #fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
         elif problem == "pnm4":
-            objective = lambda x: pnm_4d_objective(x,rho,lc,ls,lt)
-            objective_der = lambda x: pnm_4d_objective_der(x,rho,lc,ls,lt)
-            fg = Funcgradmon(objective, objective_der, filename, verbose=1)
-
+            if solver == "lbfgs":
+                objective = lambda x: pnm_4d_objective_der(x,rho,lc,ls,lt)
+                fg = Funcgradmon(objective, filename, computing_grads = True,verbose=1)
+            else:
+                objective = lambda x: pnm_4d_objective(x,rho,lc,ls,lt)
+                fg = Funcgradmon(objective, filename, computing_grads = False,verbose=1)
 
         # call LBFGS
         # bounds: these are arbitrary, but seem more than reasonable:
