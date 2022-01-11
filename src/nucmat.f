@@ -28,14 +28,11 @@ c
      &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
 #ifdef ALLOW_TAPENADE
 #if defined (DO_ALL)
-c      COMMON /consts_dv/ astd, atnd, alsd, dtd, drd, evxd
 #ifdef VARS2
       COMMON /consts_dv/ astd, dtd, drd, evxd
 #endif
 #ifdef VARS4
-c      COMMON /consts_dv/ astd, bstd, btnd, dtd, drd, evxd
-      COMMON /consts_dv/ astd, atnd, alsd, bstd, btnd, 
-     &blsd, dtd, drd, evxd
+      COMMON /consts_dv/ astd, bstd, btnd, dtd, drd, evxd
 #endif
 #ifdef VARS7
       COMMON /consts_dv/ astd, atnd, alsd, bstd,

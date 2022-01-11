@@ -66,7 +66,7 @@ ifeq ($(VARS),2)
 VARSTR = "nmmainad(flocal)/(dor,ast)"
 endif
 ifeq ($(VARS),4)
-VARSTR = "nmmainad(flocal)/(dor,bls,bst,btn,als,ast,atn)"
+VARSTR = "nmmainad(flocal)/(dor,bst,btn,ast)"
 endif
 ifeq ($(VARS),7)
 VARSTR = "nmmainad(flocal)/(dor,bls,bst,btn,als,ast,atn)"
