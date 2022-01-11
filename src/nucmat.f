@@ -28,14 +28,11 @@ c
      &       cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
 #ifdef ALLOW_TAPENADE
 #if defined (DO_ALL)
-c      COMMON /consts_dv/ astd, atnd, alsd, dtd, drd, evxd
 #ifdef VARS2
       COMMON /consts_dv/ astd, dtd, drd, evxd
 #endif
 #ifdef VARS4
-c      COMMON /consts_dv/ astd, bstd, btnd, dtd, drd, evxd
-      COMMON /consts_dv/ astd, atnd, alsd, bstd, btnd, 
-     &blsd, dtd, drd, evxd
+      COMMON /consts_dv/ astd, bstd, btnd, dtd, drd, evxd
 #endif
 #ifdef VARS7
       COMMON /consts_dv/ astd, atnd, alsd, bstd,
@@ -163,19 +160,6 @@ c
 #ifndef DO_FULLX
       ndirs=1
       dord(ndirs)=1.0
-      if (n.ge.2) then
-        ndirs=ndirs+1
-        astd(ndirs)=1.0
-        atnd=astd
-        alsd=astd
-      end if
-      if (n.eq.4) then
-        ndirs=ndirs+1
-        bstd(ndirs)=1.0
-        ndirs=ndirs+1
-        btnd(ndirs)=1.0
-        if (bls.ne.0.)blsd=bstd
-      end if
       if (n.eq.2) then
         ndirs=ndirs+1
         astd(ndirs)=1.0
@@ -507,19 +491,6 @@ c     l3=2*l3
 #ifndef DO_FULLX
       ndirs=1
       dord(ndirs)=1.0
-      if (n.ge.2) then
-        ndirs=ndirs+1
-        astd(ndirs)=1.0
-        atnd=astd
-        alsd=astd
-      end if
-      if (n.eq.4) then
-        ndirs=ndirs+1
-        bstd(ndirs)=1.0
-        ndirs=ndirs+1
-        btnd(ndirs)=1.0
-        if (bls.ne.0.)blsd=bstd
-      end if
       if (n.eq.2) then
         ndirs=ndirs+1
         astd(ndirs)=1.0
