@@ -587,13 +587,13 @@ c     l3=2*l3
 c $$$$$$$$$$$$$$$$$$$$$$$
 c NEW stability condition
 c $$$$$$$$$$$$$$$$$$$$$$$
-      f = flocal-abs(endiff)/2
-      fplus=flocal+abs(endiff)
+      final = flocal-abs(endiff)/2
+      fplus=flocal
 #endif
 
-      write(nlog,1095) flocal,f,fplus
-      write(nout,1095) flocal,f,fplus
-      write(nres,*) flocal,f,fplus
+      write(nlog,1095) final, fplus
+      write(nout,1095) final, fplus
+      write(nres,*) flocal
 #if defined (ALLOW_TAPENADE)
 #ifdef DO_ALL
 #ifndef DO_FULLX
