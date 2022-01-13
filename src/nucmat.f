@@ -477,16 +477,30 @@ c     l3=2*l3
       bls=bst
 #endif
 #ifdef ALLOW_TAPENADE
+      kfd=0.0
+      rhod=0.0
+      acnd=0.0
       astd=0.0
       atnd=0.0
       alsd=0.0
+      cnd=0.0
+      cned=0.0
+      dtd=0.0
+      drd=0.0
+      evxd=0.0
+      h2md=0.0
+      h2mcsd=0.0
+      pid=0.0
+      sd=0.0
       bstd=0.0
       btnd=0.0
       blsd=0.0
       dord=0.0
-      gintd =0.0
-      flocald = 0.0
-      gint = 0.0
+      al2d=0.0
+      als2d=0.0
+      gintd=0.0
+      flocald=0.0
+      gint=0.0
 #ifdef DO_ALL
 #ifndef DO_FULLX
       ndirs=1
@@ -573,13 +587,13 @@ c     l3=2*l3
 c $$$$$$$$$$$$$$$$$$$$$$$
 c NEW stability condition
 c $$$$$$$$$$$$$$$$$$$$$$$
-      f = flocal-abs(endiff)/2
-      fplus=flocal+abs(endiff)
+      final = flocal-abs(endiff)/2
+      fplus=flocal
 #endif
 
-      write(nlog,1095) flocal,f,fplus
-      write(nout,1095) flocal,f,fplus
-      write(nres,*) flocal,f,fplus
+      write(nlog,1095) final, fplus
+      write(nout,1095) final, fplus
+      write(nres,*) flocal
 #if defined (ALLOW_TAPENADE)
 #ifdef DO_ALL
 #ifndef DO_FULLX
