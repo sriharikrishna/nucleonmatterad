@@ -33,8 +33,4 @@ c     &       h2m,h2mcs,pi,s
         g2=g2+(gint(l)+1.)**2
       end do 
       flocal=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
-c $$$$$$$$$$$$$$$$$$$$$$$
-c NEW stability condition
-c $$$$$$$$$$$$$$$$$$$$$$$
-      flocal=flocal+abs(endiff)/2
       end
