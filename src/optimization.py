@@ -288,6 +288,57 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
 
     return f,g
 
+def pnm_9d_objective_der(x,rho,lc,ls,lt):
+    xstr = [str(elem) for elem in x]
+    rhostr = "%.3f" % rho
+
+    # write call string
+    callstr = "".join(["./script_nm_pnm_9.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", xstr[4], " ", xstr[5], " ", xstr[6], " ", xstr[7], " ", xstr[8], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
+
+    os.system(callstr)
+
+    # we read in f and g from the .txt:
+    searchstr = "out_pnm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    output_file = glob.glob(searchstr)
+    pnm_file = output_file[0]
+    file = open(pnm_file)
+    line = file.read().replace(","," ")
+    file.close()
+    line = line.split()
+
+    # write g
+    f = np.float(line[0])
+    g = np.zeros(9)
+    g[0] = np.float(line[12])
+    g[1] = np.float(line[13])
+    g[2] = np.float(line[14])
+    g[3] = np.float(line[15])
+    g[4] = np.float(line[16])
+    g[5] = np.float(line[17])
+    g[6] = np.float(line[18])  
+    g[7] = np.float(line[19])
+    g[8] = np.float(line[20])
+
+    # SAFETY:
+    if np.isnan(f):
+        f = 1e3
+        g = np.zeros(9)
+    
+    # CLEANUP:
+    remove_string = "rm " + pnm_file
+    os.system(remove_string)
+
+    searchstr = "out_tap*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt)
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
+    os.system(remove_string)
+
+    searchstr = "temp*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
+    os.system(remove_string)
+
+    return f,g
 def main():
     # args:
     # arg1: dor
@@ -303,16 +354,37 @@ def main():
 
     import sys
     args = sys.argv
-    dor = args[1]
-    alpha = args[2]
-    betas = args[3]
-    betat = args[4]
-    problem = args[5]
-    solver = args[6]
-    rho = float(args[7])
-    lc = int(args[8])
-    ls = int(args[9])
-    lt = int(args[10])
+    
+    if len(args) == 11:
+        dor = args[1]
+        alpha = args[2]
+        betas = args[3]
+        betat = args[4]
+        problem = args[5]
+        solver = args[6]
+        rho = float(args[7])
+        lc = int(args[8])
+        ls = int(args[9])
+        lt = int(args[10])
+    elif len(args) == 16:
+        dor = args[1]
+        ast = args[2]
+        atn = args[3]
+        als = args[4]
+        al2 = args[5]
+        als2 = args[6]
+        bst = args[7]
+        btn = args[8]
+        bls = args[9]
+        problem = args[10]
+        solver = args[11]
+        rho = float(args[12])
+        lc = int(args[13])
+        ls = int(args[14])
+        lt = int(args[15])
+    else:
+        print("Wrong number of input arguments!")
+        return
 
     # initial point
     # WARNING, CURRENTLY HARDCODED TO READ FIRST FOUR ARGUMENTS AS INITIAL POINT FOR PNM, MUST FIX LATER
@@ -320,136 +392,113 @@ def main():
         x0 = np.array([3.997, 0.796])
         dim = 2
     if problem == "pnm4":
-        x0 = np.array([float(dor), float(alpha), float(betas), float(betat)])
-        dim = 4 
+        if len(args) == 11:
+            x0 = np.array([float(dor), float(alpha), float(betas), float(betat)])
+        elif len(args) == 16:
+            x0 = np.array([float(dor), float(ast), float(atn), float(als), float(al2), float(als2), float(bst), float(btn), float(bls)])
+        dim = len(args)-7 
     # tolerance (definition changes with solver)
     tolerance = 1e-8
 
     # some options to play with
-    options = {'disp': True, 'maxcor': dim, 'ftol': 1e-16, 'gtol': 1e-8, 'eps': 1e-08, 'maxfun': 100,
-               'maxiter': 100, 'iprint': 101, 'maxls': 20}
+    options = {'disp': True, 'maxcor': dim, 'ftol': 1e-16, 'gtol': 1e-8, 'eps': 1e-08, 'maxfun': 1000,
+               'maxiter': 1000, 'iprint': 101, 'maxls': 20}
 
-    # read in the perturbations
-    #perturbation_file = open("circle.txt",'r')
-    #lines = perturbation_file.readlines()
-    #perturbation_file.close()
-    #perturbations = np.zeros((30,7))
-    #count = 0
-    #for line in lines:
-    #    perturbations[count,:] = np.fromstring(line, sep = " ")
-    #    count += 1
+    xi = x0
 
-    start_index = 0
-    end_index = 1
-    for i in range(start_index,end_index):
+    # instantiate the Funcgradmon object
+    filename = problem + "_" + solver + "_dim=" + str(dim) + "_rho=" + str(rho) + "_lc_" + str(lc) + "_ls_" + str(ls) + "_lt_" + str(lt) + ".npz"
 
-        if i == 0:
-            xi = x0
-        else:
-            xi = x0 + 0.1*perturbations[i-1,:dim]
-
-        # instantiate the Funcgradmon object
-        filename = problem + "_run_starting_at_x" + str(i) + solver + "_rho=" + str(rho) + "_lc_" + str(lc) + "_ls_" + str(ls) + "_lt_" + str(lt) + ".npz"
-
-        if problem == "snm2":
-            raise Exception('snm2 is currently not implemented, pending Krishna changes to allow for rho, lc, ls, lt inputs')
-            #fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
-        elif problem == "pnm4":
-            if solver == "lbfgs":
+    if problem == "snm2":
+        raise Exception('snm2 is currently not implemented, pending Krishna changes to allow for rho, lc, ls, lt inputs')
+        #fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
+    elif problem == "pnm4":
+        if solver == "lbfgs":
+            if dim == 4:
                 objective = lambda x: pnm_4d_objective_der(x,rho,lc,ls,lt)
                 fg = Funcgradmon(objective, filename, computing_grads = True,verbose=1)
-            else:
-                objective = lambda x: pnm_4d_objective(x,rho,lc,ls,lt)
-                fg = Funcgradmon(objective, filename, computing_grads = False,verbose=1)
+            elif dim == 9:
+                objective = lambda x: pnm_9d_objective_der(x,rho,lc,ls,lt)
+                fg = Funcgradmon(objective, filename, computing_grads = True,verbose=1)
+        else:
+            objective = lambda x: pnm_4d_objective(x,rho,lc,ls,lt)
+            fg = Funcgradmon(objective, filename, computing_grads = False,verbose=1)
 
-        # call LBFGS
-        # bounds: these are arbitrary, but seem more than reasonable:
-        lb = -9.999*np.ones(dim)
-        ub = 9.999*np.ones(dim)
-        bounds = np.vstack((lb,ub))
-        bounds = bounds.T
+    # call LBFGS
+    # bounds: these are arbitrary, but seem more than reasonable:
+    lb = -100*np.ones(dim)
+    ub = 100*np.ones(dim)
+    bounds = np.vstack((lb,ub))
+    bounds = bounds.T
 
-        if solver == "lbfgs":
-            #opt = nlopt.opt(nlopt.LD_LBFGS, dim)
-            #opt.set_min_objective(fg)
-            #opt.set_lower_bounds(lb)
-            #opt.set_upper_bounds(ub)
-            ##opt.set_ftol_rel(1e-16)
-            ##opt.set_ftol_abs(1e-16)
-            ##opt.set_xtol_rel(1e-16)
-            ##opt.set_xtol_abs(1e-16)
-            #opt.set_maxeval(100)
-            #opt.set_vector_storage(dim)
-            #res = opt.optimize(xi)
+    if solver == "lbfgs":
+        res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
+    elif solver == "scipy_neldermead":
+        res = minimize(fg, xi, method='Nelder-Mead', tol=tolerance)
+    elif solver == "fd_lbfgs":
+        res = minimize(fg, xi, method='L-BFGS-B', tol=tolerance)
+    elif solver == "neldermead":
+        xstr = ["%.17f" % elem for elem in xi]
+        absxstr = ["%.17f" % elem for elem in np.abs(xi)]
+        if problem == "snm2":
+            callstr = "".join(["./script_dfo_snm.sh ", xstr[0], " ", xstr[1]])
+            output_file = "out_snm"
+        elif problem == "pnm4":
+            callstr = "".join(["./script_dfo_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3]])
+            output_file = "out_pnm"
+        os.system(callstr)
 
-            res = minimize(fg, xi, method='L-BFGS-B', jac = True, bounds = bounds, tol = tolerance, options=options)
-        elif solver == "scipy_neldermead":
-            res = minimize(fg, xi, method='Nelder-Mead', tol=tolerance)
-        elif solver == "fd_lbfgs":
-            res = minimize(fg, xi, method='L-BFGS-B', tol=tolerance)
-        elif solver == "neldermead":
-            xstr = ["%.17f" % elem for elem in xi]
-            absxstr = ["%.17f" % elem for elem in np.abs(xi)]
-            if problem == "snm2":
-                callstr = "".join(["./script_dfo_snm.sh ", xstr[0], " ", xstr[1]])
-                output_file = "out_snm"
-            elif problem == "pnm4":
-                callstr = "".join(["./script_dfo_pnm.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3]])
-                output_file = "out_pnm"
-            os.system(callstr)
+    # write the output file
+    if solver == "lbfgs":
+        fg.savez(filename, paramstr="...")
+    elif solver == "scipy_neldermead":
+        filename = problem + "_run_starting_at_x" + str(i) + "scipy_neldermead.npz"
+        fg.savez(filename, paramstr="...")
+    elif solver == "fd_lbfgs":
+        filename = problem + "_run_starting_at_x" + str(i) + "fd_lbfgs.npz"
+        fg.savez(filename, paramstr="...")
+    elif solver == "neldermead":
+        for j in range(len(xstr)):
+            output_file = output_file + "_" + absxstr[j]
+        output_file = output_file + ".txt"
 
-        # write the output file
-        if solver == "lbfgs":
-            filename = problem + "_rho=" + str(rho) + "_lc=" + str(lc) + "_ls=" + str(ls) + "_lt=" + str(lt) + "_run_starting_at_x" + str(i) + "lbfgs.npz"
-            fg.savez(filename, paramstr="...")
-        elif solver == "scipy_neldermead":
-            filename = problem + "_run_starting_at_x" + str(i) + "scipy_neldermead.npz"
-            fg.savez(filename, paramstr="...")
-        elif solver == "fd_lbfgs":
-            filename = problem + "_run_starting_at_x" + str(i) + "fd_lbfgs.npz"
-            fg.savez(filename, paramstr="...")
-        elif solver == "neldermead":
-            for j in range(len(xstr)):
-                output_file = output_file + "_" + absxstr[j]
-            output_file = output_file + ".txt"
+        # open the output file, and split the data
+        file = open(output_file)
+        line = file.read().replace(",", " ")
+        file.close()
+        line = line.split()
 
-            # open the output file, and split the data
-            file = open(output_file)
-            line = file.read().replace(",", " ")
-            file.close()
-            line = line.split()
+        num_entries = len(line)
 
-            num_entries = len(line)
-
-            # parse line to get arrays
-            if problem == "snm2":
-                num_evals = np.int(num_entries/6)
-                f = np.zeros(num_evals)
-                x = np.zeros((num_evals, 2))
-                g = np.zeros((num_evals,2))
-                for ctr in range(num_evals):
-                    f[ctr] = np.float(line[6*ctr+1])
-                    x[ctr,0] = np.float(line[6*ctr+2])
-                    x[ctr,1] = np.float(line[6*ctr+3])
-                    g[ctr,0] = np.float(line[6*ctr+4])
-                    g[ctr,1] = np.float(line[6*ctr+5])
-            elif problem == "pnm4":
-                num_evals = np.int(num_entries/10)
-                f = np.zeros(num_evals)
-                x = np.zeros((num_evals, 4))
-                g = np.zeros((num_evals,4))
-                for ctr in range(num_evals):
-                    f[ctr] = np.float(line[10*ctr+1])
-                    x[ctr,0] = np.float(line[10*ctr+2])
-                    x[ctr,1] = np.float(line[10*ctr+3])
-                    x[ctr,2] = np.float(line[10*ctr+4])
-                    x[ctr,3] = np.float(line[10*ctr+5])
-                    g[ctr, 0] = np.float(line[10 * ctr + 6])
-                    g[ctr, 1] = np.float(line[10 * ctr + 7])
-                    g[ctr, 2] = np.float(line[10 * ctr + 8])
-                    g[ctr, 3] = np.float(line[10 * ctr + 9])
-            filename = problem + "_run_starting_at_x" + str(i) + "neldermead.npz"
-            np.savez(filename, f=f, x=x, g=g)
+        # parse line to get arrays
+        if problem == "snm2":
+            num_evals = np.int(num_entries/6)
+            f = np.zeros(num_evals)
+            x = np.zeros((num_evals, 2))
+            g = np.zeros((num_evals,2))
+            for ctr in range(num_evals):
+                f[ctr] = np.float(line[6*ctr+1])
+                x[ctr,0] = np.float(line[6*ctr+2])
+                x[ctr,1] = np.float(line[6*ctr+3])
+                g[ctr,0] = np.float(line[6*ctr+4])
+                g[ctr,1] = np.float(line[6*ctr+5])
+        elif problem == "pnm4":
+            num_evals = np.int(num_entries/10)
+            f = np.zeros(num_evals)
+            x = np.zeros((num_evals, 4))
+            g = np.zeros((num_evals,4))
+            for ctr in range(num_evals):
+                f[ctr] = np.float(line[10*ctr+1])
+                x[ctr,0] = np.float(line[10*ctr+2])
+                x[ctr,1] = np.float(line[10*ctr+3])
+                x[ctr,2] = np.float(line[10*ctr+4])
+                x[ctr,3] = np.float(line[10*ctr+5])
+                g[ctr, 0] = np.float(line[10 * ctr + 6])
+                g[ctr, 1] = np.float(line[10 * ctr + 7])
+                g[ctr, 2] = np.float(line[10 * ctr + 8])
+                g[ctr, 3] = np.float(line[10 * ctr + 9])
+        filename = problem + "_run_starting_at_x" + str(i) + "neldermead.npz"
+        np.savez(filename, f=f, x=x, g=g)
 
 
 if __name__ == '__main__':
