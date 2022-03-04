@@ -262,10 +262,10 @@ def pnm_4d_objective_der(x,rho,lc,ls,lt):
     # write g
     f = np.float(line[0])
     g = np.zeros(4)
-    g[0] = np.float(line[7])
-    g[1] = np.float(line[8])
-    g[2] = np.float(line[9])
-    g[3] = np.float(line[10])
+    g[0] = np.float(line[5])
+    g[1] = np.float(line[6])
+    g[2] = np.float(line[7])
+    g[3] = np.float(line[8])
 
     # SAFETY:
     if np.isnan(f):
@@ -309,15 +309,15 @@ def pnm_9d_objective_der(x,rho,lc,ls,lt):
     # write g
     f = np.float(line[0])
     g = np.zeros(9)
-    g[0] = np.float(line[12])
-    g[1] = np.float(line[13])
-    g[2] = np.float(line[14])
-    g[3] = np.float(line[15])
-    g[4] = np.float(line[16])
-    g[5] = np.float(line[17])
-    g[6] = np.float(line[18])  
-    g[7] = np.float(line[19])
-    g[8] = np.float(line[20])
+    g[0] = np.float(line[10])
+    g[1] = np.float(line[11])
+    g[2] = np.float(line[12])
+    g[3] = np.float(line[13])
+    g[4] = np.float(line[14])
+    g[5] = np.float(line[15])
+    g[6] = np.float(line[16])  
+    g[7] = np.float(line[17])
+    g[8] = np.float(line[18])
 
     # SAFETY:
     if np.isnan(f):
@@ -401,8 +401,8 @@ def main():
     tolerance = 1e-8
 
     # some options to play with
-    options = {'disp': True, 'maxcor': dim, 'ftol': 1e-16, 'gtol': 1e-8, 'eps': 1e-08, 'maxfun': 1000,
-               'maxiter': 1000, 'iprint': 101, 'maxls': 20}
+    options = {'disp': True, 'ftol': 1e-16, 'gtol': 1e-8, 'eps': 1e-15, 'maxfun': 1000,
+            'maxiter': 1000, 'iprint': 101, 'maxls': 20, 'maxcor': 30}
 
     xi = x0
 
