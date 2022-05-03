@@ -122,6 +122,9 @@ ifeq ($(CASE), snm)
 else
   CPPFLAGS+=-DCASE_PNM
 endif
+ifdef FD
+  CPPFLAGS+=-DFD
+endif
 CPPCMD = cat $< |  cpp $(CPPFLAGS) -I../ -I./ -traditional-cpp -P 
 
 %.pre.f: %.f

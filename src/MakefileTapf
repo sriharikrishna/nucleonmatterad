@@ -5,6 +5,7 @@ TPN  = ${TAPENADE_HOME}/bin/tapenade
 CC = @gcc
 FC = @ifort
 FFLAGS   = -O3 -r8
+#FFLAGS   = -O0 -g -r8
 F90FLAGS = $(FFLAGS)
 
 #TARGETS =  nmad nmadv 

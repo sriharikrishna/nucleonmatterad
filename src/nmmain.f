@@ -2,19 +2,15 @@ c *id* nmmain **********************************************************
 c main subroutine for calculating properties of nuclear or
 c neutron matter
 c **********************************************************************
-c      subroutine nmmain(np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le
-c     &                 ,l3,lk,dor,npi,npf, gint,
-c     & endiff, efree)
       subroutine nmmain(np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le
-     &                 ,l3,lk,dor,npi,npf, gint,
-     & endiff, efree)
+     &                 ,l3,lk,dor,npi,npf, gint, endiff, efree)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
-      include "nclude/params.f"
 c params.f sets nm (=1 for nuclear, =2 for neutron) 
 c            lgrid (maximum dimension for r-space arrays)
+      include "nclude/params.f"
       parameter (nu=4/nm)
-      parameter (nlog=0,nin=5,nout=6)
+      parameter (nlog=0,nin=5,nout=6,nfil=11)
       logical larya
       data larya/.false./
       real*8 kf,rho,acn,ast,atn,als,al2,als2,bst,btn,bls,
@@ -58,6 +54,8 @@ c            lgrid (maximum dimension for r-space arrays)
      &       w3x(6,4,3)
       common /eblock/ ev6,evb,evq,ek6,ekb,ef6,ej6,ejb,ep6,
      &       wx,wcx,wcdx,wcmx,wcrx,w3x
+      character*24 nffile
+      common /files/ nffile
 c ----------------------------------------------------------------------
       real*8 xsq(lgrid),xqq(lgrid),rllpp(lgrid),rdls(lgrid),rlss(lgrid)
      &,rlltp(lgrid),wkx(10),wjx(10),ya(6),zif(6,2),esum(14),echeck(14)
@@ -118,36 +116,63 @@ c ======================================================================
 c --------------
 c Fermi gas test
 c --------------
-      if (ns.eq.-1) then
-      do 11 ir=1,lt
-        f(ir,1)=1.
-        fp(ir,1)=0.
-        fds(ir,1)=0.
-   11 continue
+      if (ns.ge.2) then
+        f(:,1)=1.
+        f(:,2:8)=0.
+        fp(:,:)=0.
+        fds(:,:)=0.
       end if
+c -------------------
+c Read in correlation
+c -------------------
+c      if (ns.eq.3) then
+c        open(unit=nfil,file=nffile,status='unknown',form='formatted')
+c        write(nlog,998) nffile
+c        write(nout,998) nffile
+c  998   format(/4x,'reading stored f,fp,fds file ',a24)
+c        read(nfil,999) (rfil,f(ir,1),fp(ir,1),fds(ir,1),ir=1,lc+1)
+c  999   format(f15.8,3f16.8)
+c      end if
 c --------------
-      do 13 l=1,4,nm
-        if (l.eq.1) go to 13
-        do 12 ir=1,lt
-          f(ir,l)=bst*f(ir,l)
-          fp(ir,l)=bst*fp(ir,l)
-          fds(ir,l)=bst*fds(ir,l)
-   12   continue
-   13 continue
-      if (nv.le.4) go to 20
-      do 14 l=5,6,nm
-      do 14 ir=1,lt
-        f(ir,l)=btn*f(ir,l)
-        fp(ir,l)=btn*fp(ir,l)
-        fds(ir,l)=btn*fds(ir,l)
-   14 continue
-      if (nv.le.6) go to 20
-      do 16 l=7,8,nm
-      do 16 ir=1,lt
-        f(ir,l)=bls*f(ir,l)
-        fp(ir,l)=bls*fp(ir,l)
-        fds(ir,l)=bls*fds(ir,l)
-   16 continue
+c     do 13 l=1,4,nm
+c       if (l.eq.1) go to 13
+c       do 12 ir=1,lt
+c         f(ir,l)=bst*f(ir,l)
+c         fp(ir,l)=bst*fp(ir,l)
+c         fds(ir,l)=bst*fds(ir,l)
+c  12   continue
+c  13 continue
+c     if (nv.le.4) go to 20
+c     do 14 l=5,6,nm
+c     do 14 ir=1,lt
+c       f(ir,l)=btn*f(ir,l)
+c       fp(ir,l)=btn*fp(ir,l)
+c       fds(ir,l)=btn*fds(ir,l)
+c  14 continue
+c     if (nv.le.6) go to 20
+c     do 16 l=7,8,nm
+c     do 16 ir=1,lt
+c       f(ir,l)=bls*f(ir,l)
+c       fp(ir,l)=bls*fp(ir,l)
+c       fds(ir,l)=bls*fds(ir,l)
+c  16 continue
+      do 18 ir=1,lt
+        f(ir,2)=bls*f(ir,2)
+        fp(ir,2)=bls*fp(ir,2)
+        fds(ir,2)=bls*fds(ir,2)
+        f(ir,3)=bst*f(ir,3)
+        fp(ir,3)=bst*fp(ir,3)
+        fds(ir,3)=bst*fds(ir,3)
+        f(ir,4)=btn*f(ir,4)
+        fp(ir,4)=btn*fp(ir,4)
+        fds(ir,4)=btn*fds(ir,4)
+        f(ir,5)=bst*f(ir,5)
+        fp(ir,5)=bst*fp(ir,5)
+        fds(ir,5)=bst*fds(ir,5)
+        f(ir,6)=btn*f(ir,6)
+        fp(ir,6)=btn*fp(ir,6)
+        fds(ir,6)=btn*fds(ir,6)
+   18 continue
 c print ================================================================
    20 if (no.gt.0) then
         write(nlog,1030) dg,de,bst,btn,bls

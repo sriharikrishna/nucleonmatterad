@@ -133,6 +133,7 @@ c
       character*32 mname(4)
       character*50 sysdat
       character*160 fname
+      character*7 outpre
       data mname/'Nuclear matter','Neutron matter'
      &          ,'Not implemented at this time'
      &          ,'Spin-polarized neutron matter'/
@@ -153,6 +154,10 @@ c
       if (ndim.eq.2) then
         ast=x(2)
         atn=ast
+        als=ast
+      else if (ndim.eq.3) then
+        ast=x(2)
+        atn=x(3)
         als=ast
       else if (ndim.eq.4) then
         ast=x(2)
@@ -221,8 +226,9 @@ c   ------------------
  1002 format(5x,f10.4)
       read(nin,1002) acn,ast,atn,als,al2,als2
       read(nin,1002) bst,btn,bls,cn,cne
-      read(nin,1002) temp,mstar,tnia,tnic,tnis
-      read(nin,1002) tniu,tnix,cut,cut0
+c      read(nin,1002) temp,mstar,tnia,tnic,tnis
+c      read(nin,1002) tniu,tnix,cut,cut0
+      read(nin,1002) temp,mstar,tnia,tnic,tnis,tniu,tnix,cut,cut0
       read(nin,1001) npi,npf
       read(nin,1002) eav,fsof,plm,qmin,qmax
       if (ns.eq.3) read(nin,1003) nffile
@@ -258,6 +264,9 @@ c   ------------------
             x(1)=dor
       if (ndim.eq.2) then
         x(2)=ast
+      else if (ndim.eq.3) then
+        x(2)=ast
+        x(3)=atn
       else if (ndim.eq.4) then
         x(2)=ast
         x(3)=bst
@@ -290,41 +299,40 @@ c   ------------------
       no=1
       npi=0
 #ifdef CUSTOM_INPUTS
+#if defined (CASE_SNM)
+      outpre = "out_snm"
+#else
+      outpre = "out_pnm"
+#endif
 #ifndef DO_FULLX
       read(nin,*) (x(i),i=1,ndim)
-#if defined (CASE_SNM)
-      write(fname,"(A7,2(A1,F19.17),A4)")
-     &"out_snm", ("_",abs(x(i)),i=1,ndim),".txt"
-#else
+#ifdef FD
+      read(nin,*) nind, xptert
+      if(nind.ne.0) x(nind)=x(nind)+x(nind)*xptert
+#endif
       if (ndim.eq.2) then
       write(fname,"(A7,2(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       else if (ndim.eq.4) then
       write(fname,"(A7,4(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       else if (ndim.eq.7) then
       write(fname,"(A7,7(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       else if (ndim.eq.9) then
       write(fname,"(A7,9(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,ndim),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       end if
-#endif
 #else
       nbdirsmax=7
       read(nin,*) (x(i),i=1,nbdirsmax)
-#if defined (CASE_SNM)
-      write(fname,"(A7,7(A1,F19.17),A4)")
-     &"out_snm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
-#else
       write(fname,"(A7,7(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
-#endif
 #endif
       open(unit=nres,file=fname,action="WRITE")
 #endif
@@ -348,6 +356,10 @@ c     l3=2*l3
       if (ndim.eq.2) then
         ast=x(2)
         atn=ast
+        als=ast
+      else if (ndim.eq.3) then
+        ast=x(2)
+        atn=x(3)
         als=ast
       else if (ndim.eq.4) then
         ast=x(2)
@@ -381,9 +393,9 @@ c     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
   995 g2=g2+(gint(l)+1.)**2
       final=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
       fplus=final+abs(endiff)/2
-      write(nlog,1095) final,fplus
-      write(nout,1095) final,fplus
- 1095 format(/2x,'econs   eplus',/2f8.3)
+      write(nlog,*) final,fplus
+      write(nout,*) final,fplus
+ 1095 format(/2x,'econs   eplus',/2f17.9)
       if (no.le.1) go to 999
       call nmout(le,lg,lt,l3,nie,no,nt,nv)
   999 return

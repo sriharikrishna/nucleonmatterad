@@ -88,6 +88,7 @@ c
       character*32 mname(4)
       character*50 sysdat
       character*200 fname
+      character*7 outpre
       data mname/'Nuclear matter','Neutron matter'
      &          ,'Not implemented at this time'
      &          ,'Spin-polarized neutron matter'/
@@ -109,6 +110,10 @@ c
       if (n.eq.2) then
         ast=x(2)
         atn=ast
+        als=ast
+      else if (n.eq.3) then
+        ast=x(2)
+        atn=x(3)
         als=ast
       else if (n.eq.4) then
         ast=x(2)
@@ -164,6 +169,12 @@ c
         ndirs=ndirs+1
         astd(ndirs)=1.0
         atnd=astd
+        alsd=astd
+      else if (n.eq.3) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        ndirs=ndirs+1
+        atnd(ndirs)=1.0
         alsd=astd
       else if (n.eq.4) then
         ndirs=ndirs+1
@@ -286,11 +297,15 @@ c   ------------------
  1002 format(5x,f10.4)
       read(nin,1002) acn,ast,atn,als,al2,als2
       read(nin,1002) bst,btn,bls,cn,cne
-      read(nin,1002) temp,mstar,tnia,tnic,tnis
-      read(nin,1002) tniu,tnix,cut,cut0
+c      read(nin,1002) temp,mstar,tnia,tnic,tnis
+c      read(nin,1002) tniu,tnix,cut,cut0
+      read(nin,1002) temp,mstar,tnia,tnic,tnis,tniu,tnix,cut,cut0
       read(nin,1001) npi,npf
       read(nin,1002) eav,fsof,plm,qmin,qmax
-      if (ns.eq.3) read(nin,1003) nffile
+      if (ns.eq.3) then
+        read(nin,1003) nffile
+        open(unit=nfil,file=nffile,status='unknown',form='formatted')
+      end if 
  1003 format(5x,a24)
       write(nlog,1010) mname(nmlocal)
       write(nout,1010) mname(nmlocal)
@@ -332,6 +347,9 @@ c   ------------------
       x(1)=dor
       if (n.eq.2) then
         x(2)=ast
+      else if (n.eq.3) then
+        x(2)=ast
+        x(3)=atn
       else if (n.eq.4) then
         x(2)=ast
         x(3)=bst
@@ -384,40 +402,35 @@ c   ------------------
       open(unit=nres,file=fname,action="WRITE")
       write(nres,"(I2.2,A1,F3.1)") nperturb,",",delta
 #else 
+#if defined (CASE_SNM)
+      outpre = "out_snm"
+#else
+      outpre = "out_pnm"
+#endif
 #ifndef DO_FULLX
       read(nin,*) (x(i),i=1,n)
-#if defined (CASE_SNM)
-      write(fname,"(A7,2(A1,F19.17),A4)")
-     &"out_snm", ("_",abs(x(i)),i=1,n),".txt"
-#else
       if (n.eq.2) then
       write(fname,"(A7,2(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       else if (n.eq.4) then
       write(fname,"(A7,4(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       else if (n.eq.7) then
       write(fname,"(A7,7(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       else if (n.eq.9) then
       write(fname,"(A7,9(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
       end if
-#endif
 #else
       read(nin,*) (x(i),i=1,nbdirsmax)
-#if defined (CASE_SNM)
-      write(fname,"(A7,5(A1,F19.17),A4)")
-     &"out_snm", ("_",abs(x(i)),i=1,nbdirsmax),".txt"
-#else
       write(fname,"(A7,5(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
-     &"out_pnm", ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
+     &outpre, ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
      & "_",ls,"_",lt,".txt"
-#endif
 #endif
       open(unit=nres,file=fname,action="WRITE")
 #endif
@@ -442,6 +455,10 @@ c     l3=2*l3
       if (n.eq.2) then
         ast=x(2)
         atn=ast
+        als=ast
+      else if (n.eq.3) then
+        ast=x(2)
+        atn=x(3)
         als=ast
       else if (n.eq.4) then
         ast=x(2)
@@ -509,6 +526,12 @@ c     l3=2*l3
         ndirs=ndirs+1
         astd(ndirs)=1.0
         atnd=astd
+        alsd=astd
+      else if (n.eq.3) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        ndirs=ndirs+1
+        atnd(ndirs)=1.0
         alsd=astd
       else if (n.eq.4) then
         ndirs=ndirs+1

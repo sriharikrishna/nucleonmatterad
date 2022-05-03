@@ -339,6 +339,57 @@ def pnm_9d_objective_der(x,rho,lc,ls,lt):
     os.system(remove_string)
 
     return f,g
+
+def snm_7d_objective_der(x,rho,lc,ls,lt):
+    xstr = [str(elem) for elem in x]
+    rhostr = "%.3f" % rho
+
+    # write call string
+    callstr = "".join(["./script_nm_snm_7.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", xstr[4], " ", xstr[5], " ", xstr[6], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
+
+    os.system(callstr)
+
+    # we read in f and g from the .txt:
+    searchstr = "out_snm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    output_file = glob.glob(searchstr)
+    snm_file = output_file[0]
+    file = open(snm_file)
+    line = file.read().replace(","," ")
+    file.close()
+    line = line.split()
+    print("line", line)
+    # write g
+    f = np.float(line[0])
+    g = np.zeros(7)
+    g[0] = np.float(line[8])
+    g[1] = np.float(line[9])
+    g[2] = np.float(line[10])
+    g[3] = np.float(line[11])
+    g[4] = np.float(line[12])
+    g[5] = np.float(line[13])
+    g[6] = np.float(line[14])
+
+    # SAFETY:
+    if np.isnan(f):
+        f = 1e3
+        g = np.zeros(9)
+    
+    # CLEANUP:
+    remove_string = "rm " + snm_file
+    os.system(remove_string)
+
+    searchstr = "out_tap*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt)
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
+    os.system(remove_string)
+
+    searchstr = "temp*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
+    os.system(remove_string)
+
+    return f,g
+
 def main():
     # args:
     # arg1: dor
@@ -382,15 +433,32 @@ def main():
         lc = int(args[13])
         ls = int(args[14])
         lt = int(args[15])
+    elif len(args) == 14:
+        dor = args[1]
+        ast = args[2]
+        atn = args[3]
+        als = args[4]
+        bst = args[5]
+        btn = args[6]
+        bls = args[7]
+        problem = args[8]
+        solver = args[9]
+        rho = float(args[10])
+        lc = int(args[11])
+        ls = int(args[12])
+        lt = int(args[13])
     else:
-        print("Wrong number of input arguments!")
+        print("Wrong number of input arguments!", len(args))
         return
 
     # initial point
     # WARNING, CURRENTLY HARDCODED TO READ FIRST FOUR ARGUMENTS AS INITIAL POINT FOR PNM, MUST FIX LATER
     if problem == "snm2":
-        x0 = np.array([3.997, 0.796])
-        dim = 2
+        #x0 = np.array([3.997, 0.796])
+        #dim = 2
+        if len(args) == 14:
+            x0 = np.array([float(dor), float(ast), float(atn), float(als), float(bst), float(btn), float(bls)])
+        dim = len(args)-7 
     if problem == "pnm4":
         if len(args) == 11:
             x0 = np.array([float(dor), float(alpha), float(betas), float(betat)])
@@ -410,7 +478,15 @@ def main():
     filename = problem + "_" + solver + "_dim=" + str(dim) + "_rho=" + str(rho) + "_lc_" + str(lc) + "_ls_" + str(ls) + "_lt_" + str(lt) + ".npz"
 
     if problem == "snm2":
-        raise Exception('snm2 is currently not implemented, pending Krishna changes to allow for rho, lc, ls, lt inputs')
+        if solver == "lbfgs":
+            if dim == 7:
+                objective = lambda x: snm_7d_objective_der(x,rho,lc,ls,lt)
+                fg = Funcgradmon(objective, filename, computing_grads = True,verbose=1)
+            else:
+                raise Exception('snm2 is currently not implemented with dim=',dim)
+        else:
+            objective = lambda x: pnm_4d_objective(x,rho,lc,ls,lt)
+            fg = Funcgradmon(objective, filename, computing_grads = False,verbose=1)
         #fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
     elif problem == "pnm4":
         if solver == "lbfgs":
@@ -426,6 +502,7 @@ def main():
 
     # call LBFGS
     # bounds: these are arbitrary, but seem more than reasonable:
+    print("dim ", dim)
     lb = -100*np.ones(dim)
     ub = 100*np.ones(dim)
     bounds = np.vstack((lb,ub))
