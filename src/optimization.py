@@ -372,7 +372,7 @@ def snm_7d_objective_der(x,rho,lc,ls,lt):
     # SAFETY:
     if np.isnan(f):
         f = 1e3
-        g = np.zeros(9)
+        g = np.zeros(7)
     
     # CLEANUP:
     remove_string = "rm " + snm_file
@@ -471,7 +471,6 @@ def main():
     # some options to play with
     options = {'disp': True, 'ftol': 1e-16, 'gtol': 1e-8, 'eps': 1e-15, 'maxfun': 1000,
             'maxiter': 1000, 'iprint': 101, 'maxls': 20, 'maxcor': 30}
-
     xi = x0
 
     # instantiate the Funcgradmon object
