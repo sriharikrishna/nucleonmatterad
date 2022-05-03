@@ -1,5 +1,6 @@
 # omp options
-OMPFLAGS= -openmp -lpthread -openmp-report
+#OMPFLAGS= -openmp -lpthread -openmp-report
+OMPFLAGS= -qopenmp -lpthread -openmp-report
 # debug compiler options
 OPTFLAGSD= -g -r8 -O0 -WB -traceback -Include
 FCD=ifort -fPIC $(OPTFLAGSD)
