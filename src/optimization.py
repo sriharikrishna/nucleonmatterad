@@ -448,7 +448,7 @@ def main():
         ls = int(args[12])
         lt = int(args[13])
     else:
-        print("Wrong number of input arguments!", len(args))
+        print("Wrong number of input arguments!", len(args), args)
         return
 
     # initial point
@@ -459,12 +459,15 @@ def main():
         if len(args) == 14:
             x0 = np.array([float(dor), float(ast), float(atn), float(als), float(bst), float(btn), float(bls)])
         dim = len(args)-7 
-    if problem == "pnm4":
+    elif problem == "pnm4":
         if len(args) == 11:
             x0 = np.array([float(dor), float(alpha), float(betas), float(betat)])
         elif len(args) == 16:
             x0 = np.array([float(dor), float(ast), float(atn), float(als), float(al2), float(als2), float(bst), float(btn), float(bls)])
         dim = len(args)-7 
+    else:
+        raise Exception('unknown problem =',problem)
+
     # tolerance (definition changes with solver)
     tolerance = 1e-8
 
