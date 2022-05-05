@@ -212,9 +212,9 @@ c ----------------------------------------
 c ----------------------------
 c construct 3-point superbonds
 c ----------------------------
-!$OMP PARALLEL SHARED(sddd,sdde,sdee,seee,sccd,scce)
-!$OMP& PRIVATE(i,j,k,l,m,np)
-!$OMP DO SCHEDULE(DYNAMIC)
+C$OMP PARALLEL SHARED(sddd,sdde,sdee,seee,sccd,scce)
+C$OMP& PRIVATE(i,j,k,l,m,np)
+C$OMP DO SCHEDULE(DYNAMIC)
       do 160 i=1,le                              ! r12
         do 150 j=1,le                            ! r13
           ka=iabs(i-j)+1
@@ -275,8 +275,8 @@ c ----------------------------
   140     continue
   150   continue
   160 continue
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL
+C!$OMP END DO NOWAIT
+C!$OMP END PARALLEL
 c -----------------------
 c set soc input functions
 c -----------------------
@@ -336,9 +336,9 @@ c        write(*,*) "1assigning gdd(",il,"1)", gdd(il,1)*co
         gca(il,1)=gca(il,1)*co
         gcb(il,1)=gcb(il,1)*co
   240 continue
-!$OMP PARALLEL SHARED(gdd,gde,gee,gca,gcb)
-!$OMP& PRIVATE(i,j,k,l)
-!$OMP DO SCHEDULE(DYNAMIC)
+C$OMP PARALLEL SHARED(gdd,gde,gee,gca,gcb)
+C$OMP& PRIVATE(i,j,k,l)
+C$OMP DO SCHEDULE(DYNAMIC)
       do 290 i=1,lg
         ei=q2cn*ri(i)
         do 280 j=1,lg
@@ -383,8 +383,8 @@ c              write(*,*) "4assigning gdd(",i,l+4,",)",gdd(i,l+4)
   270     continue
   280   continue
   290 continue
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL
+C$OMP END DO NOWAIT
+C$OMP END PARALLEL
 c -------------------------------
 c elementary diagram integrations
 c -------------------------------
@@ -395,9 +395,9 @@ c -------------------------------
         eca(il,1)=eca(il,1)*coe
         ecb(il,1)=ecb(il,1)*coe
   340 continue
-!$OMP PARALLEL SHARED(edd,ede,eee,eca,ecb)
-!$OMP& PRIVATE(i,j,k,l)
-!$OMP DO SCHEDULE(DYNAMIC)
+C$OMP PARALLEL SHARED(edd,ede,eee,eca,ecb)
+C$OMP& PRIVATE(i,j,k,l)
+C$OMP DO SCHEDULE(DYNAMIC)
       do 390 i=1,le
         ei=q3cne*ri(i)
         do 380 j=1,le
@@ -621,8 +621,8 @@ c    &             +sccd(kji)* xgcc(j)*     xgdd(k,l+4) )
   370     continue
   380   continue
   390 continue
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL
+C$OMP END DO NOWAIT
+C$OMP END PARALLEL
       do 395 i=1,lg
 c        write(*,*) "lg", lg, "i",i,gdd(i,1),edd(i,1)
         eca(i,1)=.5*eca(i,1)
