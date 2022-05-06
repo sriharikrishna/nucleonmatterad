@@ -8,7 +8,7 @@ else
 fi
 
 cat snm/av6p.seven08.in  >temp_$(printf %.3f $1)_$(printf %.3f $2)_$(printf %.3f $3)_$(printf %.3f $4)_$(printf %.3f $5)_$(printf %.3f $6)_$(printf %.3f $7)_$8_$9_${10}_${11}.dat
-echo $1 $2 $3 $4 $5 $6 $7 $8 $9 >> temp_$(printf %.3f $1)_$(printf %.3f $2)_$(printf %.3f $3)_$(printf %.3f $4)_$(printf %.3f $5)_$(printf %.3f $6)_$(printf %.3f $7)_$8_$9_${10}_${11}.dat 
+echo $1 $2 $3 $4 $5 $6 $7 >> temp_$(printf %.3f $1)_$(printf %.3f $2)_$(printf %.3f $3)_$(printf %.3f $4)_$(printf %.3f $5)_$(printf %.3f $6)_$(printf %.3f $7)_$8_$9_${10}_${11}.dat 
 
 sedify() {
   sed -i "s/ rho=/ rho=$1/g" $5
