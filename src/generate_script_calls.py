@@ -22,8 +22,8 @@ def scriptgen(ndim, case, dor, ast, als, atn,
     return cmdlist
 
 def call_script(cmd):
-    print(cmd)
-    #os.system(cmd)
+    #print(cmd)
+    os.system(cmd)
 
 def runbatch(batch=0, cmdlist=[]):
     N = min(os.cpu_count(), 48)
