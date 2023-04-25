@@ -119,9 +119,10 @@ def snm_2d_objective(x):
     output_file = output_file + ".txt" #output_file.join([".txt"])
 
     # we read in f and g from the .txt:
-
+    print("output_file", output_file)
     file = open(output_file)
     line = file.read().replace(","," ")
+    print("line:", line)
     file.close()
     line = line.split()
 
@@ -133,60 +134,6 @@ def snm_2d_objective(x):
         f = 1e2
 
     return f
-
-def snm_2d_objective_der(x):
-    xstr = ["%.17f" % elem for elem in x]
-    absxstr = ["%.17f" % elem for elem in np.abs(x)]
-
-    # write call string
-    callstr = "".join(["./script_nm_snm.sh ", xstr[0], " ", xstr[1]])
-
-    ## the output was written to out_snm_abs(x(i))....txt
-    output_file = "out_snm"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".txt"  # output_file.join([".txt"])
-
-    if not os.path.exists(output_file):
-        # call the call string
-        os.system(callstr)
-
-    # we read in f and g from the .xt:
-    file = open(output_file)
-    line = file.read().replace(","," ")
-    file.close()
-    line = line.split()
-
-    # write g
-    g = np.zeros(2)
-    g[0] = np.float(line[3])
-    g[1] = np.float(line[4])
-
-    # SAFETY
-    f = np.float(line[0])
-    if np.isinf(f) or np.isnan(f):
-        g = np.zeros(2)
-
-    remove_string = "rm " + output_file
-    os.system(remove_string)
-
-    output_file = "out_tap_all_nucmat_snm"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    remove_string = "rm " + output_file
-    os.system(remove_string)
-
-    output_file = "temp"
-    for j in range(len(xstr)):
-        # output_file = output_file.join(["_", absxstr[j]])
-        output_file = output_file + "_" + absxstr[j]
-    output_file = output_file + ".dat"  # output_file.join([".txt"])
-    remove_string = "rm " + output_file
-    os.system(remove_string)
-
-    return g
 
 def pnm_4d_objective(x,rho,lc,ls,lt):
     # convert x into strings
@@ -340,18 +287,69 @@ def pnm_9d_objective_der(x,rho,lc,ls,lt):
 
     return f,g
 
-def snm_7d_objective_der(x,rho,lc,ls,lt):
+def snm_2d_objective_der(x,rho,lc,ls,ll):
     xstr = [str(elem) for elem in x]
     rhostr = "%.3f" % rho
 
     # write call string
-    callstr = "".join(["./script_nm_snm_7.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", xstr[4], " ", xstr[5], " ", xstr[6], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(lt)])
+    callstr = "".join(["./script_nm_snm_2.sh ", xstr[0], " ", xstr[1], " ", " ", rhostr, " ", str(lc), " ", str(ls), " ", str(ll)])
+    print("callstr", callstr)
 
     os.system(callstr)
 
     # we read in f and g from the .txt:
-    searchstr = "out_snm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    searchstr = "out_snm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(ll) + ".txt"
+    print("searchstr", searchstr)
     output_file = glob.glob(searchstr)
+    print("output_file", output_file)
+    snm_file = output_file[0]
+    file = open(snm_file)
+    line = file.read().replace(","," ")
+    file.close()
+    line = line.split()
+    print("line", line)
+    # write g
+    f = np.float(line[0])
+    g = np.zeros(2)
+    g[0] = np.float(line[3])
+    g[1] = np.float(line[4])
+
+    # SAFETY:
+    if np.isnan(f):
+        f = 1e3
+        g = np.zeros(2)
+    
+    # CLEANUP:
+    remove_string = "rm " + snm_file
+    os.system(remove_string)
+
+    searchstr = "out_tap*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(ll)
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
+    os.system(remove_string)
+
+    searchstr = "temp*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(ll) + ".dat"
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
+    os.system(remove_string)
+
+    return f,g
+
+
+def snm_7d_objective_der(x,rho,lc,ls,ll):
+    xstr = [str(elem) for elem in x]
+    rhostr = "%.3f" % rho
+
+    # write call string
+    callstr = "".join(["./script_nm_snm_7.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", xstr[4], " ", xstr[5], " ", xstr[6], " ", rhostr, " ", str(lc), " ", str(ls), " ", str(ll)])
+
+    os.system(callstr)
+
+    # we read in f and g from the .txt:
+    searchstr = "out_snm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(ll) + ".txt"
+    print("searchstr", searchstr)
+    output_file = glob.glob(searchstr)
+    print("output_file", output_file)
     snm_file = output_file[0]
     file = open(snm_file)
     line = file.read().replace(","," ")
@@ -378,12 +376,12 @@ def snm_7d_objective_der(x,rho,lc,ls,lt):
     remove_string = "rm " + snm_file
     os.system(remove_string)
 
-    searchstr = "out_tap*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt)
+    searchstr = "out_tap*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(ll)
     output_file = glob.glob(searchstr)
     remove_string = "rm " + output_file[0]
     os.system(remove_string)
 
-    searchstr = "temp*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
+    searchstr = "temp*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(ll) + ".dat"
     output_file = glob.glob(searchstr)
     remove_string = "rm " + output_file[0]
     os.system(remove_string)
@@ -405,8 +403,16 @@ def main():
 
     import sys
     args = sys.argv
-    
-    if len(args) == 11:
+    if len(args) == 9:
+        dor = args[1]
+        alpha = args[2]
+        problem = args[3]
+        solver = args[4]
+        rho = float(args[5])
+        lc = int(args[6])
+        ls = int(args[7])
+        lt = int(args[8]) 
+    elif len(args) == 11:
         dor = args[1]
         alpha = args[2]
         betas = args[3]
@@ -458,6 +464,8 @@ def main():
         #dim = 2
         if len(args) == 14:
             x0 = np.array([float(dor), float(ast), float(atn), float(als), float(bst), float(btn), float(bls)])
+        if len(args) == 9:
+            x0 = np.array([float(dor), float(alpha)])
         dim = len(args)-7 
     elif problem == "pnm4":
         if len(args) == 11:
@@ -477,11 +485,14 @@ def main():
     xi = x0
 
     # instantiate the Funcgradmon object
-    filename = problem + "_" + solver + "_dim=" + str(dim) + "_rho=" + str(rho) + "_lc_" + str(lc) + "_ls_" + str(ls) + "_lt_" + str(lt) + ".npz"
+    filename = problem + "_" + solver + "_dim=" + str(dim) + "_rho=" + str(rho) + "_lc_" + str(lc) + "_ls_" + str(ls) + "_ll_" + str(lt) + ".npz"
 
     if problem == "snm2":
         if solver == "lbfgs":
-            if dim == 7:
+            if dim == 2:
+                objective = lambda x: snm_2d_objective_der(x,rho,lc,ls,lt)
+                fg = Funcgradmon(objective, filename, computing_grads = True,verbose=1)
+            elif dim == 7:
                 objective = lambda x: snm_7d_objective_der(x,rho,lc,ls,lt)
                 fg = Funcgradmon(objective, filename, computing_grads = True,verbose=1)
             else:
