@@ -134,45 +134,46 @@ c        read(nfil,999) (rfil,f(ir,1),fp(ir,1),fds(ir,1),ir=1,lc+1)
 c  999   format(f15.8,3f16.8)
 c      end if
 c --------------
-c     do 13 l=1,4,nm
-c       if (l.eq.1) go to 13
-c       do 12 ir=1,lt
-c         f(ir,l)=bst*f(ir,l)
-c         fp(ir,l)=bst*fp(ir,l)
-c         fds(ir,l)=bst*fds(ir,l)
-c  12   continue
-c  13 continue
-c     if (nv.le.4) go to 20
-c     do 14 l=5,6,nm
-c     do 14 ir=1,lt
-c       f(ir,l)=btn*f(ir,l)
-c       fp(ir,l)=btn*fp(ir,l)
-c       fds(ir,l)=btn*fds(ir,l)
-c  14 continue
-c     if (nv.le.6) go to 20
-c     do 16 l=7,8,nm
-c     do 16 ir=1,lt
-c       f(ir,l)=bls*f(ir,l)
-c       fp(ir,l)=bls*fp(ir,l)
-c       fds(ir,l)=bls*fds(ir,l)
-c  16 continue
-      do 18 ir=1,lt
-        f(ir,2)=bls*f(ir,2)
-        fp(ir,2)=bls*fp(ir,2)
-        fds(ir,2)=bls*fds(ir,2)
-        f(ir,3)=bst*f(ir,3)
-        fp(ir,3)=bst*fp(ir,3)
-        fds(ir,3)=bst*fds(ir,3)
-        f(ir,4)=btn*f(ir,4)
-        fp(ir,4)=btn*fp(ir,4)
-        fds(ir,4)=btn*fds(ir,4)
-        f(ir,5)=bst*f(ir,5)
-        fp(ir,5)=bst*fp(ir,5)
-        fds(ir,5)=bst*fds(ir,5)
-        f(ir,6)=btn*f(ir,6)
-        fp(ir,6)=btn*fp(ir,6)
-        fds(ir,6)=btn*fds(ir,6)
-   18 continue
+      do 13 l=1,4,nm
+        if (l.eq.1) go to 13
+        do 12 ir=1,lt
+          f(ir,l)=bst*f(ir,l)
+          fp(ir,l)=bst*fp(ir,l)
+          fds(ir,l)=bst*fds(ir,l)
+   12   continue
+   13 continue
+      if (nv.le.4) go to 20
+      do 14 l=5,6,nm
+      do 14 ir=1,lt
+        f(ir,l)=btn*f(ir,l)
+        fp(ir,l)=btn*fp(ir,l)
+        fds(ir,l)=btn*fds(ir,l)
+   14 continue
+      if (nv.le.6) go to 20
+      do 16 l=7,8,nm
+      do 16 ir=1,lt
+        f(ir,l)=bls*f(ir,l)
+        fp(ir,l)=bls*fp(ir,l)
+        fds(ir,l)=bls*fds(ir,l)
+   16 continue
+c --------------
+c     do 18 ir=1,lt
+c       f(ir,2)=bls*f(ir,2)
+c       fp(ir,2)=bls*fp(ir,2)
+c       fds(ir,2)=bls*fds(ir,2)
+c       f(ir,3)=bst*f(ir,3)
+c       fp(ir,3)=bst*fp(ir,3)
+c       fds(ir,3)=bst*fds(ir,3)
+c       f(ir,4)=btn*f(ir,4)
+c       fp(ir,4)=btn*fp(ir,4)
+c       fds(ir,4)=btn*fds(ir,4)
+c       f(ir,5)=bst*f(ir,5)
+c       fp(ir,5)=bst*fp(ir,5)
+c       fds(ir,5)=bst*fds(ir,5)
+c       f(ir,6)=btn*f(ir,6)
+c       fp(ir,6)=btn*fp(ir,6)
+c       fds(ir,6)=btn*fds(ir,6)
+c  18 continue
 c print ================================================================
    20 if (no.gt.0) then
         write(nlog,1030) dg,de,bst,btn,bls
@@ -182,7 +183,7 @@ c print ================================================================
 c ======================================================================
       call nmhnc(lg,le,l3,ni,nie,nio,no,nt,nv)
 c ======================================================================
-      do 30 ir=1,ltd
+      do 30 ir=1,lg
         xsq(ir)=ksav*rs(ir)/3
         xqq(ir)=.16*kqav*rs(ir)**2+2*xsq(ir)
         rllp(ir)=r(ir)*sl(ir)*slp(ir)
@@ -301,7 +302,7 @@ c -------------------------------
 c --------------------------------------
 c integrations for w2,wh,ws,ws2,wsb(bpk)
 c --------------------------------------
-      do 130 ir=1,ltd
+      do 130 ir=1,lg
       z=f(ir,i)*v(ir,j)*f(ir,k)*qx*rs(ir)
       xdd=gx(ir)
       xde=gy(ir)
@@ -509,7 +510,7 @@ c following line not in AA
 c --------------------------------------
 c integrations for w2b,whb,wsb(bik),wf2b
 c --------------------------------------
-  215 do 230 ir=1,ltd
+  215 do 230 ir=1,lg
       z=f(ir,i)*v(ir,j)*f(ir,k)*qx*rs(ir)
       xdd=gx(ir)
       xde=gy(ir)
@@ -877,7 +878,7 @@ c ---------------------------------
 c ------------------------
 c integration for w2q, wsq
 c ------------------------
-  309 do 310 ir=1,ltd
+  309 do 310 ir=1,lg
       z=f(ir,i)*v(ir,j)*f(ir,k)*qx*rs(ir)
       xdd=gx(ir)
       xde=gde(ir,1)
@@ -1040,7 +1041,7 @@ c ---------------------
         vmmnp=0
         vmmnn=0
         esq=197.327053/137.03599
-        do 750 ir=1,ltd
+        do 750 ir=1,lg
           call empot(1,1.,1.,r(ir),vem)
           vc1pp=vc1pp+vem(1)*(gnn(ir,1)+gnn(ir,2)/3.)*rs(ir)-esq*r(ir)
           vc1np=vc1np+vem(5)*(gnn(ir,1)-gnn(ir,2)/3.)*rs(ir)
@@ -1080,7 +1081,7 @@ c --------
       do 820 l=1,6,nm
       echeck(l)=0
       gint(l)=0
-      do 810 ir=1,ltd
+      do 810 ir=1,lg
       echeck(l)=echeck(l)+v(ir,l)*gnn(ir,l)*rs(ir)*x
       gnn(ir,l)=gnn(ir,l)/aa(l)
       gint(l)=gint(l)+2*(gnn(ir,l)-at(l,1)+af(l)*sls(ir)/nu)*rs(ir)*x
@@ -1094,7 +1095,7 @@ c --------
       if (nv.gt.6) then
         do 840 l=7,14,nm
         echeck(l)=0
-        do 830 ir=1,ltd
+        do 830 ir=1,lg
         echeck(l)=echeck(l)+v(ir,l)*gnn(ir,l)*rs(ir)*x
   830   continue
         esum(l)=0

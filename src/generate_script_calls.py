@@ -7,18 +7,21 @@ def scriptgen(ndim, case, dor, ast, als, atn,
               bst, btn, bls, rho, solver="lbfgs"):
     cmdlist = []
     count = 0
+    #TODO: ll is the same as ls 
+    #TODO: lc range (8, ls+1,2)  
     for ls in range (10,33,2):
-        for ll in range (10,ls+1,2):
-            for lc in range (10,ll+1,2):
-                count+=1
-                if ndim == 2:
-                    cmd = "python3 optimization.py {} {} {} {} {} {} {} {} > opt_out_{}_{}_{}_{}_{}_{}".format(dor, ast, case, solver, rho, lc, ls, ll, dor, ast, rho, lc, ls, ll)
-                if ndim == 4:
-                    cmd = "python3 optimization.py {} {} {} {} {} {} {} {} {} {} > opt_out_{}_{}_{}_{}_{}_{}_{}_{}".format(dor, ast, bst, btn, case, solver, rho, lc, ls, ll, dor, ast, bst, btn, rho, lc, ls, ll)
-                if ndim == 7:
-                    cmd = "python3 optimization.py {} {} {} {} {} {} {} {} {} {} {} {} {} > opt_out_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(dor, ast, atn, als, bst, btn, bls, case, solver, rho, lc, ls, ll, dor, ast, atn, als, bst, btn, bls, rho, lc, ls, ll)
-                cmdlist.append(cmd)
-    print(count)
+        ll = ls
+        #for ll in range (10,ls+1,2):
+        for lc in range (8, ls+1,2):
+            count+=1
+            if ndim == 2:
+                cmd = "python3 optimization.py {} {} {} {} {} {} {} {} > opt_out_{}_{}_{}_{}_{}_{}".format(dor, ast, case, solver, rho, lc, ls, ll, dor, ast, rho, lc, ls, ll)
+            if ndim == 4:
+                cmd = "python3 optimization.py {} {} {} {} {} {} {} {} {} {} > opt_out_{}_{}_{}_{}_{}_{}_{}_{}".format(dor, ast, bst, btn, case, solver, rho, lc, ls, ll, dor, ast, bst, btn, rho, lc, ls, ll)
+            if ndim == 7:
+                cmd = "python3 optimization.py {} {} {} {} {} {} {} {} {} {} {} {} {} > opt_out_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(dor, ast, atn, als, bst, btn, bls, case, solver, rho, lc, ls, ll, dor, ast, atn, als, bst, btn, bls, rho, lc, ls, ll)
+            cmdlist.append(cmd)
+    print(cmdlist)
     return cmdlist
 
 def call_script(cmd):

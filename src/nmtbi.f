@@ -57,6 +57,7 @@ c
 c -------------------------
 c statement functions
 c error in rbrtr fixed 7/07
+c error in zzr fixed 8/21
 c -------------------------
       rrr(i,j,k,ijk,ikj,jik,kji)=
      &  rdd(i)*rdd(j)*rdd(k)*(1+sddd(ijk)+sdde(ijk)+sdde(jik)

@@ -122,6 +122,13 @@ c
         bst=x(3)
         btn=x(4)
         if (bls.ne.0.) bls=bst
+      else if (n.eq.5) then
+        ast=x(2)
+        atn=x(3)
+        als=ast
+        bst=x(4)
+        btn=x(5)
+        bls=bst
       else if (n.eq.7) then
         ast=x(2)
         atn=x(3)
@@ -179,13 +186,24 @@ c
       else if (n.eq.4) then
         ndirs=ndirs+1
         astd(ndirs)=1.0
-        atnd=astd
+c        atnd=astd
+c        alsd=astd
+        ndirs=ndirs+1
+        bstd(ndirs)=1.0
+        ndirs=ndirs+1
+        btnd(ndirs)=1.0
+c        if (bls.ne.0.) blsd=bstd
+      else if (n.eq.5) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        ndirs=ndirs+1
+        atnd(ndirs)=1.0
         alsd=astd
         ndirs=ndirs+1
         bstd(ndirs)=1.0
         ndirs=ndirs+1
         btnd(ndirs)=1.0
-        if (bls.ne.0.) blsd=bstd
+        blsd=bstd
       else if (n.eq.7) then
         ndirs=ndirs+1
         astd(ndirs)=1.0
@@ -235,7 +253,12 @@ c
       do l=1,2,nmlocal
         g2=g2+(gint(l)+1.)**2
       end do
-      f=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      f=efree+econ*sqrt(g2)**ncon
+c $$$$$$$$$$$$$$$$$$$$$$$
+c NEW stability condition
+c $$$$$$$$$$$$$$$$$$$$$$$
+      if (ntype.le.1) f=f+ntype*endiff/2
+      if (ntype.eq.2) f=f+abs(endiff)/2
 #else
 #ifndef DO_ALL
       call NMMAINAD_D(np, nv, nt, ni, nie, nio, no, ns, lf, lc, ls, lt
@@ -279,7 +302,7 @@ c
 c ************************
 c entry for initialization
 c ************************
-      entry nminit(x,n)
+      entry nminit(x,n,lread)
       pi=acos(-1.)
       do 1 i=1,8
       do 1 j=1,8
@@ -292,6 +315,7 @@ c   read in parameters
 c   ------------------
       read(nin,1001) nmlocal,np,nv,nt,ni,nie,nio,no,ns
  1001 format(5x,i3)
+
       read(nin,1001) lf,lc,ls,lt,ll,lg,le,l3,lk
       read(nin,1002) kf,rho,dor
  1002 format(5x,f10.4)
@@ -318,13 +342,23 @@ c      read(nin,1002) tniu,tnix,cut,cut0
       ptnnam=' '
       if (np.le.100) then
         ptnnam(1:20)=pname(np)
+        write(nlog,1012) ptnnam,tname(nt)
+        write(nout,1012) ptnnam,tname(nt)
+ 1012   format(/4x,2a20)
       else if (np.gt.100 .and. np.le.200) then
-        ptnnam(1:13)='Norfolk v19 #'
-        write(ptnnam(14:16),'(i3)') np
+        ptnnam(1:12)='Norfolk vij '
+        if (nt.gt.100) then
+          ptnnam(13:18)='+ Vijk'
+          write(nlog,1014) ptnnam,np,nt
+          write(nout,1014) ptnnam,np,nt
+ 1014     format(/4x,a20,'#',i3,' + #',i3)
+        else
+          write(nlog,1016) ptnnam,np
+          write(nout,1016) ptnnam,np
+ 1016     format(/4x,a12,'#',i3)
+        end if
       end if
-      write(nlog,1012) ptnnam,tname(nt)
-      write(nout,1012) ptnnam,tname(nt)
- 1012 format(/4x,2a20)
+ccccc
       s=float(4/nmlocal)
       nosave=no
       npisav=npi
@@ -352,9 +386,16 @@ c      read(nin,1002) tniu,tnix,cut,cut0
         x(3)=atn
       else if (n.eq.4) then
         x(2)=ast
+        atn=ast
+        als=ast
         x(3)=bst
         x(4)=btn
         if (bls.ne.0.) bls=bst
+      else if (n.eq.5) then
+        x(2)=ast
+        x(3)=atn
+        x(4)=bst
+        x(5)=btn
       else if (n.eq.7) then
         x(2)=ast
         x(3)=atn
@@ -412,25 +453,25 @@ c      read(nin,1002) tniu,tnix,cut,cut0
       if (n.eq.2) then
       write(fname,"(A7,2(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
      &outpre, ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
-     & "_",ls,"_",lt,".txt"
+     & "_",ls,"_",ll,".txt"
       else if (n.eq.4) then
       write(fname,"(A7,4(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
      &outpre, ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
-     & "_",ls,"_",lt,".txt"
+     & "_",ls,"_",ll,".txt"
       else if (n.eq.7) then
       write(fname,"(A7,7(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
      &outpre, ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
-     & "_",ls,"_",lt,".txt"
+     & "_",ls,"_",ll,".txt"
       else if (n.eq.9) then
       write(fname,"(A7,9(A1,F5.3),A1,F5.3,3(A1,I2),A4)")
      &outpre, ("_",abs(x(i)),i=1,n),"_",rho,"_",lc,
-     & "_",ls,"_",lt,".txt"
+     & "_",ls,"_",ll,".txt"
       end if
 #else
       read(nin,*) (x(i),i=1,nbdirsmax)
       write(fname,"(A7,5(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
      &outpre, ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
-     & "_",ls,"_",lt,".txt"
+     & "_",ls,"_",ll,".txt"
 #endif
       open(unit=nres,file=fname,action="WRITE")
 #endif
@@ -439,8 +480,8 @@ c *******************
 c entry for final run
 c *******************
       entry nmfin(x,n)
-      ni=ni+5
-      if (nie.gt.0) nie=nie+1
+c      ni=ni+5
+c      if (nie.gt.0) nie=nie+1
       no=nosave
       npi=npisav
 c     lc=2*lc
@@ -467,6 +508,13 @@ c     l3=2*l3
         bst=x(3)
         btn=x(4)
         if (bls.ne.0.) bls=bst
+      else if (n.eq.5) then
+        ast=x(2)
+        atn=x(3)
+        als=ast
+        bst=x(4)
+        btn=x(5)
+        bls=bst
       else if (n.eq.7) then
         ast=x(2)
         atn=x(3)
@@ -536,13 +584,24 @@ c     l3=2*l3
       else if (n.eq.4) then
         ndirs=ndirs+1
         astd(ndirs)=1.0
-        atnd=astd
+c        atnd=astd
+c        alsd=astd
+        ndirs=ndirs+1
+        bstd(ndirs)=1.0
+        ndirs=ndirs+1
+        btnd(ndirs)=1.0
+c        if (bls.ne.0.) blsd=bstd
+      else if (n.eq.5) then
+        ndirs=ndirs+1
+        astd(ndirs)=1.0
+        ndirs=ndirs+1
+        atnd(ndirs)=1.0
         alsd=astd
         ndirs=ndirs+1
         bstd(ndirs)=1.0
         ndirs=ndirs+1
         btnd(ndirs)=1.0
-        if (bls.ne.0.) blsd=bstd
+        blsd=bstd
       else if (n.eq.7) then
         ndirs=ndirs+1
         astd(ndirs)=1.0
@@ -591,7 +650,8 @@ c     l3=2*l3
       g2=0.
       do 995 l=1,2,nmlocal
   995 g2=g2+(gint(l)+1.)**2
-      final=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      final=efree+econ*sqrt(g2)**ncon
+      if (ntype.le.1) final=final+ntype*endiff/2
       fplus=final+abs(endiff)
 #else
 #ifndef DO_ALL

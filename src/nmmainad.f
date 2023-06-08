@@ -10,7 +10,7 @@ c ----------------------------------------------------------------------
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
 
-      parameter (nlog=0,nin=5,nout=6)
+      parameter (nlog=0,nin=5,nout=6,nes=14)
       common /minim/ econ,ncon,ntype
 c      real*8 kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,h2m,h2mcs,pi,s
 c      common /consts/ kf,rho,acn,ast,atn,als,cn,cne,dt,dr,evx,
@@ -32,5 +32,10 @@ c     &       h2m,h2mcs,pi,s
       do l=1,2,nmlocal
         g2=g2+(gint(l)+1.)**2
       end do 
-      flocal=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      flocal=efree+econ*sqrt(g2)**ncon
+c $$$$$$$$$$$$$$$$$$$$$$$
+c NEW stability condition
+c $$$$$$$$$$$$$$$$$$$$$$$
+      if (ntype.le.1) flocal=flocal+ntype*endiff/2
+      if (ntype.eq.2) flocal=flocal+abs(endiff)/2
       end

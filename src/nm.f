@@ -10,20 +10,24 @@ c **********************************************************************
 #endif
       include "nclude/params.f"
       external nucmat
-      parameter (nlog=0,nin=5,nout=6)
+      parameter (nlog=0,nin=5,nout=6,nes=14)
       parameter (maxdim=15)
       character*50 sysdat
       character*20 timdat
+      character*24 nffile,nesfil
+      common /files/ nffile,nesfil
+      logical lread,lprint
       logical lprt
       real*8 x(maxdim),scale(maxdim)
       common /minim/ econ,ncon,ntype
-      character*4 etype(3)
-      data etype/' jf ',' av ',' pb '/
+      character*4 etype(4)
+      data etype/' jf ',' av ',' pb ',' a+ '/
       timeit=timer(0.)
       call header(sysdat,timdat)
       write(nlog,6) sysdat,timdat
       write(nout,6) sysdat,timdat
     6 format(/80('*')//1x,a50,8x,a20)
+      read(nin,*) nloop,nesfil
       read(nin,*) maxcl1,tol1,maxcl2,tol2,alpha,beta,gamma,ndim
       read(nin,*) (scale(i),i=1,ndim)
 #if !defined(ONLY_NUCMAT) && !defined(BFGS) && defined(DO_FULLX)
@@ -32,7 +36,13 @@ c **********************************************************************
       end do
 #endif
       read(nin,*) econ,ncon,ntype
-      call nminit(x,ndim)
+c
+      lread=.true.
+      open(unit=nes,file=nesfil,status='unknown',form='formatted')
+      nloop=1
+      do loops=1,nloop
+c
+      call nminit(x,ndim,lread)
       if (maxcl1.ge.1) then
         write(nlog,7) etype(ntype+2),ndim
         write(nout,7) etype(ntype+2),ndim
@@ -85,7 +95,11 @@ c **********************************************************************
 #endif
       end if
 !#if !defined (ALLOW_TAPENADE) && !defined (ONLY_NUCMAT)
-      call nmfin(x,ndim)
+      call nmfin(x,ndim,lread)
+c
+      lread=.false.
+      end do !loops
+      close(unit=nes,status='keep')
 !#endif
       timeit=timer(timeit)
       write(nlog,999) timeit
@@ -97,11 +111,11 @@ c **********************************************************************
 c *id* nucmat **********************************************************
 c subroutine for driving nuclear/neutron matter code
 c ----------------------------------------------------------------------
-      subroutine nucmat(x,ndim,f,lprt)
+      subroutine nucmat(x,ndim,f,lprint)
       implicit real*8 (a-h,o-z)
       implicit integer*4 (i-n)
-      parameter (nlog=0,nin=5,nout=6,nres=7)
-      logical lprt
+      parameter (nlog=0,nin=5,nout=6,nes=14)
+      logical lread,lprint
       real*8 x(ndim)
       common /minim/ econ,ncon,ntype
 c
@@ -120,9 +134,9 @@ c
       real*8 eav,fsof,plm,qmin,qmax
       common /pionic/ eav,fsof,plm,qmin,qmax
       real*8 temp,mstar,chmpot,entrpy,ksav,kqav
-      character*24 nffile
-      common /files/ nffile
       common /hotted/ temp,mstar,chmpot,entrpy,ksav,kqav
+      character*24 nffile,nesfil
+      common /files/ nffile,nesfil
       save nmlocal,np,nv,nt,ni,nie,nio,no,ns,lf,lc,ls,lt,ll,lg,le,l3,lk
 c     &,npi,npf,bst,btn,bls,nosave,npisav
      &,npi,npf,nosave,npisav
@@ -166,6 +180,13 @@ c
         bst=x(3)
         btn=x(4)
         if (bls.ne.0.) bls=bst
+      else if (ndim.eq.5) then
+        ast=x(2)
+        atn=x(3)
+        als=ast
+        bst=x(4)
+        btn=x(5)
+        bls=bst
       else if (ndim.eq.7) then
         ast=x(2)
         atn=x(3)
@@ -190,11 +211,12 @@ c
         g2=g2+(gint(l)+1.)**2
       end do
       cons=econ*sqrt(g2)**ncon
-      f=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+      f=efree+econ*sqrt(g2)**ncon
 c $$$$$$$$$$$$$$$$$$$$$$$
 c NEW stability condition
 c $$$$$$$$$$$$$$$$$$$$$$$
-      f=f+abs(endiff)/2
+      if (ntype.le.1) f=f+ntype*endiff/2
+      if (ntype.eq.2) f=f+abs(endiff)/2
       no=0
 #if defined CUSTOM_INPUTS && defined ONLY_NUCMAT
       write(nres,*) f
@@ -208,7 +230,10 @@ c $$$$$$$$$$$$$$$$$$$$$$$
 c ************************
 c entry for initialization
 c ************************
-      entry nminit(x,ndim)
+      entry nminit(x,ndim,lread)
+c
+      if (lread) then
+c
       pi=acos(-1.)
       do 1 i=1,8
       do 1 j=1,8
@@ -231,6 +256,9 @@ c      read(nin,1002) tniu,tnix,cut,cut0
       read(nin,1002) temp,mstar,tnia,tnic,tnis,tniu,tnix,cut,cut0
       read(nin,1001) npi,npf
       read(nin,1002) eav,fsof,plm,qmin,qmax
+c
+      end if
+c
       if (ns.eq.3) read(nin,1003) nffile
  1003 format(5x,a24)
       write(nlog,1010) mname(nmlocal)
@@ -261,7 +289,7 @@ c      read(nin,1002) tniu,tnix,cut,cut0
         end if
       end if
       s=float(4/nmlocal)
-            x(1)=dor
+      x(1)=dor
       if (ndim.eq.2) then
         x(2)=ast
       else if (ndim.eq.3) then
@@ -269,9 +297,16 @@ c      read(nin,1002) tniu,tnix,cut,cut0
         x(3)=atn
       else if (ndim.eq.4) then
         x(2)=ast
+        atn=ast
+        als=ast
         x(3)=bst
         x(4)=btn
         if (bls.ne.0.) bls=bst
+      else if (ndim.eq.5) then
+        x(2)=ast
+        x(3)=atn
+        x(4)=bst
+        x(5)=btn
       else if (ndim.eq.7) then
         x(2)=ast
         x(3)=atn
@@ -328,7 +363,7 @@ c      read(nin,1002) tniu,tnix,cut,cut0
      & "_",ls,"_",lt,".txt"
       end if
 #else
-      nbdirsmax=7
+      nbdirsmax=2
       read(nin,*) (x(i),i=1,nbdirsmax)
       write(fname,"(A7,7(A1,F19.17),A1,F19.17,3(A1,I2),A4)")
      &outpre, ("_",abs(x(i)),i=1,nbdirsmax),"_",rho,"_",lc,
@@ -340,18 +375,11 @@ c      read(nin,1002) tniu,tnix,cut,cut0
 c *******************
 c entry for final run
 c *******************
-      entry nmfin(x,ndim)
-      ni=ni+5
-      if (nie.gt.0) nie=nie+1
+      entry nmfin(x,ndim,lread)
+c     ni=ni+5
+c     if (nie.gt.0) nie=nie+1
       no=nosave
       npi=npisav
-c     lc=2*lc
-c     ls=2*ls
-c     lt=2*lt
-c     ll=2*ll
-c     lg=2*lg
-c     le=2*le
-c     l3=2*l3
       dor=x(1)
       if (ndim.eq.2) then
         ast=x(2)
@@ -368,6 +396,13 @@ c     l3=2*l3
         bst=x(3)
         btn=x(4)
         if (bls.ne.0.) bls=bst
+      else if (ndim.eq.5) then
+        ast=x(2)
+        atn=x(3)
+        als=ast
+        bst=x(4)
+        btn=x(5)
+        bls=bst
       else if (ndim.eq.7) then
         ast=x(2)
         atn=x(3)
@@ -391,11 +426,23 @@ c     &           ,dor,bst,btn,bls,npi,npf, gint, endiff, efree)
       g2=0.
       do 995 l=1,2,nmlocal
   995 g2=g2+(gint(l)+1.)**2
-      final=efree+ntype*endiff/2+econ*sqrt(g2)**ncon
+c $$$$$$$$$$$$$$$$$$$$$$$
+c NEW stability condition
+c $$$$$$$$$$$$$$$$$$$$$$$
+      final=efree+econ*sqrt(g2)**ncon
+      if (ntype.le.1) final=final+ntype*endiff/2
       fplus=final+abs(endiff)/2
       write(nlog,*) final,fplus
       write(nout,*) final,fplus
  1095 format(/2x,'econs   eplus',/2f17.9)
+c
+      if (lread) write(nes,1098)
+      write(nes,1099) lc,ls,lt,ll,dor,ast,atn,bst,btn,efree
+     &,endiff,abs(gint(1)),abs(gint(2)),final,fplus
+ 1098 format(1x,'lc/ls/lt/ll',3x,'dt/r0',5x,'ast/atn',7x,'bst/btn'
+     &,7x,'E     (PB-JF)',3x,'gcint   gtint',5x,'+cons',5x,'+dE/2')
+ 1099 format(1x,i2,1x,i2,1x,i2,1x,i2,3x,f5.3,3x,f5.3,1x,f5.3,3x
+     &,f5.3,1x,f5.3,3x,f7.3,2x,f6.3,3x,f5.3,3x,f5.3,3x,f7.3,3x,f7.3)
       if (no.le.1) go to 999
       call nmout(le,lg,lt,l3,nie,no,nt,nv)
   999 return
