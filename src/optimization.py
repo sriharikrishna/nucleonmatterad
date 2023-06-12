@@ -2,7 +2,6 @@ import os
 import os.path
 import numpy as np
 from scipy.optimize import minimize
-import nlopt
 import glob
 
 # this class wraps functions and gradient functions to write all evaluations to a file
@@ -27,7 +26,7 @@ class Funcgradmon(object):
     min50 = minimize( fg, x0, jac=True, options=options )
     """
 
-    def __init__( self, func, filename, computing_grads=True, verbose=1 ):
+    def __init__( self, func, filename, computing_grads=True, verbose=1):
         self.func = func
         self.verbose = verbose
         self.filename = filename
@@ -135,6 +134,41 @@ def snm_2d_objective(x):
 
     return f
 
+def snm_4d_objective(x):
+    # convert x into strings
+    xstr = ["%.17f" % elem for elem in x]
+    absxstr = ["%.17f" % elem for elem in np.abs(x)]
+
+    # write call string
+    callstr = "".join(["./script_nm_snm_f_only_4.sh ",xstr[0]," ",xstr[1]," ",xstr[2]," ",xstr[3]])
+
+    # call the call string
+    os.system(callstr)
+
+    # the output was written to out_snm_abs(x(i))....txt
+    output_file = "out_snm"
+    for j in range(len(xstr)):
+        #output_file = output_file.join(["_", absxstr[j]])
+        output_file = output_file + "_" + absxstr[j]
+    output_file = output_file + ".txt" #output_file.join([".txt"])
+
+    # we read in f and g from the .txt:
+    print("output_file", output_file)
+    file = open(output_file)
+    line = file.read().replace(","," ")
+    print("line:", line)
+    file.close()
+    line = line.split()
+
+    # write f
+    f = np.float(line[0])
+
+    # SAFETY
+    if np.isnan(f) or np.isinf(f):
+        f = 1e2
+
+    return f
+
 def pnm_4d_objective(x,rho,lc,ls,lt):
     # convert x into strings
     xstr = ["%.4f" % elem for elem in x]
@@ -187,6 +221,56 @@ def pnm_4d_objective(x,rho,lc,ls,lt):
     os.system(remove_string)
 
     return f
+
+
+def snm_4d_objective_der(x, rho, lc, ls, lt):
+    xstr = [str(elem) for elem in x]
+    rhostr = "%.3f" % rho
+
+    # write call string
+    callstr = "".join(
+        ["./script_nm_snm_4.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rhostr, " ", str(lc), " ",
+         str(ls), " ", str(lt)])
+
+    os.system(callstr)
+
+    # we read in f and g from the .txt:
+    searchstr = "out_pnm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    output_file = glob.glob(searchstr)
+    pnm_file = output_file[0]
+    file = open(pnm_file)
+    line = file.read().replace(",", " ")
+    file.close()
+    line = line.split()
+
+    # write g
+    f = np.float(line[0])
+    g = np.zeros(4)
+    g[0] = np.float(line[5])
+    g[1] = np.float(line[6])
+    g[2] = np.float(line[7])
+    g[3] = np.float(line[8])
+
+    # SAFETY:
+    if np.isnan(f):
+        f = 1e3
+        g = np.zeros(4)
+
+    # CLEANUP:
+    remove_string = "rm " + pnm_file
+    os.system(remove_string)
+
+    searchstr = "out_tap*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt)
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
+    os.system(remove_string)
+
+    searchstr = "temp*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
+    output_file = glob.glob(searchstr)
+    remove_string = "rm " + output_file[0]
+    os.system(remove_string)
+
+    return f, g
 
 def pnm_4d_objective_der(x,rho,lc,ls,lt):
     xstr = [str(elem) for elem in x]
@@ -472,7 +556,9 @@ def main():
             x0 = np.array([float(dor), float(alpha), float(betas), float(betat)])
         elif len(args) == 16:
             x0 = np.array([float(dor), float(ast), float(atn), float(als), float(al2), float(als2), float(bst), float(btn), float(bls)])
-        dim = len(args)-7 
+        dim = len(args)-7
+    elif problem == "snm4":
+        x0 = np.array([float(dor), float(alpha), float(betas), float(betat)])
     else:
         raise Exception('unknown problem =',problem)
 
@@ -501,6 +587,13 @@ def main():
             objective = lambda x: pnm_4d_objective(x,rho,lc,ls,lt)
             fg = Funcgradmon(objective, filename, computing_grads = False,verbose=1)
         #fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
+    elif problem == "snm4":
+        if solver == "lbfgs":
+            objective = lambda x: snm_4d_objective_der(x, rho, lc, ls, lt)
+            fg = Funcgradmon(objective, filename, computing_grads=True, verbose=1)
+        else:
+            objective = lambda x: snm_4d_objective(x, rho, lc, ls, lt)
+            fg = Funcgradmon(objective, filename, computing_grads=False, verbose=1)
     elif problem == "pnm4":
         if solver == "lbfgs":
             if dim == 4:
@@ -572,7 +665,7 @@ def main():
                 x[ctr,1] = np.float(line[6*ctr+3])
                 g[ctr,0] = np.float(line[6*ctr+4])
                 g[ctr,1] = np.float(line[6*ctr+5])
-        elif problem == "pnm4":
+        elif problem == "pnm4" or problem == "snm4":
             num_evals = np.int(num_entries/10)
             f = np.zeros(num_evals)
             x = np.zeros((num_evals, 4))
