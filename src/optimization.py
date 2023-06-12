@@ -235,7 +235,7 @@ def snm_4d_objective_der(x, rho, lc, ls, lt):
     os.system(callstr)
 
     # we read in f and g from the .txt:
-    searchstr = "out_pnm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    searchstr = "out_snm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
     output_file = glob.glob(searchstr)
     pnm_file = output_file[0]
     file = open(pnm_file)
@@ -559,6 +559,7 @@ def main():
         dim = len(args)-7
     elif problem == "snm4":
         x0 = np.array([float(dor), float(alpha), float(betas), float(betat)])
+        dim = 4
     else:
         raise Exception('unknown problem =',problem)
 
