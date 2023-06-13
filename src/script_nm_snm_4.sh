@@ -14,10 +14,10 @@ sedify() {
   sed -i "s/ rho=/ rho=$1/g" $5
   sed -i "s/ lc=/ lc=$2/g" $5
   sed -i "s/ ls=/ ls=$3/g" $5
-  sed -i "s/ lt=/ lt=$4/g" $5
+  sed -i "s/ ll=/ ll=$4/g" $5
 }
 
-#sedify $5 $6 $7 $8 temp_$(printf %.3f $1)_$(printf %.3f $2)_$(printf %.3f $3)_$(printf %.3f $4)_$5_$6_$7_$8.dat
+sedify $5 $6 $7 $8 temp_$(printf %.3f $1)_$(printf %.3f $2)_$(printf %.3f $3)_$(printf %.3f $4)_$5_$6_$7_$8.dat
 
 start=`date +%s`
 time ./nmadv < temp_$(printf %.3f $1)_$(printf %.3f $2)_$(printf %.3f $3)_$(printf %.3f $4)_$5_$6_$7_$8.dat > out_tap_all_nucmat_snm_$(printf %.3f $1)_$(printf %.3f $2)_$(printf %.3f $3)_$(printf %.3f $4)_$5_$6_$7_$8
