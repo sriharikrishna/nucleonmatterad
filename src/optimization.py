@@ -223,22 +223,23 @@ def pnm_4d_objective(x,rho,lc,ls,lt):
     return f
 
 
-def snm_4d_objective_der(x, rho, lc, ls, lt):
+def snm_4d_objective_der(x, rho, lc, ls, ll):
     xstr = [str(elem) for elem in x]
     rhostr = "%.3f" % rho
 
     # write call string
     callstr = "".join(
         ["./script_nm_snm_4.sh ", xstr[0], " ", xstr[1], " ", xstr[2], " ", xstr[3], " ", rhostr, " ", str(lc), " ",
-         str(ls), " ", str(lt)])
+         str(ls), " ", str(ll)])
 
     os.system(callstr)
 
     # we read in f and g from the .txt:
-    searchstr = "out_snm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".txt"
+    searchstr = "out_snm*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(ll) + ".txt"
     output_file = glob.glob(searchstr)
-    pnm_file = output_file[0]
-    file = open(pnm_file)
+    print(output_file)
+    snm_file = output_file[0]
+    file = open(snm_file)
     line = file.read().replace(",", " ")
     file.close()
     line = line.split()
@@ -257,15 +258,15 @@ def snm_4d_objective_der(x, rho, lc, ls, lt):
         g = np.zeros(4)
 
     # CLEANUP:
-    remove_string = "rm " + pnm_file
+    remove_string = "rm " + snm_file
     os.system(remove_string)
 
-    searchstr = "out_tap*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt)
+    searchstr = "out_tap*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(ll)
     output_file = glob.glob(searchstr)
     remove_string = "rm " + output_file[0]
     os.system(remove_string)
 
-    searchstr = "temp*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(lt) + ".dat"
+    searchstr = "temp*" + rhostr + "_" + str(lc) + "_" + str(ls) + "_" + str(ll) + ".dat"
     output_file = glob.glob(searchstr)
     remove_string = "rm " + output_file[0]
     os.system(remove_string)
@@ -496,7 +497,7 @@ def main():
         lc = int(args[6])
         ls = int(args[7])
         lt = int(args[8]) 
-    elif len(args) == 11:
+    elif len(args) == 11 and args[5] == "pnm4":
         dor = args[1]
         alpha = args[2]
         betas = args[3]
@@ -507,6 +508,17 @@ def main():
         lc = int(args[8])
         ls = int(args[9])
         lt = int(args[10])
+    elif len(args) == 11 and args[5] == "snm4":
+        dor = args[1]
+        ast = args[2]
+        bst = args[3]
+        btn = args[4]
+        problem = args[5]
+        solver = args[6]
+        rho = float(args[7])
+        lc = int(args[8])
+        ls = int(args[9])
+        ll = int(args[10])
     elif len(args) == 16:
         dor = args[1]
         ast = args[2]
@@ -558,7 +570,7 @@ def main():
             x0 = np.array([float(dor), float(ast), float(atn), float(als), float(al2), float(als2), float(bst), float(btn), float(bls)])
         dim = len(args)-7
     elif problem == "snm4":
-        x0 = np.array([float(dor), float(alpha), float(betas), float(betat)])
+        x0 = np.array([float(dor), float(ast), float(bst), float(btn)])
         dim = 4
     else:
         raise Exception('unknown problem =',problem)
@@ -572,7 +584,7 @@ def main():
     xi = x0
 
     # instantiate the Funcgradmon object
-    filename = problem + "_" + solver + "_dim=" + str(dim) + "_rho=" + str(rho) + "_lc_" + str(lc) + "_ls_" + str(ls) + "_ll_" + str(lt) + ".npz"
+    filename = problem + "_" + solver + "_dim=" + str(dim) + "_rho=" + str(rho) + "_lc_" + str(lc) + "_ls_" + str(ls) + "_ll_" + str(ll) + ".npz"
 
     if problem == "snm2":
         if solver == "lbfgs":
@@ -590,10 +602,10 @@ def main():
         #fg = Funcgradmon(snm_2d_objective, snm_2d_objective_der, filename, verbose=1)
     elif problem == "snm4":
         if solver == "lbfgs":
-            objective = lambda x: snm_4d_objective_der(x, rho, lc, ls, lt)
+            objective = lambda x: snm_4d_objective_der(x, rho, lc, ls, ll)
             fg = Funcgradmon(objective, filename, computing_grads=True, verbose=1)
         else:
-            objective = lambda x: snm_4d_objective(x, rho, lc, ls, lt)
+            objective = lambda x: snm_4d_objective(x, rho, lc, ls, ll)
             fg = Funcgradmon(objective, filename, computing_grads=False, verbose=1)
     elif problem == "pnm4":
         if solver == "lbfgs":
