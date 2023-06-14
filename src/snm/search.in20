@@ -21,7 +21,7 @@
   l3=64     # of points in 3b potential integration
   lk= 2     # * kf for upper limit in k integration for finite temp
   kf=0.          fermi momentum used in correlation generator
- rho=0.20        density
+ rho=            density
  dor=3.950       dt/r0 or dc/r0 (nm=1 or 2)
  acn=1.          central potential quencher
  ast=0.625       spin (sigma) potential quencher
