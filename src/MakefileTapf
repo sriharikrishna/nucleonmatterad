@@ -1,6 +1,6 @@
 #TAPENADE_HOME = /Users/mattmenickelly/tapenade_src/tapenade_3.15/
 TAPENADE_HOME = ~/tapenade_src/tapenade_3.16/
-TPN  = ${TAPENADE_HOME}/bin/tapenade
+TPN  = ${TAPENADE_HOME}/bin/tapenade -nooptim spareinit -nooptim  mergediff
 
 CC = @gcc
 FC = @ifort
